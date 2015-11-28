@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="头文件\extern">
+      <UniqueIdentifier>{44a43ec6-8000-4e7e-ac80-df9f17da75ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\extern\nv_dds">
+      <UniqueIdentifier>{c56e4740-12fb-4dc1-bff5-f9b50c0ca42f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\extern">
+      <UniqueIdentifier>{de021bce-048b-44bd-9c48-4c143cf01adf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\extern\nv_dds">
+      <UniqueIdentifier>{6df2bf6b-cf09-4abf-85b7-d70b096d8ab3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include">
+      <UniqueIdentifier>{24f62364-a871-4fdd-ba1b-c15ef8ab3c85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{3d1ec9f7-4114-4ed1-adfd-5e8bd2d2cd03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\header">
+      <UniqueIdentifier>{4413d4c9-c3f0-4349-8102-0e0a7b1a9fab}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Engine\source">
+      <UniqueIdentifier>{9f1290c7-b70c-482f-85ba-32392a527ba8}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="RenderDevice">
+      <UniqueIdentifier>{13a59d68-be02-4a30-9460-963b9a4e5802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderDevice\header">
+      <UniqueIdentifier>{55b89bbe-bbcd-46aa-be05-8ddf828e763b}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="RenderDevice\source">
+      <UniqueIdentifier>{996d021c-87ce-44e1-85e2-c4ad0db2ab9a}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{dffcc28a-59d9-403c-8ab4-2ae9a0a335ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\header">
+      <UniqueIdentifier>{83e5b93f-e441-4d6d-a124-96581288fa94}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Renderer\source">
+      <UniqueIdentifier>{df1bab4c-1a42-49b5-8f3b-e393ab51cc31}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="extern\nv_dds\nv_dds.cpp">
+      <Filter>源文件\extern\nv_dds</Filter>
+    </ClCompile>
+    <ClCompile Include="n2dUtil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dModelLoaderImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dObjLoader.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dVBOHelper.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\n2dEngineImpl.cpp">
+      <Filter>Engine\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dTextureImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\n2dWindowImpl.cpp">
+      <Filter>Engine\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dRenderDeviceImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dShaderWrapperImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dGraphicsImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\n2dFPSControllerImpl.cpp">
+      <Filter>Engine\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\n2dFontImpl.cpp">
+      <Filter>Renderer\source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="extern\nv_dds\nv_dds.h">
+      <Filter>头文件\extern\nv_dds</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dCommon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dKeyState.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Natsu2D.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dInterface.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dModelLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dModelLoaderImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dObjLoader.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dVBOHelper.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\n2dEngineImpl.h">
+      <Filter>Engine\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dTexture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dTextureImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dWindow.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\n2dWindowImpl.h">
+      <Filter>Engine\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dRenderDeviceImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dRenderDevice.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dShaderWrapper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dShaderWrapperImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dGraphics.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dGraphicsImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dFPSController.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\n2dFPSControllerImpl.h">
+      <Filter>Engine\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dFont.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\n2dFontImpl.h">
+      <Filter>Renderer\header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Natsu2D.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DefaultVertexShader.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="DefaultFragmentShader.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
+</Project>

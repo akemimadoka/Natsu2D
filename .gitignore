@@ -1,28 +1,68 @@
-# Compiled Object files
-*.slo
-*.lo
+程序文档/
+Debug/
+Release/
+Natsu2D/bin/
+Natsu2D/Debug/
+Natsu2D/Release/
+Natsu2D/extern/freetype/bin/
+Natsu2D/extern/freetype/obj/
+Natsu2D/extern/glew/bin/
+Natsu2D/extern/glew/obj/
+Natsu2D/extern/zlib/bin/
+Natsu2D/extern/zlib/obj/
+
+Natsu2D/lib/
+
+NatsuLib/bin/
+NatsuLib/Debug/
+NatsuLib/Release/
+
+test/Debug/
+test/Release/
+
+test/Natsu2D_d.dll
+test/Natsu2D_d.pdb
+test/Natsu2D.dll
+test/Natsu2D.pdb
+
+ipch/
+
+*.sdf
+*.suo
+
+###############
+#  fixed file #
+###############
+*.exe
+*.txt
+*.def
+*.dsp
+*.lib
+*.doc
+*.dll
+*.lnt
+*.pm
+*.xls
+*.dbg
+*.DBG
 *.o
 *.obj
+*.plg
+*.keep
 
-# Precompiled Headers
-*.gch
-*.pch
+###############
+#  temp file  #
+###############
+~*
+*.log
+*.cmm
+*.men
+*.ini
+*.fig
+*.cmp
+*.tmp
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+###############
+#    script   #
+###############
+*.bat

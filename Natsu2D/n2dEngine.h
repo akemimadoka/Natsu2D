@@ -1,0 +1,153 @@
+#pragma once
+#include <natEvent.h>
+#include <natException.h>
+#include <natUtil.h>
+#include "n2dInterface.h"
+#include <Windows.h>
+#include "n2dWindow.h"
+#include "n2dCommon.h"
+
+struct n2dRenderDevice;
+struct n2dFPSController;
+
+///	@brief	全局变量
+namespace global
+{
+	///	@brief	异常事件
+	///	@note	data为natException，不可取消
+	extern
+#ifndef Natsu2DStatic
+#	ifdef N2DEXPORT
+		__declspec(dllexport)
+#	else
+		__declspec(dllimport)
+#	endif
+#endif
+	natEvent<natException*> EventException;
+
+	inline void InitGlew()
+	{
+		GLenum tRet;
+		glewExperimental = true;
+		if ((tRet = glewInit()) != GLEW_OK)
+		{
+			throw natException(_T("global::InitGlew"), natUtil::FormatString(_T("GLEW initializing failed, id=%d, description:%s"), tRet, reinterpret_cast<const char *>(glewGetErrorString(tRet))));
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///	@brief	EventMSG使用的窗口消息结构体
+////////////////////////////////////////////////////////////////////////////////
+struct Msgdata
+{
+	HWND hWnd;		///< @brief	窗口句柄
+	UINT uMsg;		///< @brief	信息类型
+	WPARAM wParam;	///< @brief	wParam
+	LPARAM lParam;	///< @brief	lParam
+	LRESULT result;	///< @brief	处理结果
+};
+
+////////////////////////////////////////////////////////////////////////////////
+///	@brief	Natsu2D引擎事件监听器
+///	@note	通过继承此类并重载方法以实现信息回调
+////////////////////////////////////////////////////////////////////////////////
+struct n2dEngineEventListener
+{
+	virtual ~n2dEngineEventListener() = default;
+
+	virtual nBool EngineInit() = 0;
+	virtual void EngineUninit() = 0;
+	///	@brief	初始化函数
+	///	@note	每次窗口初始化时被调用，包括切换全屏
+	virtual nBool WindowInit() = 0;
+	///	@brief	反初始化函数
+	///	@note	每次窗口反初始化时被调用，包括切换全屏
+	virtual void WindowUninit() = 0;
+	///	@brief	更新函数
+	///	@note	在此实现非绘画的更新内容
+	///	@param[in]		dElapsedTime	距离上次更新的时间
+	///	@param[inout]	pFPSController	FPS控制器
+	virtual void Update(nDouble dElapsedTime, n2dFPSController* pFPSController) = 0;
+	///	@brief	绘画函数
+	///	@note	在此实现绘画的更新内容
+	///	@param[in]		ElapsedTime		距离上次更新的时间
+	///	@param[inout]	pFPSController	FPS控制器
+	///	@param[inout]	pRenderDevice	渲染设备
+	virtual void Render(nDouble dElapsedTime, n2dFPSController* pFPSController, n2dRenderDevice* pRenderDevice) = 0;
+};
+
+struct n2dEngine
+	: n2dInterface
+{
+	///	@brief	自定义窗口消息
+	enum WindowMessage
+	{
+		WM_TOGGLEFULLSCREEN = WM_USER + 1	///< @brief 切换全屏
+	};
+
+	///	@brief	线程模式
+	enum class ThreadMode
+	{
+		SingleThread,	///< @brief	单线程模式
+		MultiThread		///< @brief	多线程模式
+	};
+
+	struct WndMsgEvent
+		: natEvent<Msgdata>
+	{
+		typedef void(*EventHandler)(WndMsgEvent&);
+
+		WndMsgEvent() : natEvent(true) {}
+		virtual nuInt Register(EventHandler func, DWORD WndMsg, nInt priority = Priority::Normal) = 0;
+		virtual nBool Unregister(nuInt HandlerIndex, DWORD WndMsg, nInt Priority) = 0;
+		virtual void Unregister(DWORD WndMsg, EventHandler Handler) = 0;
+
+		virtual nBool Activate(DWORD WndMsg, nInt PriorityLimitmin = Priority::Low, nInt PriorityLimitmax = Priority::High) = 0;
+		virtual nBool Activate(DWORD WndMsg, dataType const& data, nInt PriorityLimitmin, nInt PriorityLimitmax) = 0;
+
+		virtual nBool operator()(DWORD WndMsg, dataType const& data) = 0;
+
+		virtual void Release() override = 0;
+
+		virtual n2dEngine* GetEngine() = 0;
+	};
+
+	///	@brief	切换全屏
+	virtual void ToggleFullscreen() = 0;
+	///	@brief	结束应用程序
+	virtual void TerminateApplication() = 0;
+
+	///	@brief	显示/隐藏窗口
+	///	@param[in]	show	是否显示窗口
+	virtual void Show(nBool show = true) = 0;
+	///	@brief	交换缓冲区
+	virtual void SwapBuffers() = 0;
+	///	@brief	获得窗口
+	virtual n2dWindow* GetWindow() = 0;
+	virtual n2dRenderDevice* GetRenderDevice() = 0;
+	virtual n2dEngineEventListener* GetListener() = 0;
+
+	virtual ThreadMode GetThreadMode() const = 0;
+	virtual HINSTANCE GetHInstance() const = 0;
+
+	///	@brief	注册窗口消息处理函数
+	///	@param[in]	func		窗口消息处理函数
+	///	@param[in]	WndMsg		要处理的窗口消息
+	///	@param[in]	priority	该消息处理函数的优先级
+	///	@note	函数接受一个参数WndMsgEvent&，请使用WndMsgEvent::getData方法获得窗口消息
+	///	@see	Msgdata
+	///	@see	n2dEngine::WndMsgEvent
+	virtual void AddMessageHandler(WndMsgEvent::EventHandler func, DWORD WndMsg, Priority::Priority priority = Priority::Normal) = 0;
+
+	///	@brief	获得按键的状态
+	///	@param[in]	Key		按键键值
+	///	@return	按键是否按下
+	virtual nBool IsKeyPressed(nuInt Key) const = 0;
+
+	///	@brief	应用程序主循环
+	///	@param[in]	title	窗口名
+	///	@param[in]	FPS		渲染和更新FPS
+	///	@note	将来可能分离渲染及更新FPS
+	virtual void MainLoop(ncTStr title, nuInt FPS) = 0;
+};

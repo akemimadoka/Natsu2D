@@ -1,0 +1,218 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0470F050-73BB-45AD-8712-4F9941BC341A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MyNatsu2D</RootNamespace>
+    <ProjectName>Natsu2D</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>bin\</OutDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>bin\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>NatsuLib_d.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;lib/assimp/assimpd.lib;lib/CxImage/Debug/cximage.lib;lib/CxImage/Debug/jasper.lib;lib/CxImage/Debug/jbig.lib;lib/CxImage/Debug/Jpeg.lib;lib/CxImage/Debug/libdcr.lib;lib/CxImage/Debug/mng.lib;lib/CxImage/Debug/png.lib;lib/CxImage/Debug/Tiff.lib;lib/CxImage/Debug/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../NatsuLib/bin/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;Natsu2DStatic;N2DEXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>../NatsuLib/bin/NatsuLib.lib;opengl32.lib;glu32.lib;lib/freetype/freetype261MT.lib;lib/assimp/assimp.lib;lib/CxImage/Release/cximage.lib;lib/CxImage/Release/jasper.lib;lib/CxImage/Release/jbig.lib;lib/CxImage/Release/Jpeg.lib;lib/CxImage/Release/libdcr.lib;lib/CxImage/Release/mng.lib;lib/CxImage/Release/png.lib;lib/CxImage/Release/Tiff.lib;lib/CxImage/Release/zlib.lib;lib/GL/Release/Win32/glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;Natsu2DStatic;N2DEXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Engine\n2dEngineImpl.cpp" />
+    <ClCompile Include="Engine\n2dFPSControllerImpl.cpp" />
+    <ClCompile Include="Engine\n2dWindowImpl.cpp" />
+    <ClCompile Include="extern\nv_dds\nv_dds.cpp" />
+    <ClCompile Include="n2dUtil.cpp" />
+    <ClCompile Include="RenderDevice\n2dGraphicsImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dModelLoaderImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dObjLoader.cpp" />
+    <ClCompile Include="RenderDevice\n2dRenderDeviceImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dShaderWrapperImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dTextureImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dVBOHelper.cpp" />
+    <ClCompile Include="Renderer\n2dFontImpl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Engine\n2dEngineImpl.h" />
+    <ClInclude Include="Engine\n2dFPSControllerImpl.h" />
+    <ClInclude Include="Engine\n2dWindowImpl.h" />
+    <ClInclude Include="n2dCommon.h" />
+    <ClInclude Include="extern\nv_dds\nv_dds.h" />
+    <ClInclude Include="n2dEngine.h" />
+    <ClInclude Include="n2dFont.h" />
+    <ClInclude Include="n2dFPSController.h" />
+    <ClInclude Include="n2dGraphics.h" />
+    <ClInclude Include="n2dInterface.h" />
+    <ClInclude Include="n2dModelLoader.h" />
+    <ClInclude Include="n2dKeyState.h" />
+    <ClInclude Include="n2dRenderDevice.h" />
+    <ClInclude Include="n2dShaderWrapper.h" />
+    <ClInclude Include="n2dTexture.h" />
+    <ClInclude Include="n2dWindow.h" />
+    <ClInclude Include="Natsu2D.h" />
+    <ClInclude Include="n2dUtil.h" />
+    <ClInclude Include="RenderDevice\n2dGraphicsImpl.h" />
+    <ClInclude Include="RenderDevice\n2dModelLoaderImpl.h" />
+    <ClInclude Include="RenderDevice\n2dObjLoader.h" />
+    <ClInclude Include="RenderDevice\n2dRenderDeviceImpl.h" />
+    <ClInclude Include="RenderDevice\n2dShaderWrapperImpl.h" />
+    <ClInclude Include="RenderDevice\n2dTextureImpl.h" />
+    <ClInclude Include="RenderDevice\n2dVBOHelper.h" />
+    <ClInclude Include="Renderer\n2dFontImpl.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Natsu2D.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DefaultFragmentShader.glsl" />
+    <None Include="DefaultVertexShader.glsl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="Natsu2D.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

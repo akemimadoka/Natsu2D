@@ -30,7 +30,6 @@
 #pragma comment (lib, "opengl32.lib")
 
 #include <n2dFont.h>
-#include <n2dShaderWrapper.h>
 
 #include <n2dCommon.h>
 #include <n2dFPSController.h>
@@ -38,12 +37,12 @@
 #include <n2dGraphics.h>
 #include <n2dUtil.h>
 #include <n2dTexture.h>
-#include <n2dModelLoader.h>
+#include <n2dModel.h>
 
 #include <natException.h>
 #include <natMath.h>
-#include <natStream.h>
 #include <natLog.h>
+#include <natStream.h>
 
 #pragma endregion
 
@@ -124,21 +123,25 @@ public:
 		: m_Speed(0.0f),m_bShouldControl(false),m_RotateL(0.0f),m_RotateH(0.0f),f(nullptr),
 		m_model(nullptr)//f(48, 0, 0, 0, FW_BOLD, false, false, false, GB2312_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE | DEFAULT_PITCH, _T("微软雅黑"))
 	{
-		CreateN2DEngine(0, _T("GLAPP"), 0u, 0u, 800u, 600u, 1280u, 720u, 32u, false, hInstance, n2dEngine::ThreadMode::MultiThread, this, &m_pEngine);
+		if (NATFAIL(CreateN2DEngine(0, _T("GLAPP"), 0u, 0u, 800u, 600u, 1280u, 720u, 32u, false, hInstance, n2dEngine::ThreadMode::MultiThread, this, &m_pEngine)))
+		{
+			throw natException(_T("test::test"), _T("Failed to create Natsu2D engine"));
+		}
+
 		m_pEngine->GetRenderDevice()->CreateGraphics2D(&m_pGraphics);
 		m_pEngine->GetRenderDevice()->CreateTexture(&m_texture);
 		m_pEngine->GetRenderDevice()->CreateTexture(&m_texture2);
 		m_pEngine->GetRenderDevice()->CreateTexture(&m_texture3);
-		m_pEngine->GetRenderDevice()->CreateObjLoader(&m_model);
-		m_pEngine->GetRenderDevice()->CreateObjLoader(&m_obj);
-		m_pEngine->GetRenderDevice()->CreateObjLoader(&m_obj2);
+		m_pEngine->GetRenderDevice()->CreateModelLoader(&m_model);
+		m_pEngine->GetRenderDevice()->CreateModelLoader(&m_model2);
+		m_pEngine->GetRenderDevice()->CreateModelLoader(&m_model3);
 
-		//global::pCurrentApp = m_pEngine;
-		m_pEngine->MainLoop(_T("夏之幻想"), 60u);
+		//n2dGlobal::pCurrentApp = m_pEngine;
+		m_pEngine->MainLoop(_T("夏之幻想"), 6000u);
 	}
 	~test()
 	{
-		SafeRelease(m_model);
+
 	}
 
 	nBool EngineInit() override
@@ -148,12 +151,21 @@ public:
 
 	void EngineUninit() override
 	{
-		
+
 	}
+
+	struct Test
+	{
+		int first;
+		n2dGraphics3DVertex vert;
+	};
 
 	nBool WindowInit() override
 	{
-		global::InitGlew();
+		if (!m_pGraphics3D)
+		{
+			m_pEngine->GetRenderDevice()->CreateGraphics3D(&m_pGraphics3D);
+		}
 
 		natLog::GetInstance().LogMsg(n2dUtil::FormatString(TEXT("GLAPP initialized as %s thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? TEXT("single") : TEXT("multi"))));
 		natLog::GetInstance().LogMsg(_T("GLAPP start initializing"));
@@ -161,14 +173,15 @@ public:
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
 			CloseHandle(m_Mutex);
-			throw natException(_T("test::Initialize"), _T("GLAPP is already running"));
+			throw natException(_T("test::WindowInit"), _T("GLAPP is already running"));
 		}
 		if (!m_Mutex)
 		{
-			throw natException(_T("test::Initialize"), _T("Cannot create mutex"));
+			throw natException(_T("test::WindowInit"), _T("Cannot create mutex"));
 		}
 
 		n2dWindow* window = m_pEngine->GetWindow();
+		n2dRenderDevice* renderdevice = m_pEngine->GetRenderDevice();
 
 		if (!window->FullScreen)
 		{
@@ -180,27 +193,48 @@ public:
 
 		SetActiveWindow(window->GetWnd());
 
-		//m_pEngine->ResizeDraw(true);
+		renderdevice->SetSwapInterval(1u);
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		renderdevice->EnableCapability(n2dRenderDevice::Capability::Blend);
+		renderdevice->SetBlendMode(n2dRenderDevice::BlendFactor::SrcAlpha, n2dRenderDevice::BlendFactor::OneMinusSrcAlpha);
 
-		sw = m_pEngine->GetRenderDevice()->GetShaderWrapper();
+		sw = renderdevice->GetShaderWrapper();
+		sw->CreateProgram(&sp);
+		n2dShader* pShader[2];
+		natStream* pStream = new natFileStream(_T("VertexShader.glsl"), true, false);
+		sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
+		if (!pShader[0]->Compiled())
+		{
+			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Compile Shader0 Failed, Log: %s"), pShader[0]->GetInfoLog()));
+		}
 
-		glBindProgramPipeline(pipelineID = sw->GenPipelineID());
-		sw->AddShader(n2dShaderWrapper::Vertex, _T("VertexShader.glsl"));
-		sw->AddShader(n2dShaderWrapper::Fragment, _T("FragmentShader.glsl"));
-		programID = sw->CompileProgram(/*_T("tmp.glsl")*/);
-		//natStream* pStream = new natFileStream(_T("tmp.glsl"), false);
-		//programID = sw->LoadProgram(pStream);
-		//pStream->Release();
-		glUseProgram(programID);
-		//glUseProgramStages(pipelineID, GL_VERTEX_SHADER | GL_FRAGMENT_SHADER, programID);
-		//auto err = glGetError();
-		//glActiveShaderProgram(pipelineID, programID);
-		//GLuint pid = 0;
-		//glGetIntegerv(GL_CURRENT_PROGRAM, reinterpret_cast<GLint *>(&pid));
-		MatrixID = glGetUniformLocation(programID, "MVP");
+		SafeRelease(pStream);
+		pStream = new natFileStream(_T("FragmentShader.glsl"), true, false);
+		sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
+		if (!pShader[1]->Compiled())
+		{
+			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Compile Shader1 Failed, Log: %s"), pShader[1]->GetInfoLog()));
+		}
+
+		SafeRelease(pStream);
+		sp->AttachShader(pShader[0]);
+		sp->AttachShader(pShader[1]);
+
+		sp->Link();
+		if (!sp->IsLinked())
+		{
+			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Link ShaderProgram Failed, Log: %s"), sp->GetInfoLog()));
+		}
+
+		sp->Use();
+
+		sp->DetachShader(pShader[0]);
+		sp->DetachShader(pShader[1]);
+
+		SafeRelease(pShader[0]);
+		SafeRelease(pShader[1]);
+
+		Matrix = sp->GetUniformReference(_T("MVP"));
 		/*posID = glGetSubroutineUniformLocation(programID, n2dShaderWrapperImpl::Vertex, "positionShader");
 		if (posID >= 0)
 		{
@@ -218,11 +252,65 @@ public:
 			SafeDelArr(indices);
 		}*/
 
-		ViewMatrixID = glGetUniformLocation(programID, "V");
-		ModelMatrixID = glGetUniformLocation(programID, "M");
-		LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+
+		ViewMatrix = sp->GetUniformReference(_T("V"));
+		ModelMatrix = sp->GetUniformReference(_T("M"));
+		Light = sp->GetUniformReference(_T("LightPosition_worldspace"));
 		//TimeID = glGetUniformLocation(programID, "Time");
-		n2dRenderDevice* renderdevice = m_pEngine->GetRenderDevice();
+
+		n2dBuffer* pBuf = nullptr;
+		renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, &pBuf);
+		pBuf->AllocData(sizeof(Test), nullptr, n2dBuffer::BufferUsage::DynamicCopy);
+		pBuf->BindBase(0u);
+		/*glGenBuffers(1, &TestID);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, TestID);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Test), nullptr, GL_DYNAMIC_COPY);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0u, TestID);*/
+
+		/*GLsizei length;
+		GLchar tmpName[10] = "";*/
+		/*glGetActiveUniformBlockName(programID, 0, 10, &length, tmpName);
+		GLuint Materid = glGetUniformBlockIndex(programID, "Mater");
+		GLuint Lightid = glGetUniformBlockIndex(programID, "Light");*/
+		
+		struct LightProperties
+		{
+			nBool isEnabled;
+			nBool isLocal;
+			nBool isSpot;
+			natVec3<> ambient;
+			natVec3<> color;
+			natVec3<> position;
+			natVec3<> halfVector;
+			natVec3<> coneDirection;
+			nFloat spotCosCutoff;
+			nFloat spotExponent;
+			nFloat constantAttenuation;
+			nFloat linearAttenuation;
+			nFloat quadraticAttenuation;
+		};
+
+		struct MaterialProperties
+		{
+			natVec4<> Diffuse;
+			natVec4<> Specular;
+			natVec4<> Ambient;
+			natVec4<> Emission;
+			nFloat Shininess;
+			nFloat Strength;
+		};
+
+		//glGetError();
+		/*n2dBuffer* pBuf = nullptr;
+		renderdevice->CreateBuffer(n2dBuffer::UniformBuffer, &pBuf);
+		pBuf->AllocData(sizeof(MaterialProperties), nullptr, n2dBuffer::StaticDraw);
+		glBindBufferBase(GL_UNIFORM_BUFFER, Materid, pBuf->GetBuffer());*/
+		//auto e = glGetError();
+		pStream = pBuf->MapBuffer(n2dBuffer::BufferAccess::WriteOnly);
+		MaterialProperties tm = { natVec4<>(), natVec4<>() ,natVec4<>() ,natVec4<>() ,1.0f,1.0f };
+		pStream->WriteBytes(reinterpret_cast<ncData>(&tm), sizeof(MaterialProperties));
+		SafeRelease(pStream);
+		pBuf->UnmapBuffer();
 		
 		m_pEngine->AddMessageHandler(MouseClick, WM_LBUTTONDOWN);
 		m_pEngine->AddMessageHandler(MouseMove, WM_MOUSEMOVE);
@@ -240,32 +328,40 @@ public:
 		// Model matrix : an identity matrix (model will be at the origin)
 		renderdevice->SubmitModelMat(natMat4<>(1.0f));
 
+		/*GLuint light = glGetUniformBlockIndex(programID, "Lights");
+		GLuint lb = 0u;
+		glGenBuffers(1, &lb);
+		glBindBuffer(GL_UNIFORM_BUFFER, lb);*/
+
+
 		//f->InitFont(renderdevice, _T("fz.ttf"), 32, 32);
 		//f->InitText(_T("23"), 2);
 		if (!m_texture->LoadTexture(_T("texture.dds")))
 		{
-			throw natException(_T("test::Initialize"), _T("Unable to load texture"));
+			throw natException(_T("test::WindowInit"), _T("Unable to load texture"));
 		}
 		if (!m_texture2->LoadTexture(_T("table.dds")))
 		{
-			throw natException(_T("test::Initialize"), _T("Unable to load texture"));
+			throw natException(_T("test::WindowInit"), _T("Unable to load texture"));
 		}
 		
 		if (!m_texture3->LoadTexture(_T("ch.png")))
 		{
-			throw natException(_T("test::Initialize"), _T("Unable to load texture"));
+			throw natException(_T("test::WindowInit"), _T("Unable to load texture"));
 		}
 
-		//MessageBox(m_pEngine->GetWindow()->GetWnd(), _T("即将开始加载模型，请等待\n按上下左右进行旋转，点击鼠标左键开始移动，滚动鼠标滚轮进行缩放"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		MessageBox(window->GetWnd(), _T("即将开始加载模型，请等待\n按上下左右进行旋转，点击鼠标左键开始移动，滚动鼠标滚轮进行缩放"), _T("提示"), MB_OK | MB_ICONINFORMATION);
 		natLog::GetInstance().LogMsg(_T("Loading model"));
-		/*if (NATFAIL(m_obj.LoadFromFile(_T("comb.obj"))))
+		m_model2->SetDefaultTexture(m_texture);
+		if (NATFAIL(m_model2->LoadFromFile(_T("comb.obj"))))
 		{
-			throw natException(_T("test::Initialize"), _T("Unable to load obj model"));
-		}*/
+			throw natException(_T("test::WindowInit"), _T("Unable to load obj model"));
+		}
 
+		m_model->SetDefaultTexture(m_texture2);
 		if (NATFAIL(m_model->LoadFromFile(_T("table.obj"))))
 		{
-			throw natException(_T("test::Initialize"), _T("Unable to load obj model"));
+			throw natException(_T("test::WindowInit"), _T("Unable to load obj model"));
 		}
 
 		natLog::GetInstance().LogMsg(_T("Loaded model successfully"));
@@ -303,9 +399,10 @@ public:
 			SetWindowText(m_pEngine->GetWindow()->GetWnd(), n2dUtil::FormatString(_T("夏之幻想 | FPS=%f"), pFPSController->FPS).c_str());
 		}
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		pRenderDevice->Clear(n2dRenderDevice::ClearBit_Color | n2dRenderDevice::ClearBit_Depth);
 
-		if (NATFAIL(m_pGraphics->Begin()))
+		if (NATFAIL(m_pGraphics->Begin()) || NATFAIL(m_pGraphics3D->Begin()))
 		{
 			throw natException(_T("test::Render"), _T("Failed to prepare graphic renderer"));
 		}
@@ -314,8 +411,62 @@ public:
 		//f.PrintFont(m_pGraphics, _T("2333"), 0.f, 0.f, 10.f);
 		//glUseProgram(programID);
 
-		//m_pGraphics->DrawRaw(m_texture, *m_obj);
-		m_pGraphics->DrawRaw(m_texture2, *m_model);
+		//m_pGraphics->DrawRaw(m_texture, m_model2);
+		//m_pGraphics->DrawRaw(m_texture2, m_model);
+
+		natVec3<> lightPos = natVec3<>(100, 100, 200);
+		//glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+		Light->SetValue(1u, &lightPos[0]);
+
+		// Send our transformation to the currently bound shader, 
+		// in the "MVP" uniform
+
+		/*natMat4<> tmatL(
+			cos(natTransform::DegtoRad(m_RotateL)),0, -sin(natTransform::DegtoRad(m_RotateL)),	0,
+			0,									1, 0,											0,
+			sin(natTransform::DegtoRad(m_RotateL)),0, cos(natTransform::DegtoRad(m_RotateL)),	0,
+			0,									0, 0,											1
+			);
+
+		natMat4<> tmatH(
+			1	,0,										0,										0,
+			0,	cos(natTransform::DegtoRad(m_RotateH)),	sin(natTransform::DegtoRad(m_RotateH)),	0,
+			0,	-sin(natTransform::DegtoRad(m_RotateH)),cos(natTransform::DegtoRad(m_RotateH)),	0,
+			0,	0,										0,										1
+			);
+
+		natMat4<> tmat2(
+			1.0f,		0.0f,		0.0f,		0.0f,
+			0.0f,		1.0f,		0.0f,		0.0f,
+			0.0f,		0.0f,		1.0f,		0.0f,
+			m_Speed.x,	m_Speed.y,	m_Speed.z,	1.0f);*/
+		
+		pRenderDevice->SubmitViewMat(natTransform::move(
+			natTransform::rotate(
+				natTransform::rotate(
+					pRenderDevice->GetCurViewMat(),
+					natTransform::DegtoRad(m_RotateL),
+					natVec3<>(0.0f, 1.0f, 0.0f)
+					),
+				natTransform::DegtoRad(m_RotateH),
+				natVec3<>(1.0f, 0.0f, 0.0f)
+				),
+			m_Speed));
+
+		Matrix->SetValue(1, &pRenderDevice->GetMVPMat()[0][0]);
+		ModelMatrix->SetValue(1, &pRenderDevice->GetCurModelMat()[0][0]);
+		ViewMatrix->SetValue(1, &pRenderDevice->GetCurViewMat()[0][0]);
+		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &pRenderDevice->GetMVPMat()[0][0]);
+		//glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &pRenderDevice->GetCurModelMat()[0][0]);
+		//glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &pRenderDevice->GetCurViewMat()[0][0]);
+		//glUniform1f(TimeID, static_cast<GLfloat>(pFPSController->GetTotalFrame()));
+
+		m_pGraphics3D->RenderModel(m_model->GetModel());
+		m_pGraphics3D->RenderModel(m_model2->GetModel());
+
+		sp->Use();
+
+		m_pGraphics3D->End();
 
 		m_pGraphics->DrawQuad(m_texture3,
 			n2dGraphics2DVertex{ natVec3<>(-100, 0, 200), 0, natVec2<>(0, 0) },
@@ -323,70 +474,65 @@ public:
 			n2dGraphics2DVertex{ natVec3<>(100, 200, 200), 0, natVec2<>(1, 1) },
 			n2dGraphics2DVertex{ natVec3<>(-100, 200, 200), 0, natVec2<>(0, 1) });
 
-		natVec3<> lightPos = natVec3<>(100, 100, 200);
-		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-
-		natMat4<> tmatL(
-			cos(natTransform::DegtoRad(m_RotateL)),	0, -sin(natTransform::DegtoRad(m_RotateL)),	0,
-			0,									1, 0,									0,
-			sin(natTransform::DegtoRad(m_RotateL)),	0, cos(natTransform::DegtoRad(m_RotateL)),	0,
-			0,									0, 0,									1
-			);
-
-		natMat4<> tmatH(
-			1	,0,									0,									0,
-			0,	cos(natTransform::DegtoRad(m_RotateH)),	sin(natTransform::DegtoRad(m_RotateH)),	0,
-			0,	-sin(natTransform::DegtoRad(m_RotateH)),	cos(natTransform::DegtoRad(m_RotateH)),	0,
-			0,	0,									0,									1
-			);
-
-		natMat4<> tmat2(
-			1.0f,		0.0f,		0.0f,		0.0f,
-			0.0f,		1.0f,		0.0f,		0.0f,
-			0.0f,		0.0f,		1.0f,		0.0f,
-			m_Speed.x,	m_Speed.y,	m_Speed.z,	1.0f);
-
-		pRenderDevice->SubmitViewMat(pRenderDevice->GetCurViewMat() * tmatL * tmatH * tmat2);
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &pRenderDevice->GetMVPMat()[0][0]);
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &pRenderDevice->GetCurModelMat()[0][0]);
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &pRenderDevice->GetCurViewMat()[0][0]);
-		//glUniform1f(TimeID, static_cast<GLfloat>(pFPSController->GetTotalFrame()));
+		n2dShaderProgram* pd = sw->GetDefaultProgram();
+		pd->Use();
+		auto um = pd->GetUniformReference(_T("MVP"));
+		um->SetValue(1, &pRenderDevice->GetMVPMat()[0][0]);
 
 		m_pGraphics->End();
+
+		//Test data;
+
+		//GLint b = 0;
+		//glGetBufferParameteriv(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &b);
+		/*if (b > 0)
+		{
+			memcpy_s(&data, sizeof(data), glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY), b);
+		}
+
+		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);*/
+
 		m_pEngine->GetWindow()->SwapBuffers();
 	}
 
 private:
-	n2dEngine*			m_pEngine;
-	n2dGraphics2D*		m_pGraphics;
+	natRefPointer<n2dEngine>		m_pEngine;
+	natRefPointer<n2dGraphics2D>	m_pGraphics;
+	natRefPointer<n2dGraphics3D>	m_pGraphics3D;
 
-	natVec3<>			m_PosCamera;
-	natVec3<>			m_Speed;
-	nBool				m_bShouldControl;
-	nFloat				m_RotateL;
-	nFloat				m_RotateH;
+	natVec3<>						m_PosCamera;
+	natVec3<>						m_Speed;
+	nBool							m_bShouldControl;
+	nFloat							m_RotateL;
+	nFloat							m_RotateH;
 
-	n2dFont*			f;
-	n2dShaderWrapper*	sw;
-	GLuint				pipelineID;
-	GLuint				programID;
-	GLuint				posID;
-	GLuint				MatrixID;
-	GLuint				ViewMatrixID;
-	GLuint				ModelMatrixID;
-	GLuint				LightID;
-	GLuint				TimeID;
-	HANDLE				m_Mutex;
-	n2dTexture2D*		m_texture;
-	n2dTexture2D*		m_texture2;
-	n2dTexture2D*		m_texture3;
-	n2dModelLoader*		m_obj;
-	n2dModelLoader*		m_obj2;
-	n2dModelLoader*		m_model;
+	natRefPointer<n2dFont>			f;
+	n2dShaderWrapper*				sw;
+	n2dShaderProgram*				sp;
+
+	n2dShaderProgram::UniformReference* Matrix;
+	n2dShaderProgram::UniformReference* ViewMatrix;
+	n2dShaderProgram::UniformReference* ModelMatrix;
+	n2dShaderProgram::UniformReference* Light;
+
+	GLuint							pipelineID;
+	GLuint							programID;
+	GLuint							posID;
+	//GLuint							MatrixID;
+	//GLuint							ViewMatrixID;
+	//GLuint							ModelMatrixID;
+	//GLuint							LightID;
+	GLuint							TimeID;
+
+	GLuint							TestID;
+
+	HANDLE							m_Mutex;
+	natRefPointer<n2dTexture2D>		m_texture;
+	natRefPointer<n2dTexture2D>		m_texture2;
+	natRefPointer<n2dTexture2D>		m_texture3;
+	natRefPointer<n2dModelLoader>	m_model;
+	natRefPointer<n2dModelLoader>	m_model2;
+	natRefPointer<n2dModelLoader>	m_model3;
 };
 
 void LogEvent(natEvent<nTString>& e)
@@ -420,8 +566,8 @@ void ExceptionHandler(natEvent<natException*>& e)
 		MessageBox(nullptr, ss.str().c_str(), _T("Uncaught exception"), MB_OK | MB_ICONERROR);
 	}
 
-	//if (global::pCurrentApp != nullptr)
-	//	global::pCurrentApp->TerminateApplication();
+	//if (n2dGlobal::pCurrentApp != nullptr)
+	//	n2dGlobal::pCurrentApp->TerminateApplication();
 
 	exit(EXIT_FAILURE);
 }
@@ -430,17 +576,17 @@ int main()
 {
 	try
 	{
-		//std::locale::global(std::locale(std::locale(), "", LC_CTYPE));
+		//std::locale::n2dGlobal(std::locale(std::locale(), "", LC_CTYPE));
 		std::locale::global(std::locale("", LC_CTYPE));
 		_set_invalid_parameter_handler(custom_invalid_parameter);
 		natLog::GetInstance().RegisterLogUpdateEventFunc(LogEvent);
-		global::EventException += ExceptionHandler;
+		n2dGlobal::EventException += ExceptionHandler;
 
-		test (NULL);
+		test (GetModuleHandle(NULL));
 	}
 	catch (natException& ex)
 	{
-		global::EventException(&ex);
+		n2dGlobal::EventException(&ex);
 	}
 	catch (...)
 	{
@@ -458,5 +604,5 @@ void custom_invalid_parameter(ncTStr expression, ncTStr function, ncTStr file, n
 	ss << "In " << file << ", line " << line << ": " << expression;
 
 	natException ex(function, ss.str());
-	global::EventException(&ex);
+	n2dGlobal::EventException(&ex);
 }

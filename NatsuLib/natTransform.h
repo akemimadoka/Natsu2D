@@ -171,11 +171,30 @@ namespace natTransform
 	}
 
 	template <typename T>
+	natMat4<T> move(natMat4<T> m, natVec3<T> const& v)
+	{
+		auto a = &m[0][0];
+		a[0] += v.x * a[3];
+		a[1] += v.y * a[3];
+		a[2] += v.z * a[3];
+		a[4] += v.x * a[7];
+		a[5] += v.y * a[7];
+		a[6] += v.z * a[7];
+		a[8] += v.x * a[11];
+		a[9] += v.y * a[11];
+		a[10] += v.z * a[11];
+		a[12] += v.x * a[15];
+		a[13] += v.y * a[15];
+		a[14] += v.z * a[15];
+
+		return m;
+	}
+
+	template <typename T>
 	natMat4<T> rotate(natMat4<T> const& m, T const& angle, natVec3<T> const& v)
 	{
-		T const a = angle;
-		T const c = cos(a);
-		T const s = sin(a);
+		T const c = cos(angle);
+		T const s = sin(angle);
 
 		natVec3<T> axis(normalize(v));
 		natVec3<T> temp((T(1) - c) * axis);

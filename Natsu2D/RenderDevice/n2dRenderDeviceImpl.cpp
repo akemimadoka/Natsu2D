@@ -1,13 +1,16 @@
 #include "n2dRenderDeviceImpl.h"
+#include "OpenGL.h"
 #include "..\Engine\n2dEngineImpl.h"
 #include "n2dGraphicsImpl.h"
 #include <Windows.h>
 #include "n2dTextureImpl.h"
 #include "n2dModelLoaderImpl.h"
 #include "n2dObjLoader.h"
+#include "n2dBufferImpl.h"
 
 n2dRenderDeviceImpl::n2dRenderDeviceImpl(n2dEngine* GLApp)
 	: m_pEngine(GLApp),
+	m_Shader(this),
 	m_bUpdated(false)
 {
 	m_ModelMatStack.push(natMat4<>(1.0f));
@@ -19,6 +22,71 @@ n2dRenderDeviceImpl::n2dRenderDeviceImpl(n2dEngine* GLApp)
 void n2dRenderDeviceImpl::MakeCurrent()
 {
 	wglMakeCurrent(m_pEngine->GetWindow()->GetDC(), m_pEngine->GetWindow()->GetRC());
+}
+
+void n2dRenderDeviceImpl::Clear(nuInt clearBit)
+{
+	glClear(clearBit);
+}
+
+void n2dRenderDeviceImpl::EnableCapability(Capability capability)
+{
+	glEnable(GetCapabilityEnum(capability));
+}
+
+void n2dRenderDeviceImpl::DisableCapability(Capability capability)
+{
+	glDisable(GetCapabilityEnum(capability));
+}
+
+void n2dRenderDeviceImpl::EnableCapabilityI(CapabilityI capability, nuInt Index)
+{
+	glEnablei(GetCapabilityIEnum(capability), Index);
+}
+
+void n2dRenderDeviceImpl::DisableCapabilityI(CapabilityI capability, nuInt Index)
+{
+	glDisablei(GetCapabilityIEnum(capability), Index);
+}
+
+nBool n2dRenderDeviceImpl::IsCapabilityEnabled(Capability capability) const
+{
+	return glIsEnabled(GetCapabilityEnum(capability)) == GL_TRUE;
+}
+
+nBool n2dRenderDeviceImpl::IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const
+{
+	return glIsEnabledi(GetCapabilityIEnum(capability), Index) == GL_TRUE;
+}
+
+void n2dRenderDeviceImpl::SetBlendMode(BlendFactor Source, BlendFactor Destination)
+{
+	glBlendFunc(GetBlendFactorEnum(Source), GetBlendFactorEnum(Destination));
+}
+
+void n2dRenderDeviceImpl::SetBlendModeI(n2dBuffer* Buf, BlendFactor Source, BlendFactor Destination)
+{
+	if (!Buf || Buf->GetTarget() != n2dBuffer::BufferTarget::DrawIndirectBuffer)
+	{
+		throw natException(_T("n2dRenderDeviceImpl::SetBlendModeI"), _T("Buf is not a draw buffer"));
+	}
+
+	glBlendFunci(Buf->GetBuffer(), GetBlendFactorEnum(Source), GetBlendFactorEnum(Destination));
+}
+
+void n2dRenderDeviceImpl::SetBlendColor(natVec4<> const& Color)
+{
+	SetBlendColor(Color.r, Color.g, Color.b, Color.a);
+}
+
+void n2dRenderDeviceImpl::SetBlendColor(nFloat r, nFloat g, nFloat b, nFloat a)
+{
+	glBlendColor(r, g, b, a);
+}
+
+void n2dRenderDeviceImpl::SetSwapInterval(nuInt Interval)
+{
+	wglSwapIntervalEXT(Interval);
 }
 
 void n2dRenderDeviceImpl::SwapBuffers()
@@ -122,17 +190,17 @@ void n2dRenderDeviceImpl::InitMVPMat()
 	SubmitProjMat(natMat4<>(1.0f));
 }
 
-natMat4<> n2dRenderDeviceImpl::GetCurModelMat() const
+natMat4<> const& n2dRenderDeviceImpl::GetCurModelMat() const
 {
 	return m_ModelMatStack.top();
 }
 
-natMat4<> n2dRenderDeviceImpl::GetCurViewMat() const
+natMat4<> const& n2dRenderDeviceImpl::GetCurViewMat() const
 {
 	return m_ViewMatStack.top();
 }
 
-natMat4<> n2dRenderDeviceImpl::GetCurProjMat() const
+natMat4<> const& n2dRenderDeviceImpl::GetCurProjMat() const
 {
 	return m_ProjMatStack.top();
 }
@@ -152,6 +220,34 @@ n2dEngine* n2dRenderDeviceImpl::GetEngine()
 	return m_pEngine;
 }
 
+nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut)
+{
+	if (pOut == nullptr)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	try
+	{
+		*pOut = new n2dBufferImpl(DefaultTarget, &m_Shader);
+	}
+	catch (std::bad_alloc&)
+	{
+		natException e(_T("n2dRenderDeviceImpl::CreateBuffer"), _T("Failed to allocate memory"));
+		n2dGlobal::EventException(&e);
+	}
+	catch (natException& e)
+	{
+		n2dGlobal::EventException(&e);
+	}
+	catch (...)
+	{
+		return NatErr_Unknown;
+	}
+
+	return NatErr_OK;
+}
+
 nResult n2dRenderDeviceImpl::CreateGraphics2D(n2dGraphics2D** pOut)
 {
 	if (pOut == nullptr)
@@ -166,11 +262,39 @@ nResult n2dRenderDeviceImpl::CreateGraphics2D(n2dGraphics2D** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateGraphics2D"), _T("Failed to allocate memory"));
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (natException& e)
 	{
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
+	}
+	catch (...)
+	{
+		return NatErr_Unknown;
+	}
+
+	return NatErr_OK;
+}
+
+nResult n2dRenderDeviceImpl::CreateGraphics3D(n2dGraphics3D** pOut)
+{
+	if (pOut == nullptr)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	try
+	{
+		*pOut = new n2dGraphics3DImpl(this);
+	}
+	catch (std::bad_alloc&)
+	{
+		natException e(_T("n2dRenderDeviceImpl::CreateGraphics3D"), _T("Failed to allocate memory"));
+		n2dGlobal::EventException(&e);
+	}
+	catch (natException& e)
+	{
+		n2dGlobal::EventException(&e);
 	}
 	catch (...)
 	{
@@ -194,11 +318,11 @@ nResult n2dRenderDeviceImpl::CreateTexture(n2dTexture2D** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateTexture"), _T("Failed to allocate memory"));
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (natException& e)
 	{
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (...)
 	{
@@ -228,11 +352,11 @@ nResult n2dRenderDeviceImpl::CreateTextureFromStream(natStream* pStream, DWORD d
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateTextureFromStream"), _T("Failed to allocate memory"));
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (natException& e)
 	{
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (...)
 	{
@@ -256,11 +380,11 @@ nResult n2dRenderDeviceImpl::CreateModelLoader(n2dModelLoader** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateModelLoader"), _T("Failed to allocate memory"));
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (natException& e)
 	{
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (...)
 	{
@@ -284,11 +408,11 @@ nResult n2dRenderDeviceImpl::CreateObjLoader(n2dModelLoader** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateObjLoader"), _T("Failed to allocate memory"));
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (natException& e)
 	{
-		global::EventException(&e);
+		n2dGlobal::EventException(&e);
 	}
 	catch (...)
 	{

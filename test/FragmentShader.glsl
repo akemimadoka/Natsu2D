@@ -1,4 +1,4 @@
-#version 450 core
+#version 430 core
 
 /*uniform float     u_time;
 
@@ -17,20 +17,20 @@ in vec3 LightDirection_cameraspace;
 out vec4 color;
 
 // Values that stay constant for the whole mesh.
-uniform sampler2D myTextureSampler;
-uniform mat4 MV;
+uniform sampler2D TextureSampler;
 uniform vec3 LightPosition_worldspace;
 
-void main(){
-
+void main()
+{
     // Output color = color of the texture at the specified UV
+
     // Light emission properties
 	// You probably want to put them as uniforms
 	vec4 LightColor = vec4(1,1,1,1);
 	float LightPower = 2000.0f;
 	
 	// Material properties
-	vec4 MaterialDiffuseColor = texture2D( myTextureSampler, UV ).rgba;
+	vec4 MaterialDiffuseColor = texture2D( TextureSampler, UV ).rgba;
 
 	if (MaterialDiffuseColor.a <= 0.1)
 	{
@@ -52,8 +52,8 @@ void main(){
 	//  - light is at the vertical of the triangle -> 1
 	//  - light is perpendicular to the triangle -> 0
 	//  - light is behind the triangle -> 0
-	//float cosTheta = clamp( dot( n,l ), 0,1 );
-	float cosTheta = 1.0f;
+	float cosTheta = clamp( dot(n, l), 0,1 );
+	//float cosTheta = 1.0f;
 	
 	// Eye vector (towards the camera)
 	vec3 E = normalize(EyeDirection_cameraspace);
@@ -63,8 +63,8 @@ void main(){
 	// clamped to 0
 	//  - Looking into the reflection -> 1
 	//  - Looking elsewhere -> < 1
-	//float cosAlpha = clamp( dot( E,R ), 0,1 );
-	float cosAlpha = 1.0f;
+	float cosAlpha = clamp( dot(E, R), 0,1 );
+	//float cosAlpha = 1.0f;
 	
 	color = 
 		// Ambient : simulates indirect lighting

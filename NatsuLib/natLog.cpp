@@ -7,7 +7,7 @@
 #pragma warning (disable:4996) 
 
 ///	@brief	全局变量
-namespace global
+namespace n2dGlobal
 {
 	///	@brief	默认日志文件名
 	ncTStr Logfile = _T("Log.log");
@@ -23,7 +23,6 @@ natLog::natLog(nTString const& logfile)
 natLog::~natLog()
 {
 	m_fstr.close();
-	EventLogUpdate.Release();
 }
 
 ncWStr natLog::ParseLogType(LogType logtype)
@@ -43,7 +42,7 @@ ncWStr natLog::ParseLogType(LogType logtype)
 
 NATNOINLINE natLog& natLog::GetInstance()
 {
-	static natLog instance(global::Logfile);
+	static natLog instance(n2dGlobal::Logfile);
 	return instance;
 }
 

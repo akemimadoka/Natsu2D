@@ -66,3 +66,5 @@ ipch/
 #    script   #
 ###############
 *.bat
+*.rar
+*.opendb

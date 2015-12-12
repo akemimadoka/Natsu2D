@@ -51,7 +51,7 @@ nResult n2dFontImpl::InitFont(int Height, int Width, int Escapement, int Orienta
 
 nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, ncTStr lpFontFile, nuInt iWidth, nuInt iHeight)
 {
-	natRefPointer<natStream> pStream = new natFileStream(lpFontFile, false);
+	natRefPointer<natStream> pStream = new natFileStream(lpFontFile, true, false);
 	return InitFont(pRenderer, pStream, iWidth, iHeight);
 }
 

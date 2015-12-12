@@ -188,7 +188,7 @@ extern "C" void (*glXGetProcAddressARB(const GLubyte *procName))( void );
 #if defined(WIN32) || defined(LINUX)
 //#include <GL/gl.h>
 //#include <GL/glext.h>
-#include "../../n2dCommon.h"
+#include "../../RenderDevice/OpenGL.h"
 #include "../../../NatsuLib/natStream.h"
 #endif
 

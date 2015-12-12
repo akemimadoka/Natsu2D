@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <natType.h>
-#include "n2dModelLoaderImpl.h"
+#include <natVec.h>
+#include "..\n2dModel.h"
 #include <vector>
-#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	Obj加载器
@@ -28,6 +28,10 @@ public:
 	nResult LoadFromFile(ncTStr lpPath) override;
 	nResult LoadFromStream(natStream* pStream) override;
 
+	void SetDefaultTexture(n2dTexture2D* Texture) override;
+
+	n2dModelData* GetModel() override;
+
 	///	@brief	获得顶点缓存
 	///	@note	若未创建过顶点缓存将会创建一个，否则直接返回已创建的顶点缓存，其余缓存行为相同
 	nuInt GetVertexBuffer() override;
@@ -43,10 +47,6 @@ public:
 
 	///	@brief	获得顶点数目
 	nuInt GetVertexCount() const override;
-	///	@brief	获得UV数目
-	nuInt GetUVCount() const override;
-	///	@brief	获得法线数目
-	nuInt GetNormalCount() const override;
 	///	@brief	获得元素索引数目
 	nuInt GetIndexCount() const override;
 private:
@@ -55,6 +55,7 @@ private:
 	std::vector<natVec3<>> m_Normals;
 	std::vector<nuShort> m_ElementIndexes;
 
+	n2dTexture2D* m_Texture;
 	nuInt m_VertexBuffer, m_UVBuffer, m_NormalBuffer, m_ElementBuffer;
 
 	void init();

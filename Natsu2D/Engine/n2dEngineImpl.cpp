@@ -4,6 +4,7 @@
 #include "n2dFPSControllerImpl.h"
 #include "..\RenderDevice\n2dRenderDeviceImpl.h"
 #include "..\n2dCommon.h"
+#include "..\RenderDevice\OpenGL.h"
 #include "natLog.h"
 #include "natStopWatch.h"
 
@@ -45,7 +46,7 @@ extern "C" nResult N2DFUNC CreateN2DEngine(
 }
 
 ///	@brief	全局变量
-namespace global
+namespace n2dGlobal
 {
 	///	@brief	异常事件
 	///	@note	data为natException，不可取消
@@ -66,7 +67,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		global::hDll = hModule;
+		n2dGlobal::hDll = hModule;
 		break;
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
@@ -89,6 +90,7 @@ void n2dEngineImpl::TerminateApplication()
 
 	m_Section.Lock();
 	m_IsProgramLooping = false;
+	m_EventMSG.Release();
 	m_Section.UnLock();
 }
 
@@ -195,7 +197,7 @@ void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
 	catch (natException& ex)
 	{
 		natException tEx(_T("n2dEngineImpl::MainLoop"), _T("Main loop exit"), &ex);
-		global::EventException(&tEx);
+		n2dGlobal::EventException(&tEx);
 	}
 }
 
@@ -313,7 +315,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		break;
 	}
 
-	if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+	if (m_EventMSG.Activate(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }, Priority::Low, Priority::High))
 	{
 		return m_EventMSG.GetData().result;
 	}
@@ -323,7 +325,12 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void n2dEngineImpl::CommonInit()
 {
-	global::InitGlew();
+	GLenum tRet;
+	glewExperimental = true;
+	if ((tRet = glewInit()) != GLEW_OK)
+	{
+		throw natException(_T("n2dGlobal::InitGlew"), natUtil::FormatString(_T("GLEW initializing failed, id=%d, description:%s"), tRet, reinterpret_cast<const char *>(glewGetErrorString(tRet))));
+	}
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
@@ -334,24 +341,52 @@ void n2dEngineImpl::CommonInit()
 	glClearDepth(1.0f);
 	glShadeModel(GL_SMOOTH);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glLoadIdentity();
+	//glLoadIdentity();
 
 #ifndef Natsu2DStatic
 
-	std::vector<nByte> tVert = natUtil::GetResourceData(IDR_DefaultVertShader, _T("SHADER"), global::hDll);
-	std::vector<nByte> tFrag = natUtil::GetResourceData(IDR_DefaultFragShader, _T("SHADER"), global::hDll);
+	std::vector<nByte> tVert = natUtil::GetResourceData(IDR_DefaultVertShader, _T("SHADER"), n2dGlobal::hDll);
+	std::vector<nByte> tFrag = natUtil::GetResourceData(IDR_DefaultFragShader, _T("SHADER"), n2dGlobal::hDll);
 
 	if (!tVert.empty() && !tFrag.empty())
 	{
-		natMemoryStream* pStream = new natMemoryStream(reinterpret_cast<ncData>(&tVert[0]), tVert.size(), true, true, true);
-		n2dShaderWrapper* pShader = m_pRenderer->GetShaderWrapper();
-		pShader->AddShader(n2dShaderWrapper::Vertex, pStream);
-		pStream->SetPosition(NatSeek::Beg, 0l);
-		pStream->SetSize(tFrag.size());
-		pStream->WriteBytes(reinterpret_cast<ncData>(&tFrag[0]), tFrag.size());
-		pShader->AddShader(n2dShaderWrapper::Fragment, pStream);
-		pStream->Release();
-		glUseProgram(pShader->CompileProgram());
+		n2dShaderWrapperImpl* pShaderWrapper = dynamic_cast<n2dShaderWrapperImpl*>(m_pRenderer->GetShaderWrapper());
+		n2dShaderProgramImpl* pProgram = new n2dShaderProgramImpl;
+		
+		n2dShader* pShader[2];
+		natStream* pStream = natMemoryStream::CreateFromExternMemory(&tVert[0], tVert.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
+		if (!pShader[0]->Compiled())
+		{
+			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog()));
+		}
+		SafeRelease(pStream);
+
+		pStream = natMemoryStream::CreateFromExternMemory(&tFrag[0], tFrag.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
+		if (!pShader[1]->Compiled())
+		{
+			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog()));
+		}
+		SafeRelease(pStream);
+
+		pProgram->AttachShader(pShader[0]);
+		pProgram->AttachShader(pShader[1]);
+
+		pProgram->Link();
+		if (!pProgram->IsLinked())
+		{
+			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Link DefaultShaderProgram Failed, Log: %s"), pProgram->GetInfoLog()));
+		}
+		pProgram->Use();
+
+		pProgram->DetachShader(pShader[0]);
+		pProgram->DetachShader(pShader[1]);
+
+		SafeRelease(pShader[0]);
+		SafeRelease(pShader[1]);
+
+		pShaderWrapper->m_DefaultProgram = pProgram;
 	}
 
 #endif
@@ -538,13 +573,13 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	}
 	catch (natException& ex)
 	{
-		global::EventException(&ex);
+		n2dGlobal::EventException(&ex);
 		reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
 	}
 	catch (...)
 	{
 		natException ex(TEXT("Unknown source"), TEXT("Unknown exception"));
-		global::EventException(&ex);
+		n2dGlobal::EventException(&ex);
 		reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
 	}
 
@@ -588,13 +623,13 @@ nuInt n2dEngineImpl::UpdateThread::ThreadJob()
 	catch (natException& ex)
 	{
 		natException tEx(_T("n2dEngineImpl::UpdateThread::ThreadJob"), _T("Update break"), &ex);
-		global::EventException(&tEx);
+		n2dGlobal::EventException(&tEx);
 	}
 	catch (...)
 	{
 		natException ex(_T("Unknown source"), _T("Unknown exception"));
 		natException tEx(_T("n2dEngineImpl::UpdateThread::ThreadJob"), _T("Update break"), &ex);
-		global::EventException(&tEx);
+		n2dGlobal::EventException(&tEx);
 	}
 
 	return 0u;
@@ -644,13 +679,13 @@ nuInt n2dEngineImpl::RenderThread::ThreadJob()
 	catch (natException& ex)
 	{
 		natException tEx(_T("n2dEngineImpl::RenderThread::ThreadJob"), _T("Render break"), &ex);
-		global::EventException(&tEx);
+		n2dGlobal::EventException(&tEx);
 	}
 	catch (...)
 	{
 		natException ex(_T("Unknown source"), _T("Unknown exception"));
 		natException tEx(_T("n2dEngineImpl::RenderThread::ThreadJob"), _T("Render break"), &ex);
-		global::EventException(&tEx);
+		n2dGlobal::EventException(&tEx);
 	}
 
 	return 0u;
@@ -711,12 +746,16 @@ void n2dEngineImpl::WndMsgEventImpl::Unregister(DWORD WndMsg, EventHandler Handl
 
 bool n2dEngineImpl::WndMsgEventImpl::Activate(DWORD WndMsg, nInt PriorityLimitmin, nInt PriorityLimitmax)
 {
-	auto i = m_EventHandler[WndMsg];
-	for (auto i1 = PriorityLimitmax; i1 <= PriorityLimitmin; ++i1)
+	m_isCanceled = false;
+	if (!m_EventHandler.empty())
 	{
-		for each (auto eh in i[i1])
+		auto i = m_EventHandler[WndMsg];
+		for (auto i1 = PriorityLimitmax; i1 <= PriorityLimitmin; ++i1)
 		{
-			eh(*this);
+			for each (auto eh in i[i1])
+			{
+				eh(*this);
+			}
 		}
 	}
 
@@ -737,7 +776,7 @@ bool n2dEngineImpl::WndMsgEventImpl::operator()(DWORD WndMsg, dataType const& da
 void n2dEngineImpl::WndMsgEventImpl::Release()
 {
 	m_EventHandler.clear();
-	SetCanceled();
+	//SetCanceled();
 }
 
 n2dEngineImpl* n2dEngineImpl::WndMsgEventImpl::GetEngine()

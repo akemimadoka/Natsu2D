@@ -89,10 +89,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,10 +124,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -162,7 +162,10 @@
     <ClCompile Include="Engine\n2dWindowImpl.cpp" />
     <ClCompile Include="extern\nv_dds\nv_dds.cpp" />
     <ClCompile Include="n2dUtil.cpp" />
+    <ClCompile Include="RenderDevice\n2dBufferImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dGraphicsImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dMeshDataImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dModelImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dModelLoaderImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dObjLoader.cpp" />
     <ClCompile Include="RenderDevice\n2dRenderDeviceImpl.cpp" />
@@ -182,17 +185,20 @@
     <ClInclude Include="n2dFPSController.h" />
     <ClInclude Include="n2dGraphics.h" />
     <ClInclude Include="n2dInterface.h" />
-    <ClInclude Include="n2dModelLoader.h" />
+    <ClInclude Include="n2dModel.h" />
     <ClInclude Include="n2dKeyState.h" />
     <ClInclude Include="n2dRenderDevice.h" />
-    <ClInclude Include="n2dShaderWrapper.h" />
     <ClInclude Include="n2dTexture.h" />
     <ClInclude Include="n2dWindow.h" />
     <ClInclude Include="Natsu2D.h" />
     <ClInclude Include="n2dUtil.h" />
+    <ClInclude Include="RenderDevice\n2dBufferImpl.h" />
     <ClInclude Include="RenderDevice\n2dGraphicsImpl.h" />
+    <ClInclude Include="RenderDevice\n2dMeshDataImpl.h" />
+    <ClInclude Include="RenderDevice\n2dModelImpl.h" />
     <ClInclude Include="RenderDevice\n2dModelLoaderImpl.h" />
     <ClInclude Include="RenderDevice\n2dObjLoader.h" />
+    <ClInclude Include="RenderDevice\OpenGL.h" />
     <ClInclude Include="RenderDevice\n2dRenderDeviceImpl.h" />
     <ClInclude Include="RenderDevice\n2dShaderWrapperImpl.h" />
     <ClInclude Include="RenderDevice\n2dTextureImpl.h" />

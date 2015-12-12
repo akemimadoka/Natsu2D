@@ -117,6 +117,14 @@ public:
 		value[1] = col_type(x2, y2);
 	}
 
+	template <typename U>
+	explicit natMat2(const U* x)
+	{
+		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
+		value[0] = col_type(T(x[0]), T(x[1]));
+		value[1] = col_type(T(x[2]), T(x[3]));
+	}
+
 	explicit natMat2(
 		natVec2<T> const& v)
 	{
@@ -418,6 +426,15 @@ public:
 		value[0] = col_type(x1, y1, z1);
 		value[1] = col_type(x2, y2, z2);
 		value[2] = col_type(x3, y3, z3);
+	}
+
+	template <typename U>
+	explicit natMat3(const U* x)
+	{
+		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
+		value[0] = col_type(T(x[0]), T(x[1]), T(x[2]));
+		value[1] = col_type(T(x[3]), T(x[4]), T(x[5]));
+		value[2] = col_type(T(x[6]), T(x[7]), T(x[8]));
 	}
 
 	explicit natMat3(
@@ -748,6 +765,16 @@ public:
 		value[1] = col_type(x2, y2, z2, w2);
 		value[2] = col_type(x3, y3, z3, w3);
 		value[3] = col_type(x4, y4, z4, w4);
+	}
+
+	template <typename U>
+	explicit natMat4(const U* x)
+	{
+		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
+		value[0] = col_type(T(x[0]), T(x[1]), T(x[2]), T(x[3]));
+		value[1] = col_type(T(x[4]), T(x[5]), T(x[6]), T(x[7]));
+		value[2] = col_type(T(x[8]), T(x[9]), T(x[10]), T(x[11]));
+		value[3] = col_type(T(x[12]), T(x[13]), T(x[14]), T(x[15]));
 	}
 
 	explicit natMat4(

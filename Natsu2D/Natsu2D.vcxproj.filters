@@ -102,6 +102,15 @@
     <ClCompile Include="Renderer\n2dFontImpl.cpp">
       <Filter>Renderer\source</Filter>
     </ClCompile>
+    <ClCompile Include="RenderDevice\n2dMeshDataImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dModelImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dBufferImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="extern\nv_dds\nv_dds.h">
@@ -123,9 +132,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="n2dModelLoader.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="RenderDevice\n2dModelLoaderImpl.h">
@@ -161,9 +167,6 @@
     <ClInclude Include="n2dRenderDevice.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="n2dShaderWrapper.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="RenderDevice\n2dShaderWrapperImpl.h">
       <Filter>RenderDevice\header</Filter>
     </ClInclude>
@@ -184,6 +187,21 @@
     </ClInclude>
     <ClInclude Include="Renderer\n2dFontImpl.h">
       <Filter>Renderer\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dMeshDataImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dModelImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dBufferImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\OpenGL.h">
+      <Filter>RenderDevice\header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

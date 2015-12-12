@@ -1,17 +1,15 @@
 #pragma once
 #include <natEvent.h>
 #include <natException.h>
-#include <natUtil.h>
 #include "n2dInterface.h"
 #include <Windows.h>
 #include "n2dWindow.h"
-#include "n2dCommon.h"
 
 struct n2dRenderDevice;
 struct n2dFPSController;
 
 ///	@brief	全局变量
-namespace global
+namespace n2dGlobal
 {
 	///	@brief	异常事件
 	///	@note	data为natException，不可取消
@@ -24,16 +22,6 @@ namespace global
 #	endif
 #endif
 	natEvent<natException*> EventException;
-
-	inline void InitGlew()
-	{
-		GLenum tRet;
-		glewExperimental = true;
-		if ((tRet = glewInit()) != GLEW_OK)
-		{
-			throw natException(_T("global::InitGlew"), natUtil::FormatString(_T("GLEW initializing failed, id=%d, description:%s"), tRet, reinterpret_cast<const char *>(glewGetErrorString(tRet))));
-		}
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +44,11 @@ struct n2dEngineEventListener
 {
 	virtual ~n2dEngineEventListener() = default;
 
+	///	@brief	引擎初始化
+	///	@note	在窗口初始化之前触发，仅触发一次
 	virtual nBool EngineInit() = 0;
+	///	@brief	引擎反初始化
+	///	@note	在引擎停止主循环且窗口反初始化完成后触发，仅触发一次
 	virtual void EngineUninit() = 0;
 	///	@brief	初始化函数
 	///	@note	每次窗口初始化时被调用，包括切换全屏

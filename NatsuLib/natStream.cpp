@@ -3,12 +3,12 @@
 #include "natException.h"
 #include "natUtil.h"
 
-natFileStream::natFileStream(ncTStr lpFilename, nBool bWritable)
-	: m_Filename(lpFilename), m_bWritable(bWritable), m_LastErr(NatErr_OK)
+natFileStream::natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable)
+	: m_Filename(lpFilename), m_bReadable(bReadable), m_bWritable(bWritable), m_LastErr(NatErr_OK)
 {
 	m_hFile = CreateFile(
 		lpFilename,
-		GENERIC_READ | (bWritable ? GENERIC_WRITE : 0),
+		(bReadable ? GENERIC_READ : 0) | (bWritable ? GENERIC_WRITE : 0),
 		FILE_SHARE_READ,
 		NULL,
 		bWritable ? OPEN_ALWAYS : OPEN_EXISTING,
@@ -34,7 +34,7 @@ nBool natFileStream::CanWrite() const
 
 nBool natFileStream::CanRead() const
 {
-	return true;
+	return m_bReadable;
 }
 
 nBool natFileStream::CanResize() const
@@ -49,6 +49,11 @@ nLen natFileStream::GetSize() const
 
 nResult natFileStream::SetSize(nLen Size)
 {
+	if (!m_bWritable)
+	{
+		return m_LastErr = NatErr_IllegalState;
+	}
+
 	LARGE_INTEGER tVal;
 	tVal.QuadPart = Size;
 
@@ -106,6 +111,11 @@ nResult natFileStream::SetPosition(NatSeek Origin, nLong Offset)
 nLen natFileStream::ReadBytes(nData pData, nLen Length)
 {
 	DWORD tReadBytes = 0ul;
+	if (!m_bReadable)
+	{
+		m_LastErr = NatErr_IllegalState;
+		return tReadBytes;
+	}
 
 	if (Length == 0ul)
 	{
@@ -126,7 +136,7 @@ nLen natFileStream::ReadBytes(nData pData, nLen Length)
 
 	if (tReadBytes != Length)
 	{
-		// ignored
+		m_LastErr = NatErr_OutOfRange;
 	}
 
 	return tReadBytes;
@@ -160,7 +170,7 @@ nLen natFileStream::WriteBytes(ncData pData, nLen Length)
 
 	if (tWriteBytes != Length)
 	{
-		// ignored
+		m_LastErr = NatErr_OutOfRange;
 	}
 
 	return tWriteBytes;
@@ -198,7 +208,14 @@ natMemoryStream::natMemoryStream(ncData pData, nLen Length, nBool bReadable, nBo
 	{
 		m_pData = new nByte[static_cast<nuInt>(Length)];
 		m_Length = Length;
-		memcpy_s(m_pData, static_cast<rsize_t>(Length), pData, static_cast<rsize_t>(Length));
+		if (pData)
+		{
+			memcpy_s(m_pData, static_cast<rsize_t>(Length), pData, static_cast<rsize_t>(Length));
+		}
+		else
+		{
+			memset(m_pData, 0, static_cast<size_t>(m_Length));
+		}
 	}
 	catch (std::bad_alloc&)
 	{
@@ -329,7 +346,7 @@ nLen natMemoryStream::ReadBytes(nData pData, nLen Length)
 
 	if (tReadBytes != Length)
 	{
-		// ignored
+		m_LastErr = NatErr_OutOfRange;
 	}
 
 	return tReadBytes;
@@ -363,7 +380,7 @@ nLen natMemoryStream::WriteBytes(ncData pData, nLen Length)
 
 	if (tWriteBytes != Length)
 	{
-		// ignored
+		m_LastErr = NatErr_OutOfRange;
 	}
 
 	return tWriteBytes;
@@ -384,7 +401,28 @@ void natMemoryStream::Unlock()
 	m_Section.UnLock();
 }
 
+natMemoryStream::natMemoryStream()
+	: m_pData(nullptr), m_Length(0ul), m_CurPos(0u), m_bReadable(false), m_bWritable(false), m_bResizable(false)
+{
+}
+
 natMemoryStream::~natMemoryStream()
 {
-	SafeDelArr(m_pData);
+	if (!m_bExtern)
+	{
+		SafeDelArr(m_pData);
+	}
+}
+
+natStream* natMemoryStream::CreateFromExternMemory(nData pData, nLen Length, nBool bReadable, nBool bWritable)
+{
+	natMemoryStream* pStream = new natMemoryStream;
+
+	pStream->m_pData = pData;
+	pStream->m_Length = Length;
+	pStream->m_bReadable = bReadable;
+	pStream->m_bWritable = bWritable;
+	pStream->m_bExtern = true;
+
+	return pStream;
 }

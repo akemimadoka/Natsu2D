@@ -81,7 +81,7 @@ struct natVec2 final
 			throw natException(_T("natVec2::operator[]"), _T("Out of range"));
 		}
 
-		return &x[i];
+		return (&x)[i];
 	}
 
 	T& operator[](nuInt i)
@@ -109,6 +109,13 @@ struct natVec2 final
 
 	natVec2(T const& S1, T const& S2)
 		: x(S1), y(S2)
+	{
+		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
+	}
+
+	template <typename U>
+	explicit natVec2(const U* S)
+		: x(static_cast<T>(S[0])), y(static_cast<T>(S[1]))
 	{
 		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
@@ -363,7 +370,7 @@ struct natVec3 final
 			throw natException(_T("natVec3::operator[]"), _T("Out of range"));
 		}
 
-		return &x[i];
+		return *(&x + i);
 	}
 
 	T& operator[](nuInt i)
@@ -391,6 +398,13 @@ struct natVec3 final
 
 	natVec3(T const& s1, T const& s2, T const& s3)
 		: x(s1), y(s2), z(s3)
+	{
+		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
+	}
+
+	template <typename U>
+	explicit natVec3(const U* S)
+		: x(static_cast<T>(S[0])), y(static_cast<T>(S[1])), z(static_cast<T>(S[2]))
 	{
 		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
@@ -676,6 +690,13 @@ struct natVec4 final
 
 	natVec4(T const& s1, T const& s2, T const& s3, T const& s4)
 		: x(s1), y(s2), z(s3), w(s4)
+	{
+		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
+	}
+
+	template <typename U>
+	explicit natVec4(const U* S)
+		: x(static_cast<T>(S[0])), y(static_cast<T>(S[1])), z(static_cast<T>(S[2])), w(static_cast<T>(S[3]))
 	{
 		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}

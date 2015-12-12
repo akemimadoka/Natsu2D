@@ -11,7 +11,6 @@
 #include "..\n2dKeyState.h"
 #include <natEvent.h>
 #include <natMultiThread.h>
-#include <natException.h>
 #include <natType.h>
 
 struct n2dFPSController;
@@ -180,7 +179,7 @@ private:
 
 	///	@brief	这个事件可以被取消，被取消后将不会使用默认的处理，返回值为Msgdata::result，data为包含MSG信息的结构体Msgdata
 	///	@see	Msgdata
-	WndMsgEventImpl				m_EventMSG;
+	WndMsgEventImpl			m_EventMSG;
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

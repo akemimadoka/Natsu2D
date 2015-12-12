@@ -13,7 +13,7 @@
 ///	@brief	日志类实现
 ///	@note	单例类，使用getInstance方法获得实例，非线程安全\n
 ///			默认使用全局变量global::Logfile设定日志文件名
-///	@see	global::Logfile
+///	@see	n2dGlobal::Logfile
 ////////////////////////////////////////////////////////////////////////////////
 class natLog final
 {

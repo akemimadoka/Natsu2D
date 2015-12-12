@@ -1,5 +1,5 @@
 #include "n2dObjLoader.h"
-#include "..\n2dCommon.h"
+#include "OpenGL.h"
 #include "n2dVBOHelper.h"
 #include <natStream.h>
 #include <natUtil.h>
@@ -29,7 +29,7 @@ n2dObjLoader::~n2dObjLoader()
 
 nResult n2dObjLoader::LoadFromFile(ncTStr lpPath)
 {
-	natStream* tpStream = new natFileStream(lpPath, false);
+	natStream* tpStream = new natFileStream(lpPath, true, false);
 	nResult tRet = LoadFromStream(tpStream);
 	SafeRelease(tpStream);
 
@@ -149,6 +149,16 @@ nResult n2dObjLoader::LoadFromStream(natStream* pStream)
 	return NatErr_OK;
 }
 
+void n2dObjLoader::SetDefaultTexture(n2dTexture2D* Texture)
+{
+	m_Texture = Texture;
+}
+
+n2dModelData* n2dObjLoader::GetModel()
+{
+	return nullptr;
+}
+
 nuInt n2dObjLoader::GetVertexBuffer()
 {
 	if (m_VertexBuffer == 0u)
@@ -224,16 +234,6 @@ nuInt n2dObjLoader::GetIndexBuffer()
 nuInt n2dObjLoader::GetVertexCount() const
 {
 	return m_Vertices.size();
-}
-
-nuInt n2dObjLoader::GetUVCount() const
-{
-	return m_UVs.size();
-}
-
-nuInt n2dObjLoader::GetNormalCount() const
-{
-	return m_Normals.size();
 }
 
 nuInt n2dObjLoader::GetIndexCount() const

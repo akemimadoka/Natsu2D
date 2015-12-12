@@ -87,7 +87,7 @@ class natFileStream final
 	: public natRefObjImpl<natStream>
 {
 public:
-	natFileStream(ncTStr lpFilename, nBool bWritable);
+	natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable);
 
 	NatErr GetLastErr() const override;
 	nBool CanWrite() const override;
@@ -110,7 +110,7 @@ protected:
 private:
 	HANDLE m_hFile;
 	nTString m_Filename;
-	nBool m_bWritable;
+	nBool m_bReadable, m_bWritable;
 	natCriticalSection m_Section;
 
 	NatErr m_LastErr;
@@ -124,6 +124,8 @@ class natMemoryStream final
 {
 public:
 	natMemoryStream(ncData pData, nLen Length, nBool bReadable, nBool bWritable, nBool bResizable);
+
+	static natStream* CreateFromExternMemory(nData pData, nLen Length, nBool bReadable, nBool bWritable);
 
 	NatErr GetLastErr() const override;
 	nBool CanWrite() const override;
@@ -140,6 +142,7 @@ public:
 	void Unlock() override;
 
 protected:
+	natMemoryStream();
 	~natMemoryStream();
 private:
 	nData m_pData;
@@ -148,6 +151,7 @@ private:
 	nBool m_bReadable;
 	nBool m_bWritable;
 	nBool m_bResizable;
+	nBool m_bExtern;
 	natCriticalSection m_Section;
 
 	NatErr m_LastErr;

@@ -1,5 +1,6 @@
 #include "n2dTextureImpl.h"
 #include "..\n2dCommon.h"
+#include "OpenGL.h"
 #include "..\include\CxImage\ximage.h"
 #include "..\extern\nv_dds\nv_dds.h"
 #include <algorithm>
@@ -81,7 +82,7 @@ n2dTexture2DImpl::~n2dTexture2DImpl()
 nBool n2dTexture2DImpl::LoadTexture(nTString const& filename)
 {
 	auto tName = filename.substr(filename.find_last_of(_T('.')) + 1u);
-	natFileStream* pStream = new natFileStream(filename.c_str(), false);
+	natFileStream* pStream = new natFileStream(filename.c_str(), true, false);
 
 	if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
 	{

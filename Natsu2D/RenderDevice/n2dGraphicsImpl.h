@@ -3,14 +3,14 @@
 ///	@brief	‰÷»æ∆˜ µœ÷
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "..\n2dGraphics.h"
-
 #include <vector>
-#include "..\n2dInterface.h"
+#include "..\n2dGraphics.h"
+#include "n2dModelImpl.h"
 
 struct n2dModelLoader;
 struct n2dRenderDevice;
 struct n2dTexture2D;
+struct n2dBuffer;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	2D‰÷»æ∆˜
@@ -22,7 +22,7 @@ public:
 	explicit n2dGraphics2DImpl(n2dRenderDevice* pRenderDevice);
 	~n2dGraphics2DImpl();
 
-	nBool IsRendering() override;
+	nBool IsRendering() const override;
 
 	nResult Begin() override;
 	nResult Flush() override;
@@ -39,8 +39,6 @@ public:
 	nResult DrawQuad(n2dTexture2D* pTex, const n2dGraphics2DVertex* varr) override;
 
 	nResult DrawRaw(n2dTexture2D* pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr) override;
-
-	nResult DrawRaw(n2dTexture2D* pTex, n2dModelLoader& Model) override;
 private:
 	////////////////////////////////////////////////////////////////////////////////
 	///	@brief	‰÷»æ√¸¡Ó
@@ -63,6 +61,47 @@ private:
 	n2dRenderDevice* m_pRenderDevice;
 
 	std::vector<RenderCommand> m_Commands;
+
+	nBool m_bIsRendering;
+};
+
+class n2dGraphics3DImpl
+	: public natRefObjImpl<n2dGraphics3D>
+{
+public:
+	explicit n2dGraphics3DImpl(n2dRenderDevice* pRenderDevice);
+	~n2dGraphics3DImpl();
+
+	nBool IsRendering() const override;
+
+	nResult Begin() override;
+	nResult Flush() override;
+	nResult End() override;
+
+	nResult RenderModel(n2dModelData* pModelData) override;
+
+private:
+	////////////////////////////////////////////////////////////////////////////////
+	///	@brief	‰÷»æ√¸¡Ó
+	////////////////////////////////////////////////////////////////////////////////
+	struct RenderCommand
+	{
+		nuInt iMaterial;	///< @brief	≤ƒ÷ À˜“˝
+		nuInt VertexBuffer;
+		nuInt IndexBuffer;
+		nuInt cVertex;		///< @brief	∂•µ„ ˝¡ø
+		nuInt cIndex;		///< @brief	À˜“˝ ˝¡ø
+	};
+
+	void flush();
+
+	GLuint m_MaterialID;
+
+	n2dRenderDevice* m_pRenderDevice;
+	nuInt m_MaterialBuffer;
+
+	std::vector<RenderCommand> m_Commands;
+	std::vector<n2dMeshDataImpl::Material> m_Materials;
 
 	nBool m_bIsRendering;
 };

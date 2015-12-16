@@ -173,8 +173,9 @@ struct n2dBuffer
 	///	@param[in]	Access	存取权限
 	///	@return	映射的流
 	///	@note	会使上次映射的流失效\n
+	///			请勿Release\n
 	///			隐含调用Bind
-	virtual natRefPointer<natStream> MapBuffer(BufferAccess Access) = 0;
+	virtual natStream* MapBuffer(BufferAccess Access) = 0;
 	///	@brief	解除缓存映射
 	///	@note	会使上次映射的流失效\n
 	///			隐含调用Bind
@@ -186,8 +187,9 @@ struct n2dBuffer
 	///	@param[in]	Access	存取权限
 	///	@return	映射的流
 	///	@note	会使上次映射的流失效\n
+	///			请勿Release\n
 	///			隐含调用Bind
-	virtual natRefPointer<natStream> MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) = 0;
+	virtual natStream* MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) = 0;
 	///	@brief	刷新映射的部分缓存
 	///	@param[in]	Offset	偏移
 	///	@param[in]	Length	长度
@@ -570,12 +572,12 @@ struct n2dShaderWrapper
 	///	@brief	从流中创建着色器程序
 	///	@note	加载的必须是着色器程序的二进制编译
 	virtual nResult CreateProgramFromStream(natStream* pStream, n2dShaderProgram** pOut) = 0;
+	///	@brief	创建程序管线
+	virtual nResult CreateProgramPipeline(n2dProgramPipeline** pOut) = 0;
 
 	///	@brief		获得当前使用的着色器程序
-	///	@warning	释放指针会导致着色器对象被删除
 	virtual n2dShaderProgram* GetCurrentProgram() = 0;
 	///	@brief		获得当前使用的程序管线
-	///	@warning	释放指针会导致管线对象被删除
 	virtual n2dProgramPipeline* GetCurrentProgramPipeline() = 0;
 
 	///	@brief		获得默认程序

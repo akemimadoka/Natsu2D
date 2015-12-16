@@ -309,7 +309,7 @@ public:
 		pStream = pBuf->MapBuffer(n2dBuffer::BufferAccess::WriteOnly);
 		MaterialProperties tm = { natVec4<>(), natVec4<>() ,natVec4<>() ,natVec4<>() ,1.0f,1.0f };
 		pStream->WriteBytes(reinterpret_cast<ncData>(&tm), sizeof(MaterialProperties));
-		SafeRelease(pStream);
+		pStream = nullptr;
 		pBuf->UnmapBuffer();
 		
 		m_pEngine->AddMessageHandler(MouseClick, WM_LBUTTONDOWN);
@@ -477,7 +477,8 @@ public:
 		n2dShaderProgram* pd = sw->GetDefaultProgram();
 		pd->Use();
 		auto um = pd->GetUniformReference(_T("MVP"));
-		um->SetValue(1, &pRenderDevice->GetMVPMat()[0][0]);
+		natMat4<> t;
+		um->SetValue(1, &t/*pRenderDevice->GetMVPMat()[0][0]*/);
 
 		m_pGraphics->End();
 
@@ -518,10 +519,10 @@ private:
 	GLuint							pipelineID;
 	GLuint							programID;
 	GLuint							posID;
-	//GLuint							MatrixID;
-	//GLuint							ViewMatrixID;
-	//GLuint							ModelMatrixID;
-	//GLuint							LightID;
+	//GLuint						MatrixID;
+	//GLuint						ViewMatrixID;
+	//GLuint						ModelMatrixID;
+	//GLuint						LightID;
 	GLuint							TimeID;
 
 	GLuint							TestID;
@@ -576,7 +577,7 @@ int main()
 {
 	try
 	{
-		//std::locale::n2dGlobal(std::locale(std::locale(), "", LC_CTYPE));
+		//std::locale::global(std::locale(std::locale(), "", LC_CTYPE));
 		std::locale::global(std::locale("", LC_CTYPE));
 		_set_invalid_parameter_handler(custom_invalid_parameter);
 		natLog::GetInstance().RegisterLogUpdateEventFunc(LogEvent);

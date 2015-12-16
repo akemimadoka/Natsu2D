@@ -129,7 +129,7 @@ void n2dBufferImpl::GetSubData(nuInt Offset, nuInt Size, nData pData)
 	glGetBufferSubData(m_Target, Offset, Size, pData);
 }
 
-natRefPointer<natStream> n2dBufferImpl::MapBuffer(BufferAccess Access)
+natStream* n2dBufferImpl::MapBuffer(BufferAccess Access)
 {
 	SafeRelease(m_pMappedBuffer);
 
@@ -152,7 +152,7 @@ void n2dBufferImpl::UnmapBuffer()
 	glUnmapBuffer(m_Target);
 }
 
-natRefPointer<natStream> n2dBufferImpl::MapBufferRange(nuInt Offset, nuInt Length, nuInt Access)
+natStream* n2dBufferImpl::MapBufferRange(nuInt Offset, nuInt Length, nuInt Access)
 {
 	SafeRelease(m_pMappedBuffer);
 

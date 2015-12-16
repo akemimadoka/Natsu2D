@@ -231,12 +231,12 @@ public:
 	void GetSubData(nuInt Offset, nuInt Size, nData pData) override;
 
 	///	@note	隐含调用Bind
-	natRefPointer<natStream> MapBuffer(BufferAccess Access) override;
+	natStream* MapBuffer(BufferAccess Access) override;
 	///	@note	隐含调用Bind
 	void UnmapBuffer() override;
 
 	///	@note	隐含调用Bind
-	natRefPointer<natStream> MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) override;
+	natStream* MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) override;
 	///	@note	隐含调用Bind
 	void FlushMappedBufferRange(nuInt Offset, nuInt Length) override;
 

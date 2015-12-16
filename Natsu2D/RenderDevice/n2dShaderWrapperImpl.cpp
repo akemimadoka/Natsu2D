@@ -42,11 +42,11 @@ nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShad
 	}
 	catch (std::bad_alloc&)
 	{
-		throw natException(_T("n2dShaderWrapperImpl::CreateProgram"), _T("Failed to allocate memory"));
+		throw natException(_T("n2dShaderWrapperImpl::CreateShaderFromStream"), _T("Failed to allocate memory"));
 	}
 	catch (natException& ex)
 	{
-		natException e(_T("n2dShaderWrapperImpl::CreateProgram"), _T("CreateProgram failed"), &ex);
+		natException e(_T("n2dShaderWrapperImpl::CreateShaderFromStream"), _T("CreateProgram failed"), &ex);
 		throw e;
 	}
 	catch (...)
@@ -66,7 +66,18 @@ nResult n2dShaderWrapperImpl::CreateProgram(n2dShaderProgram** pOut)
 
 	try
 	{
-		*pOut = new n2dShaderProgramImpl;
+		n2dShaderProgramImpl* pProgram = new n2dShaderProgramImpl;
+		auto itea = m_Programs.find(pProgram->GetHandle());
+		if (itea != m_Programs.end())
+		{
+			SafeRelease(pProgram);
+			*pOut = itea->second;
+		}
+		else
+		{
+			m_Programs.insert(std::make_pair(pProgram->GetHandle(), pProgram));
+			*pOut = pProgram;
+		}
 	}
 	catch (std::bad_alloc&)
 	{
@@ -94,7 +105,18 @@ nResult n2dShaderWrapperImpl::CreateProgramFromStream(natStream* pStream, n2dSha
 
 	try
 	{
-		*pOut = n2dShaderProgramImpl::CreateFromStream(pStream);
+		n2dShaderProgramImpl* pProgram = n2dShaderProgramImpl::CreateFromStream(pStream);
+		auto itea = m_Programs.find(pProgram->GetHandle());
+		if (itea != m_Programs.end())
+		{
+			SafeRelease(pProgram);
+			*pOut = itea->second;
+		}
+		else
+		{
+			m_Programs.insert(std::make_pair(pProgram->GetHandle(), pProgram));
+			*pOut = pProgram;
+		}
 	}
 	catch (std::bad_alloc&)
 	{
@@ -103,6 +125,45 @@ nResult n2dShaderWrapperImpl::CreateProgramFromStream(natStream* pStream, n2dSha
 	catch (natException& ex)
 	{
 		natException e(_T("n2dShaderWrapperImpl::CreateProgramFromStream"), _T("CreateProgramFromStream failed"), &ex);
+		throw e;
+	}
+	catch (...)
+	{
+		return NatErr_Unknown;
+	}
+
+	return NatErr_OK;
+}
+
+nResult n2dShaderWrapperImpl::CreateProgramPipeline(n2dProgramPipeline** pOut)
+{
+	if (pOut == nullptr)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	try
+	{
+		n2dProgramPipelineImpl* pProgramPipeline = new n2dProgramPipelineImpl;
+		auto itea = m_ProgramPipelines.find(pProgramPipeline->GetHandle());
+		if (itea != m_ProgramPipelines.end())
+		{
+			SafeRelease(pProgramPipeline);
+			*pOut = itea->second;
+		}
+		else
+		{
+			m_ProgramPipelines.insert(std::make_pair(pProgramPipeline->GetHandle(), pProgramPipeline));
+			*pOut = pProgramPipeline;
+		}
+	}
+	catch (std::bad_alloc&)
+	{
+		throw natException(_T("n2dShaderWrapperImpl::CreateProgramPipeline"), _T("Failed to allocate memory"));
+	}
+	catch (natException& ex)
+	{
+		natException e(_T("n2dShaderWrapperImpl::CreateProgramPipeline"), _T("CreateProgram failed"), &ex);
 		throw e;
 	}
 	catch (...)
@@ -136,14 +197,40 @@ n2dShaderProgram* n2dShaderWrapperImpl::GetCurrentProgram()
 {
 	GLint tUsingProgram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &tUsingProgram);
-	return new n2dShaderProgramImpl(tUsingProgram);
+	if (tUsingProgram <= 0)
+	{
+		return nullptr;
+	}
+
+	auto itea = m_Programs.find(tUsingProgram);
+	if (itea != m_Programs.end())
+	{
+		return itea->second;
+	}
+	
+	n2dShaderProgramImpl* pProgram = new n2dShaderProgramImpl(tUsingProgram);
+	m_Programs.insert(std::make_pair(tUsingProgram, pProgram));
+	return pProgram;
 }
 
 n2dProgramPipeline* n2dShaderWrapperImpl::GetCurrentProgramPipeline()
 {
 	GLint tBindingPipeline = 0;
 	glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &tBindingPipeline);
-	return new n2dProgramPipelineImpl(tBindingPipeline);
+	if (tBindingPipeline <= 0)
+	{
+		return nullptr;
+	}
+
+	auto itea = m_ProgramPipelines.find(tBindingPipeline);
+	if (itea != m_ProgramPipelines.end())
+	{
+		return itea->second;
+	}
+
+	n2dProgramPipelineImpl* pProgramPipeline = new n2dProgramPipelineImpl(tBindingPipeline);
+	m_ProgramPipelines.insert(std::make_pair(tBindingPipeline, pProgramPipeline));
+	return pProgramPipeline;
 }
 
 n2dShaderProgram* n2dShaderWrapperImpl::GetDefaultProgram() const

@@ -680,6 +680,7 @@ public:
 	nResult CreateShaderFromStream(natStream* pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, n2dShader** pOut) override;
 	nResult CreateProgram(n2dShaderProgram** pOut) override;
 	nResult CreateProgramFromStream(natStream* pStream, n2dShaderProgram** pOut) override;
+	nResult CreateProgramPipeline(n2dProgramPipeline** pOut) override;
 
 	n2dShaderProgram* GetCurrentProgram() override;
 	n2dProgramPipeline* GetCurrentProgramPipeline() override;
@@ -690,6 +691,8 @@ public:
 	void ReleaseBindPoint(GLuint BindPoint);
 private:
 	std::unordered_set<nuInt> m_AvailableBindPoint;
+	std::unordered_map<GLhandle, natRefPointer<n2dShaderProgramImpl>> m_Programs;
+	std::unordered_map<GLhandle, natRefPointer<n2dProgramPipelineImpl>> m_ProgramPipelines;
 
 	n2dRenderDevice* m_pRenderDevice;
 	n2dShaderProgramImpl* m_DefaultProgram;

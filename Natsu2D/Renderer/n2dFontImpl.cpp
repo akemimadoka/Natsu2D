@@ -126,7 +126,7 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 		tCharTexture.delta_y = tBitmapGlyph->top - tBitmap.rows;
 
 		nData pBuf = new nByte[tCharTexture.Width * tCharTexture.Height * 4];
-		memset(pBuf, 0, tCharTexture.Width * tCharTexture.Height * 4);
+		//memset(pBuf, 0, tCharTexture.Width * tCharTexture.Height * 4);
 
 		for (nuInt y = 0u; y < tCharTexture.Height; ++y)
 		{
@@ -235,7 +235,7 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 		n2dUtil::TransformCoord(m_pRenderer, chx + w,	chy,		tVert[3].vert.x, tVert[3].vert.y);
 		tVert[3].uv = natVec2<>(1.f, 0.f);
 		
-		pGraphic->DrawQuad(dynamic_cast<n2dTexture2DImpl*>(mapitea->second.CharTexture), tVert);
+		pGraphic->DrawQuad(mapitea->second.CharTexture, tVert);
 
 		sx += mapitea->second.adv_x;
 	}

@@ -1,15 +1,24 @@
 #include "n2dGraphicsImpl.h"
 #include "n2dRenderDeviceImpl.h"
 #include "..\Engine\n2dEngineImpl.h"
-#include "..\n2dCommon.h"
 #include "n2dMeshDataImpl.h"
 #include "n2dModelImpl.h"
-#include "n2dBufferImpl.h"
+#include <natStream.h>
 
-n2dGraphics2DImpl::n2dGraphics2DImpl(n2dRenderDevice* pRenderDevice)
+n2dGraphics2DImpl::n2dGraphics2DImpl(n2dRenderDeviceImpl* pRenderDevice)
 	: m_pRenderDevice(pRenderDevice),
+	m_VB(nullptr),
+	m_IB(nullptr),
 	m_bIsRendering(false)
 {
+	if (NATFAIL(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, &m_VB)))
+	{
+		throw natException(_T("n2dGraphics2DImpl::n2dGraphics2DImpl"), _T("Create vertex buffer failed"));
+	}
+	if (NATFAIL(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, &m_IB)))
+	{
+		throw natException(_T("n2dGraphics2DImpl::n2dGraphics2DImpl"), _T("Create index buffer failed"));
+	}
 }
 
 n2dGraphics2DImpl::~n2dGraphics2DImpl()
@@ -121,6 +130,12 @@ void n2dGraphics2DImpl::pushCommand(n2dTexture2D* pTex, nuInt cVertex, nuInt cIn
 
 void n2dGraphics2DImpl::flush()
 {
+	m_pRenderDevice->updateMVP();
+
+	GLboolean bCullFace = glIsEnabled(GL_CULL_FACE);
+	glDisable(bCullFace);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -129,38 +144,15 @@ void n2dGraphics2DImpl::flush()
 	for (nuInt i = 0u; i < m_Commands.size(); ++i)
 	{
 		glBindTexture(GL_TEXTURE_2D, m_Commands[i].pTex->GetTextureID());
-		// 1st attribute buffer : vertices
-		glBindBuffer(GL_ARRAY_BUFFER, m_Commands[i].VertexBuffer);
-		glVertexAttribPointer(
-			0,			// attribute. No particular reason for 0, but must match the layout in the shader.
-			3,			// size
-			GL_FLOAT,	// type
-			GL_FALSE,	// normalized?
-			0,			// stride
-			nullptr		// array buffer offset
-			);
 
-		// 2nd attribute buffer : UVs
+		glBindBuffer(GL_ARRAY_BUFFER, m_Commands[i].VertexBuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_Commands[i].UVBuffer);
-		glVertexAttribPointer(
-			1,			// attribute. No particular reason for 1, but must match the layout in the shader.
-			2,			// size : U+V => 2
-			GL_FLOAT,	// type
-			GL_FALSE,	// normalized?
-			0,			// stride
-			nullptr		// array buffer offset
-			);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_Commands[i].NormalBuffer);
-		glVertexAttribPointer(
-			2,			// attribute
-			3,			// size
-			GL_FLOAT,	// type
-			GL_FALSE,	// normalized?
-			0,			// stride
-			nullptr		// array buffer offset
-			);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Commands[i].IndexBuffer);
 		glDrawElements(GL_TRIANGLES, m_Commands[i].cIndex, GL_UNSIGNED_SHORT, NULL);
@@ -178,14 +170,21 @@ void n2dGraphics2DImpl::flush()
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 
+	if (bCullFace)
+	{
+		glEnable(GL_CULL_FACE);
+	}
+
 	m_Commands.clear();
 }
 
-n2dGraphics3DImpl::n2dGraphics3DImpl(n2dRenderDevice* pRenderDevice)
+n2dGraphics3DImpl::n2dGraphics3DImpl(n2dRenderDeviceImpl* pRenderDevice)
 	: m_MaterialID(0u),
 	m_pRenderDevice(pRenderDevice),
-	m_MaterialBuffer(0u)
+	m_MaterialBuffer(nullptr)
 {
+	m_MaterialBuffer = new n2dBufferImpl(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
+	m_MaterialBuffer->BindBase(2u);
 }
 
 n2dGraphics3DImpl::~n2dGraphics3DImpl()
@@ -196,7 +195,7 @@ n2dGraphics3DImpl::~n2dGraphics3DImpl()
 		// 待解决
 		natException ex(_T("n2dGraphics3DImpl::~n2dGraphics3DImpl"), _T("End should be invoked before destroy"));
 		n2dGlobal::EventException(&ex);
-		End();
+		n2dGraphics3DImpl::End();
 	}
 }
 
@@ -234,17 +233,49 @@ nResult n2dGraphics3DImpl::End()
 
 nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 {
-	n2dModelDataImpl* pMesh = dynamic_cast<n2dModelDataImpl *>(pModelData);
-
-	if (!pMesh)
+	if (!pModelData)
 	{
 		return NatErr_InvalidArg;
 	}
 
-	for (auto& i : pMesh->m_Meshes)
+	if (pModelData->IsStatic())
 	{
-		m_Materials.emplace_back(i->m_Material);
-		m_Commands.emplace_back(RenderCommand{ m_Materials.size() - 1, i->GetVertexBuffer(), i->GetIndexBuffer(), i->GetVertexCount(), i->GetIndexCount() });
+		n2dStaticModelDataImpl* pModel = dynamic_cast<n2dStaticModelDataImpl*>(pModelData);
+
+		if (!pModel)
+		{
+			return NatErr_InvalidArg;
+		}
+
+		m_StaticMaterials.reserve(m_StaticMaterials.size() + pModel->m_Meshes.size());
+		for (auto& i : pModel->m_Meshes)
+		{
+			n2dStaticMeshDataImpl* ptMesh = dynamic_cast<n2dStaticMeshDataImpl*>(static_cast<n2dMeshData*>(i));
+			m_StaticMaterials.emplace_back(&ptMesh->m_Material);
+			std::vector<nuInt> tMatID = { m_StaticMaterials.size() - 1 };
+			m_Commands.emplace_back(RenderCommand{ true, tMatID, ptMesh->GetVertexBuffer(), ptMesh->GetIndexBuffer(), i->GetVertexCount(), i->GetIndexCount() });
+		}
+	}
+	else
+	{
+		n2dDynamicModelDataImpl* pModel = dynamic_cast<n2dDynamicModelDataImpl*>(pModelData);
+
+		if (!pModel)
+		{
+			return NatErr_InvalidArg;
+		}
+
+		m_DynamicMaterials.reserve(m_DynamicMaterials.size() + pModel->m_Mesh.m_Materials.size());
+		nuInt cMaterials = pModel->m_Mesh.m_Materials.size();
+		std::vector<nuInt> tMatID(cMaterials);
+		
+		for (nuInt i = 0u; i < cMaterials; ++i)
+		{
+			m_DynamicMaterials.push_back(&pModel->m_Mesh.m_Materials[i]);
+			tMatID[i] = m_DynamicMaterials.size() - 1;
+		}
+
+		m_Commands.emplace_back(RenderCommand{ false, tMatID, pModel->m_Mesh.GetVertexBuffer(), pModel->m_Mesh.GetIndexBuffer(), pModel->m_Mesh.GetVertexCount(), pModel->m_Mesh.GetIndexCount() });
 	}
 
 	return NatErr_OK;
@@ -252,58 +283,64 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 
 void n2dGraphics3DImpl::flush()
 {
-	/*if (!m_MaterialID)
-	{
-		GLint ProgramID = 0;
-		glGetIntegerv(GL_CURRENT_PROGRAM, &ProgramID);
-
-		m_MaterialID = glGetUniformBlockIndex(ProgramID, "Material");
-
-		if (!m_MaterialBuffer)
-		{
-			glGenBuffers(1, &m_MaterialBuffer);
-			glBindBuffer(GL_UNIFORM_BUFFER, m_MaterialBuffer);
-			glBindBufferBase(GL_UNIFORM_BUFFER, m_MaterialID, m_MaterialBuffer);
-			glBufferData(GL_UNIFORM_BUFFER, sizeof(n2dMeshData::Material) - offsetof(n2dMeshData::Material, Diffuse), nullptr, GL_DYNAMIC_DRAW);
-		}
-	}*/
+	m_pRenderDevice->updateMVP();
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 
 	glActiveTexture(GL_TEXTURE0);
+
+	n2dMeshData::Material* material;
+	n2dMeshData::DynamicMaterial* pdynamicmaterial;
+
 	for (auto& c : m_Commands)
 	{
-		n2dMeshDataImpl::Material& material = m_Materials[c.iMaterial];
-		glBindTexture(GL_TEXTURE_2D, material.Texture->GetTextureID());
-		glBindBuffer(GL_UNIFORM_BUFFER, m_MaterialBuffer);
-		//glBufferData(GL_UNIFORM_BUFFER, sizeof(n2dMeshData::Material) - offsetof(n2dMeshData::Material, Diffuse), &material.Diffuse, GL_DYNAMIC_DRAW);
-		void* pMaterial = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-		if (pMaterial)
-		{
-			memcpy_s(pMaterial, sizeof(n2dMeshData::Material) - offsetof(n2dMeshData::Material, Diffuse), &material.Diffuse, sizeof(n2dMeshData::Material) - offsetof(n2dMeshData::Material, Diffuse));
-		}
-		glUnmapBuffer(GL_UNIFORM_BUFFER);
-
-		glPolygonMode(GL_FRONT_AND_BACK, material.WireFrame ? GL_LINE : GL_FILL);
-
-		if (material.Both_sided)
-		{
-			glEnable(GL_CULL_FACE);
-		}
-		else
-		{
-			glDisable(GL_CULL_FACE);
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, c.VertexBuffer);
+		c.VertexBuffer->Bind();
 		glVertexAttribPointer(0u, 3, GL_FLOAT, GL_FALSE, sizeof(n2dGraphics3DVertex), reinterpret_cast<void*>(offsetof(n2dGraphics3DVertex, vert)));
 		glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, sizeof(n2dGraphics3DVertex), reinterpret_cast<void*>(offsetof(n2dGraphics3DVertex, uv)));
 		glVertexAttribPointer(2u, 3, GL_FLOAT, GL_FALSE, sizeof(n2dGraphics3DVertex), reinterpret_cast<void*>(offsetof(n2dGraphics3DVertex, normal)));
 		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c.IndexBuffer);
-		glDrawElements(GL_TRIANGLES, c.cIndex, GL_UNSIGNED_SHORT, nullptr);
+		c.IndexBuffer->Bind();
+
+		nuInt Count;
+		ncData tOffset;
+		for (auto iMater : c.iMaterial)
+		{
+			if (c.bStatic)
+			{
+				material = m_StaticMaterials[iMater];
+				Count = c.cIndex;
+				tOffset = nullptr;
+			}
+			else
+			{
+				pdynamicmaterial = m_DynamicMaterials[iMater];
+				material = &pdynamicmaterial->BaseMaterial;
+				Count = pdynamicmaterial->Length;
+				tOffset = reinterpret_cast<ncData>(pdynamicmaterial->Start * sizeof(nuShort));
+			}
+
+			m_MaterialBuffer->AllocData(sizeof(n2dMeshData::Material) - offsetof(n2dMeshData::Material, Diffuse), reinterpret_cast<ncData>(&material->Diffuse), n2dBuffer::BufferUsage::DynamicDraw);
+
+			glPolygonMode(GL_FRONT_AND_BACK, material->WireFrame ? GL_LINE : GL_FILL);
+
+			if (material->Both_sided)
+			{
+				glEnable(GL_CULL_FACE);
+			}
+			else
+			{
+				glDisable(GL_CULL_FACE);
+			}
+
+			glBindTexture(GL_TEXTURE_2D, material->Texture->GetTextureID());
+			glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, tOffset);
+
+			// 防错，实际上不会发生
+			if (c.bStatic)
+				break;
+		}
 	}
 
 	glDisableVertexAttribArray(0);
@@ -311,4 +348,6 @@ void n2dGraphics3DImpl::flush()
 	glDisableVertexAttribArray(2);
 
 	m_Commands.clear();
+	m_StaticMaterials.clear();
+	m_DynamicMaterials.clear();
 }

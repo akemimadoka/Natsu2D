@@ -2,6 +2,7 @@
 #include "n2dInterface.h"
 #include "n2dCommon.h"
 #include <natMat.h>
+#include <memory>
 
 struct n2dShaderWrapper;
 struct n2dEngine;
@@ -9,8 +10,41 @@ struct n2dGraphics2D;
 struct n2dGraphics3D;
 struct n2dTexture2D;
 struct n2dModelLoader;
+struct n2dMotionManager;
 
 struct natStream;
+
+struct n2dImage;
+
+////////////////////////////////////////////////////////////////////////////////
+///	@brief	纹理基类
+////////////////////////////////////////////////////////////////////////////////
+struct n2dTexture
+	: n2dInterface
+{
+	///	@brief	获得纹理ID
+	virtual nuInt GetTextureID() const = 0;
+};
+
+struct n2dTexture2D
+	: n2dTexture
+{
+	///	@brief	加载纹理
+	///	@param[in]	filename	文件名
+	///	@return	是否加载成功
+	virtual nBool LoadTexture(nTString const& filename) = 0;
+
+	///	@brief	从流中加载纹理
+	///	@param[in]	pStream		流
+	///	@param[in]	dwFileType	文件类型ID，此处是由于图形库需要而要求提供，之后会移除
+	///	@return	是否加载成功
+	virtual nBool LoadTexture(natStream* pStream, DWORD dwFileType) = 0;
+
+	///	@brief	从Image加载纹理
+	///	@param[in]	image		已加载的Image
+	///	@return	是否加载成功
+	virtual nBool LoadTexture(const std::shared_ptr<n2dImage>& image) = 0;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	缓存
@@ -586,6 +620,39 @@ struct n2dShaderWrapper
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+///	@brief	灯光控制器
+////////////////////////////////////////////////////////////////////////////////
+struct n2dLightController
+	: n2dInterface
+{
+	///	@brief	灯光属性
+	struct LightProperties
+	{
+		nBool isEnabled;
+		nBool isLocal;
+		nBool isSpot;
+		natVec3<> ambient;
+		natVec3<> color;
+		natVec3<> position;
+		natVec3<> halfVector;
+		natVec3<> coneDirection;
+		nFloat spotCosCutoff;
+		nFloat spotExponent;
+		nFloat constantAttenuation;
+		nFloat linearAttenuation;
+		nFloat quadraticAttenuation;
+	};
+
+	///	@brief	获得灯光索引
+	virtual nuInt GetIndex() const = 0;
+
+	///	@brief	获得灯光属性
+	virtual LightProperties const& GetProperties() const = 0;
+	///	@brief	设置灯光属性
+	virtual void SetProperties(LightProperties const& prop) = 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 ///	@brief	渲染设备
 ////////////////////////////////////////////////////////////////////////////////
 struct n2dRenderDevice
@@ -632,10 +699,10 @@ struct n2dRenderDevice
 	};
 
 	///	@brief	使用索引的特性
-	enum class CapabilityI
+	/*enum class CapabilityI
 	{
 		ClipDistance,				///< @brief	夹距
-	};
+	};*/
 
 	///	@brief	混合因子
 	enum class BlendFactor
@@ -673,14 +740,14 @@ struct n2dRenderDevice
 	///	@brief	禁用特性
 	virtual void DisableCapability(Capability capability) = 0;
 	///	@brief	按索引启用特性
-	virtual void EnableCapabilityI(CapabilityI capability, nuInt Index) = 0;
+	//virtual void EnableCapabilityI(CapabilityI capability, nuInt Index) = 0;
 	///	@brief	按索引禁用特性
-	virtual void DisableCapabilityI(CapabilityI capability, nuInt Index) = 0;
+	//virtual void DisableCapabilityI(CapabilityI capability, nuInt Index) = 0;
 	
 	///	@brief	判断特性是否已启用
 	virtual nBool IsCapabilityEnabled(Capability capability) const = 0;
 	///	@brief	按索引判断特性是否已启用
-	virtual nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const = 0;
+	//virtual nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const = 0;
 
 	///	@brief	设置混合模式
 	///	@param[in]	Source		源混合因子
@@ -758,6 +825,14 @@ struct n2dRenderDevice
 	///	@brief	获得关联的引擎
 	virtual n2dEngine* GetEngine() = 0;
 
+	///	@brief	获得最大灯光数
+	virtual nuInt GetMaxLight() const = 0;
+	///	@brief	设置最大灯光数
+	///	@note	仅能设置一次，后续调用将被忽略
+	virtual void SetMaxLights(nuInt value) = 0;
+	///	@brief	获得对应索引的灯光控制器
+	virtual n2dLightController* GetLightController(nuInt Index) = 0;
+
 	///	@brief	创建缓存
 	///	@param[in]	DefaultTarget	初始目标
 	///	@param[out]	pOut			创建的缓存
@@ -792,4 +867,9 @@ struct n2dRenderDevice
 	///	@return	处理结果
 	///	@deprecated	仅作者测试用
 	virtual nResult CreateObjLoader(n2dModelLoader** pOut) = 0;
+
+	///	@brief	创建动作管理器
+	///	@param[out]	pOut	创建的动作管理器
+	///	@return	处理结果
+	virtual nResult CreateMotionManager(n2dMotionManager** pOut) = 0;
 };

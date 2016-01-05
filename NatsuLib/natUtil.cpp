@@ -4,70 +4,86 @@
 
 namespace natUtil
 {
-#	ifdef UNICODE
-	enum { FIXCHAR = 1 };
-#	else
-	enum { FIXCHAR = 2 };
-#	endif
 
-	nTString FormatString(LPCTSTR lpStr, ...)
+	enum : nuInt
+	{
+		FIXCHAR = 
+#	ifdef UNICODE
+		1u
+#	else
+		2u
+#	endif
+	};
+
+	nTString FormatString(ncTStr lpStr, ...)
 	{
 		va_list vl;
 		va_start(vl, lpStr);
 
-		int nSize = lstrlen(lpStr) + 1, nLen;
-		nTStr buf = nullptr;
+		return FormatStringv(lpStr, vl);
+	}
+
+	nTString FormatStringv(ncTStr lpStr, va_list vl)
+	{
+		int nLen;
+		std::vector<nTChar> tBuf(lstrlen(lpStr) + 1u);
 
 		try
 		{
 			do
 			{
-				nSize *= 2;
-				delete[] buf;
-				buf = new nTChar[nSize];
-				memset(buf, 0, nSize * sizeof(nTChar));
-				nLen = _vsntprintf_s(buf, _TRUNCATE, nSize - 1, lpStr, vl);
-			} while (nLen < 0 || nSize - nLen <= FIXCHAR);
+				tBuf.resize(tBuf.size() * 2u);
+				nLen = _vsntprintf_s(tBuf.data(), _TRUNCATE, tBuf.size() - 1, lpStr, vl);
+			} while (nLen < 0 || tBuf.size() - nLen <= FIXCHAR);
 		}
 		catch (std::bad_alloc&)
 		{
 			throw natException(_T("n2dUtil::FormatString"), _T("Allocate memory failed"));
 		}
 
-		va_end(vl);
+		return tBuf.data();
+	}
 
-		nTString tmpstr(buf);
-		delete[] buf;
-		return tmpstr;
+	std::wstring MultibyteToUnicode(ncStr Str, nuInt CodePage)
+	{
+		nInt Num = MultiByteToWideChar(CodePage, 0, Str, -1, nullptr, 0);
+		std::vector<nWChar> tBuffer(Num);
+		MultiByteToWideChar(CodePage, 0, Str, -1, tBuffer.data(), Num);
+
+		return tBuffer.data();
+	}
+
+	std::string WidecharToMultibyte(ncWStr Str, nuInt CodePage)
+	{
+		nInt Num = WideCharToMultiByte(CodePage, 0, Str, -1, nullptr, 0, nullptr, FALSE);
+		std::vector<nChar> tBuffer(Num);
+		WideCharToMultiByte(CodePage, 0, Str, -1, tBuffer.data(), Num, nullptr, FALSE);
+
+		return tBuffer.data();
 	}
 
 	nTString GetResourceString(DWORD ResourceID, HINSTANCE hInstance)
 	{
-		int nSize = 16, nLen;
-		nTStr buf = nullptr;
+		int nLen;
+		std::vector<nTChar> tBuf(16u);
 
 		try
 		{
 			do
 			{
-				nSize *= 2;
-				delete[] buf;
-				buf = new nTChar[nSize];
-				memset(buf, 0, nSize * sizeof(nTChar));
-				nLen = LoadString(hInstance, ResourceID, buf, nSize - 1);
-			} while (nLen < 0 || nSize - nLen <= FIXCHAR);
+				tBuf.resize(tBuf.size() * 2u);
+				nLen = LoadString(hInstance, ResourceID, tBuf.data(), tBuf.size() - 1u);
+			} while (nLen < 0 || tBuf.size() - nLen <= FIXCHAR);
 		}
 		catch (std::bad_alloc&)
 		{
 			throw natException(_T("n2dUtil::GetResourceString"), _T("Allocate memory failed"));
 		}
 
-		nTString tmpstr(buf);
-		delete[] buf;
-		return tmpstr;
+		return tBuf.data();
 	}
 
-	std::vector<nByte> GetResourceData(DWORD ResourceID, LPCTSTR lpType, HINSTANCE hInstance)
+	std::vector<nByte> GetResourceData(DWORD ResourceID, ncTStr lpType, HINSTANCE hInstance)
 	{
 		HRSRC hRsrc = FindResource(hInstance, MAKEINTRESOURCE(ResourceID), lpType);
 		if (hRsrc != NULL)
@@ -86,8 +102,6 @@ namespace natUtil
 				}
 			}
 		}
-
-		DWORD err = GetLastError();
 
 		return std::vector<nByte>();
 	}

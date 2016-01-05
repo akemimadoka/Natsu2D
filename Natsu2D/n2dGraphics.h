@@ -1,12 +1,17 @@
+////////////////////////////////////////////////////////////////////////////////
+///	@file	n2dGraphics.h
+///	@brief	Natsu2D图元渲染器
+////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "n2dInterface.h"
 #include <natVec.h>
 
 struct n2dModelData;
 struct n2dTexture2D;
-struct n2dModelLoader;
-struct n2dMeshData;
+struct n2dStaticModelLoader;
+struct n2dStaticMeshData;
 
+///	@brief	二维图元渲染器用顶点
 struct n2dGraphics2DVertex
 {
 	natVec3<> vert;
@@ -14,6 +19,7 @@ struct n2dGraphics2DVertex
 	natVec2<> uv;
 };
 
+///	@brief	三维图元渲染器用顶点
 struct n2dGraphics3DVertex
 {
 	natVec3<> vert;
@@ -21,6 +27,9 @@ struct n2dGraphics3DVertex
 	natVec3<> normal;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+///	@brief	图元渲染器基类
+////////////////////////////////////////////////////////////////////////////////
 struct n2dGraphics
 	: n2dInterface
 {

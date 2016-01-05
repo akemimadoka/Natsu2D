@@ -91,14 +91,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>NatsuLib_d.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;lib/assimp/assimpd.lib;lib/CxImage/Debug/cximage.lib;lib/CxImage/Debug/jasper.lib;lib/CxImage/Debug/jbig.lib;lib/CxImage/Debug/Jpeg.lib;lib/CxImage/Debug/libdcr.lib;lib/CxImage/Debug/mng.lib;lib/CxImage/Debug/png.lib;lib/CxImage/Debug/Tiff.lib;lib/CxImage/Debug/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../NatsuLib/bin/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib_d.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/assimpd.lib;lib/CxImage/Debug/cximage.lib;lib/CxImage/Debug/jasper.lib;lib/CxImage/Debug/jbig.lib;lib/CxImage/Debug/Jpeg.lib;lib/CxImage/Debug/libdcr.lib;lib/CxImage/Debug/mng.lib;lib/CxImage/Debug/png.lib;lib/CxImage/Debug/Tiff.lib;lib/CxImage/Debug/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../NatsuLib/bin/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -126,15 +126,16 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;include;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib;include\OpenAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>../NatsuLib/bin/NatsuLib.lib;opengl32.lib;glu32.lib;lib/freetype/freetype261MT.lib;lib/assimp/assimp.lib;lib/CxImage/Release/cximage.lib;lib/CxImage/Release/jasper.lib;lib/CxImage/Release/jbig.lib;lib/CxImage/Release/Jpeg.lib;lib/CxImage/Release/libdcr.lib;lib/CxImage/Release/mng.lib;lib/CxImage/Release/png.lib;lib/CxImage/Release/Tiff.lib;lib/CxImage/Release/zlib.lib;lib/GL/Release/Win32/glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;lib/assimp/assimp.lib;glew.lib;alfw.lib;OpenAL32.lib;lib/CxImage/Release/cximage.lib;lib/CxImage/Release/jasper.lib;lib/CxImage/Release/jbig.lib;lib/CxImage/Release/Jpeg.lib;lib/CxImage/Release/libdcr.lib;lib/CxImage/Release/mng.lib;lib/CxImage/Release/png.lib;lib/CxImage/Release/Tiff.lib;lib/CxImage/Release/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../NatsuLib/bin/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -164,15 +165,20 @@
     <ClCompile Include="n2dUtil.cpp" />
     <ClCompile Include="RenderDevice\n2dBufferImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dGraphicsImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dLightControllerImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dMeshDataImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dModelImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dModelLoaderImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dMotionManagerImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dObjLoader.cpp" />
     <ClCompile Include="RenderDevice\n2dRenderDeviceImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dShaderWrapperImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dTextureImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dVBOHelper.cpp" />
     <ClCompile Include="Renderer\n2dFontImpl.cpp" />
+    <ClCompile Include="Sound\n2dSoundBufferImpl.cpp" />
+    <ClCompile Include="Sound\n2dSoundSourceImpl.cpp" />
+    <ClCompile Include="Sound\n2dSoundSysImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\n2dEngineImpl.h" />
@@ -182,21 +188,21 @@
     <ClInclude Include="extern\nv_dds\nv_dds.h" />
     <ClInclude Include="n2dEngine.h" />
     <ClInclude Include="n2dFont.h" />
-    <ClInclude Include="n2dFPSController.h" />
     <ClInclude Include="n2dGraphics.h" />
     <ClInclude Include="n2dInterface.h" />
     <ClInclude Include="n2dModel.h" />
-    <ClInclude Include="n2dKeyState.h" />
     <ClInclude Include="n2dRenderDevice.h" />
-    <ClInclude Include="n2dTexture.h" />
+    <ClInclude Include="n2dSoundSys.h" />
     <ClInclude Include="n2dWindow.h" />
     <ClInclude Include="Natsu2D.h" />
     <ClInclude Include="n2dUtil.h" />
     <ClInclude Include="RenderDevice\n2dBufferImpl.h" />
     <ClInclude Include="RenderDevice\n2dGraphicsImpl.h" />
+    <ClInclude Include="RenderDevice\n2dLightControllerImpl.h" />
     <ClInclude Include="RenderDevice\n2dMeshDataImpl.h" />
     <ClInclude Include="RenderDevice\n2dModelImpl.h" />
     <ClInclude Include="RenderDevice\n2dModelLoaderImpl.h" />
+    <ClInclude Include="RenderDevice\n2dMotionManagerImpl.h" />
     <ClInclude Include="RenderDevice\n2dObjLoader.h" />
     <ClInclude Include="RenderDevice\OpenGL.h" />
     <ClInclude Include="RenderDevice\n2dRenderDeviceImpl.h" />
@@ -205,6 +211,10 @@
     <ClInclude Include="RenderDevice\n2dVBOHelper.h" />
     <ClInclude Include="Renderer\n2dFontImpl.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Sound\n2dSoundBufferImpl.h" />
+    <ClInclude Include="Sound\n2dSoundSourceImpl.h" />
+    <ClInclude Include="Sound\n2dSoundSysImpl.h" />
+    <ClInclude Include="Sound\OpenAL.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Natsu2D.rc" />

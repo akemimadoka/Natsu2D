@@ -433,7 +433,12 @@ bool CDDSImage::load(natStream* pStream, bool flipImage, long pos)
 	if (pStream == nullptr)
 		return false;
 	if (pos)
-		pStream->SetPosition(NatSeek::Beg, pos);
+	{
+		if (NATFAIL(pStream->SetPosition(NatSeek::Beg, pos)))
+		{
+			return false;
+		}
+	}
 
 	// read in file marker, make sure its a DDS file
 	//fread(filecode, 1, 4, fp);

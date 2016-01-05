@@ -10,6 +10,8 @@
 #include <stack>
 
 struct n2dGraphics3D;
+class n2dBufferImpl;
+class n2dLightControllerImpl;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	渲染设备实现
@@ -80,7 +82,7 @@ class n2dRenderDeviceImpl final
 		}
 	}
 
-	static GLenum GetCapabilityIEnum(CapabilityI cp)
+	/*static GLenum GetCapabilityIEnum(CapabilityI cp)
 	{
 		switch (cp)
 		{
@@ -89,7 +91,7 @@ class n2dRenderDeviceImpl final
 		default:
 			throw natException(_T("n2dRenderDeviceImpl::GetCapabilityIEnum"), _T("Not an available CapabilityI enum"));
 		}
-	}
+	}*/
 
 	static GLenum GetBlendFactorEnum(BlendFactor blendfactor)
 	{
@@ -155,14 +157,14 @@ public:
 	///	@brief	禁用特性
 	void DisableCapability(Capability capability) override;
 	///	@brief	按索引启用特性
-	void EnableCapabilityI(CapabilityI capability, nuInt Index) override;
+	//void EnableCapabilityI(CapabilityI capability, nuInt Index) override;
 	///	@brief	按索引禁用特性
-	void DisableCapabilityI(CapabilityI capability, nuInt Index) override;
+	//void DisableCapabilityI(CapabilityI capability, nuInt Index) override;
 
 	///	@brief	判断特性是否已启用
 	nBool IsCapabilityEnabled(Capability capability) const override;
 	///	@brief	按索引判断特性是否已启用
-	nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const override;
+	//nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const override;
 
 	void SetBlendMode(BlendFactor Source, BlendFactor Destination) override;
 	void SetBlendModeI(n2dBuffer* Buf, BlendFactor Source, BlendFactor Destination) override;
@@ -231,6 +233,10 @@ public:
 	///	@brief	获得关联的引擎
 	n2dEngine* GetEngine() override;
 
+	nuInt GetMaxLight() const override;
+	void SetMaxLights(nuInt value) override;
+	n2dLightController* GetLightController(nuInt Index) override;
+
 	nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut) override;
 
 	///	@brief	创建二维图元渲染器
@@ -256,11 +262,13 @@ public:
 
 	///	@deprecated		仅实验用
 	nResult CreateObjLoader(n2dModelLoader** pOut) override;
-private:
-	void updateMVP();
 
+	nResult CreateMotionManager(n2dMotionManager** pOut) override;
+
+	void updateMVP();
+private:
 	n2dEngine* m_pEngine;
-	n2dShaderWrapperImpl m_Shader;
+	n2dShaderWrapperImpl* m_Shader;
 
 	nBool m_bUpdated;
 
@@ -269,4 +277,10 @@ private:
 	std::stack<natMat4<>> m_ProjMatStack;
 
 	natMat4<> m_MVPMat;
+
+	n2dBufferImpl* m_pMVPBuffer;
+
+	nuInt m_MaxLights;
+	std::vector<natRefPointer<n2dLightControllerImpl>> m_Lights;
+	n2dBufferImpl* m_pLightBuffer;
 };

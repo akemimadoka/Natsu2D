@@ -7,11 +7,16 @@
 #include "n2dModelLoaderImpl.h"
 #include "n2dObjLoader.h"
 #include "n2dBufferImpl.h"
+#include "n2dLightControllerImpl.h"
+#include "n2dMotionManagerImpl.h"
 
 n2dRenderDeviceImpl::n2dRenderDeviceImpl(n2dEngine* GLApp)
 	: m_pEngine(GLApp),
-	m_Shader(this),
-	m_bUpdated(false)
+	m_Shader(nullptr),
+	m_bUpdated(false),
+	m_pMVPBuffer(nullptr),
+	m_pLightBuffer(nullptr),
+	m_MaxLights(0u)
 {
 	m_ModelMatStack.push(natMat4<>(1.0f));
 	m_ViewMatStack.push(natMat4<>(1.0f));
@@ -39,7 +44,7 @@ void n2dRenderDeviceImpl::DisableCapability(Capability capability)
 	glDisable(GetCapabilityEnum(capability));
 }
 
-void n2dRenderDeviceImpl::EnableCapabilityI(CapabilityI capability, nuInt Index)
+/*void n2dRenderDeviceImpl::EnableCapabilityI(CapabilityI capability, nuInt Index)
 {
 	glEnablei(GetCapabilityIEnum(capability), Index);
 }
@@ -47,17 +52,17 @@ void n2dRenderDeviceImpl::EnableCapabilityI(CapabilityI capability, nuInt Index)
 void n2dRenderDeviceImpl::DisableCapabilityI(CapabilityI capability, nuInt Index)
 {
 	glDisablei(GetCapabilityIEnum(capability), Index);
-}
+}*/
 
 nBool n2dRenderDeviceImpl::IsCapabilityEnabled(Capability capability) const
 {
 	return glIsEnabled(GetCapabilityEnum(capability)) == GL_TRUE;
 }
 
-nBool n2dRenderDeviceImpl::IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const
+/*nBool n2dRenderDeviceImpl::IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const
 {
 	return glIsEnabledi(GetCapabilityIEnum(capability), Index) == GL_TRUE;
-}
+}*/
 
 void n2dRenderDeviceImpl::SetBlendMode(BlendFactor Source, BlendFactor Destination)
 {
@@ -96,7 +101,12 @@ void n2dRenderDeviceImpl::SwapBuffers()
 
 n2dShaderWrapper* n2dRenderDeviceImpl::GetShaderWrapper()
 {
-	return &m_Shader;
+	if (!m_Shader)
+	{
+		m_Shader = new n2dShaderWrapperImpl(this);
+	}
+
+	return m_Shader;
 }
 
 void n2dRenderDeviceImpl::SubmitModelMat(natMat4<> const& Mat)
@@ -207,10 +217,7 @@ natMat4<> const& n2dRenderDeviceImpl::GetCurProjMat() const
 
 natMat4<> const& n2dRenderDeviceImpl::GetMVPMat()
 {
-	if (!m_bUpdated)
-	{
-		updateMVP();
-	}
+	updateMVP();
 	
 	return m_MVPMat;
 }
@@ -218,6 +225,42 @@ natMat4<> const& n2dRenderDeviceImpl::GetMVPMat()
 n2dEngine* n2dRenderDeviceImpl::GetEngine()
 {
 	return m_pEngine;
+}
+
+nuInt n2dRenderDeviceImpl::GetMaxLight() const
+{
+	return m_MaxLights;
+}
+
+void n2dRenderDeviceImpl::SetMaxLights(nuInt value)
+{
+	if (m_MaxLights > 0u || m_pLightBuffer)
+	{
+		return;
+	}
+
+	m_MaxLights = value;
+	m_Lights.resize(m_MaxLights);
+	m_pLightBuffer = new n2dBufferImpl(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(GetShaderWrapper()));
+	m_pLightBuffer->AllocData(sizeof(n2dLightController::LightProperties) * m_MaxLights, nullptr, n2dBuffer::BufferUsage::DynamicDraw);
+	m_pLightBuffer->BindBase(1u);
+}
+
+n2dLightController* n2dRenderDeviceImpl::GetLightController(nuInt Index)
+{
+	if (m_MaxLights == 0u || !m_pLightBuffer || Index >= m_MaxLights)
+	{
+		return nullptr;
+	}
+
+	n2dLightControllerImpl* pLight;
+
+	pLight = m_Lights[Index];
+	if (pLight != nullptr)
+		return pLight;
+	
+	m_Lights[Index] = pLight = new n2dLightControllerImpl(Index, m_pLightBuffer);
+	return pLight;
 }
 
 nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut)
@@ -229,7 +272,7 @@ nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget,
 
 	try
 	{
-		*pOut = new n2dBufferImpl(DefaultTarget, &m_Shader);
+		*pOut = new n2dBufferImpl(DefaultTarget, m_Shader);
 	}
 	catch (std::bad_alloc&)
 	{
@@ -375,7 +418,7 @@ nResult n2dRenderDeviceImpl::CreateModelLoader(n2dModelLoader** pOut)
 
 	try
 	{
-		*pOut = new n2dModelLoaderImpl;
+		*pOut = new n2dModelLoaderImpl(this);
 	}
 	catch (std::bad_alloc&)
 	{
@@ -422,8 +465,46 @@ nResult n2dRenderDeviceImpl::CreateObjLoader(n2dModelLoader** pOut)
 	return NatErr_OK;
 }
 
+nResult n2dRenderDeviceImpl::CreateMotionManager(n2dMotionManager ** pOut)
+{
+	if (pOut == nullptr)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	try
+	{
+		*pOut = new n2dMotionManagerImpl;
+	}
+	catch (std::bad_alloc&)
+	{
+		natException e(_T("n2dRenderDeviceImpl::CreateObjLoader"), _T("Failed to allocate memory"));
+		n2dGlobal::EventException(&e);
+	}
+	catch (natException& e)
+	{
+		n2dGlobal::EventException(&e);
+	}
+	catch (...)
+	{
+		return NatErr_Unknown;
+	}
+
+	return NatErr_OK;
+}
+
 void n2dRenderDeviceImpl::updateMVP()
 {
+	if (m_bUpdated)
+		return;
+	
 	m_MVPMat = GetCurProjMat() * GetCurViewMat() * GetCurModelMat();
 	m_bUpdated = true;
+	if (!m_pMVPBuffer)
+	{
+		m_pMVPBuffer = new n2dBufferImpl(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(GetShaderWrapper()));
+		m_pMVPBuffer->BindBase(0u);
+	}
+
+	m_pMVPBuffer->AllocData(sizeof(natMat4<>), reinterpret_cast<ncData>(&m_MVPMat), n2dBuffer::BufferUsage::DynamicDraw);
 }

@@ -1,6 +1,5 @@
 #include "n2dEngine.h"
 #include "n2dRenderDevice.h"
-#include <GL/gl.h>
 
 namespace n2dUtil
 {

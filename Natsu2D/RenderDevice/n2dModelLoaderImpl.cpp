@@ -5,6 +5,7 @@
 #include "n2dMeshDataImpl.h"
 #include "n2dTextureImpl.h"
 #include "n2dModelImpl.h"
+#include "n2dMotionManagerImpl.h"
 #include "..\n2dCommon.h"
 #include "OpenGL.h"
 #include "..\include\assimp\Importer.hpp"
@@ -12,21 +13,30 @@
 #include "..\include\assimp\postprocess.h"
 #include <natMath.h>
 
-n2dModelLoaderImpl::n2dModelLoaderImpl()
-	: m_VertexBuffer(0u),
-	m_UVBuffer(0u),
-	m_NormalBuffer(0u),
-	m_ElementBuffer(0u),
-	m_Model(nullptr),
-	m_DefaultTexture(nullptr)
+n2dModelLoaderImpl::n2dModelLoaderImpl(n2dRenderDeviceImpl* pRenderDevice)
+	: m_DefaultTexture(nullptr),
+	m_pRenderDevice(pRenderDevice)
 {
-	//m_Model = new n2dModelDataImpl;
+	m_DefaultTexture = new n2dTexture2DImpl;
 }
 
-nResult n2dModelLoaderImpl::LoadFromStream(natStream* pStream)
+nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut)
 {
-	SafeRelease(m_Model);
-	m_Model = new n2dModelDataImpl;
+	if (!pStream || !pOut)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	n2dStaticModelDataImpl* pModel = nullptr;
+
+	try
+	{
+		pModel = new n2dStaticModelDataImpl;
+	}
+	catch (...)
+	{
+		return NatErr_InternalErr;
+	}
 
 	Assimp::Importer tImporter;
 	nLen tLen = pStream->GetSize() - pStream->GetPosition();
@@ -43,121 +53,289 @@ nResult n2dModelLoaderImpl::LoadFromStream(natStream* pStream)
 
 	if (!tpScene)
 	{
-		natLog::GetInstance().LogErr(natUtil::C2Wstr(tImporter.GetErrorString()));
+		natLog::GetInstance().LogErr(natUtil::C2Wstr(tImporter.GetErrorString()).c_str());
 		return NatErr_InternalErr;
 	}
 
-	loadMeshData(tpScene, tpScene->mRootNode, 1.0f);
+	loadMeshData(pModel, tpScene, tpScene->mRootNode, 1.0f);
 
-	/*for (nuInt i = 0u; i < tpScene->mNumMeshes; ++i)
+	for (auto& mesh : pModel->m_Meshes)
 	{
-		std::vector<natVec3<>> tVert;
-		std::vector<natVec2<>> tUV;
-		std::vector<natVec3<>> tNormal;
-		std::vector<nShort> tIndex;
+		mesh->m_pRenderDevice = m_pRenderDevice;
+	}
 
-		for (nuInt iv = 0; iv < tpScene->mMeshes[i]->mNumVertices; ++iv)
-		{
-			tVert.emplace_back(natVec3<>(&tpScene->mMeshes[i]->mVertices[iv][0]));
-			tUV.emplace_back(natVec2<>(&tpScene->mMeshes[i]->mTextureCoords[0][iv][0]));
-			tNormal.emplace_back(natVec3<>(&tpScene->mMeshes[i]->mNormals[iv][0]));
-		}
-
-		//pMesh->AddVert(&tVert[0], &tUV[0], &tNormal[0], tVert.size());
-
-		//loadMeshData(pMesh, tpScene, tpScene->mRootNode, 1.0f);
-
-		// unused
-		for (nuInt ii = 0u; ii < tpScene->mMeshes[i]->mNumFaces; ++ii)
-		{
-			m_ElementIndexes.push_back(tpScene->mMeshes[i]->mFaces[ii].mIndices[0]);
-			m_ElementIndexes.push_back(tpScene->mMeshes[i]->mFaces[ii].mIndices[1]);
-			m_ElementIndexes.push_back(tpScene->mMeshes[i]->mFaces[ii].mIndices[2]);
-		}
-	}*/
-
-	//m_MeshData->AddVert(&m_Vertices[0], &m_UVs[0], &m_Normals[0], m_Vertices.size());
-
+	*pOut = pModel;
 	return NatErr_OK;
 }
 
-nResult n2dModelLoaderImpl::LoadFromFile(ncTStr lpPath)
+nResult n2dModelLoaderImpl::CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut)
 {
 	natStream* tpStream = new natFileStream(lpPath, true, false);
-	nResult tRet = LoadFromStream(tpStream);
+	nResult tRet = CreateStaticModelFromStream(tpStream, pOut);
 	SafeRelease(tpStream);
+	return tRet;
+}
+
+nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2dModelData ** pOut)
+{
+	if (!pStream || !pOut)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	natRefPointer<n2dDynamicModelDataImpl> pModel;
+
+	try
+	{
+		pModel = new n2dDynamicModelDataImpl;
+	}
+	catch (...)
+	{
+		return NatErr_InternalErr;
+	}
+
+	pModel->m_Mesh.m_pRenderDevice = m_pRenderDevice;
+
+	nByte tBuf[257] = { 0 };
+
+	pStream->ReadBytes(tBuf, 3ull);
+	if (0 == strcmp("Pmd", reinterpret_cast<ncStr>(tBuf)))
+	{
+		pStream->ReadBytes(tBuf, 4ull);
+		if (1.0f != *reinterpret_cast<nFloat*>(tBuf))
+		{
+			return NatErr_InternalErr;
+		}
+
+		// Model info start
+		pStream->ReadBytes(tBuf, 20ull);
+		pModel->m_Name =
+#ifdef _UNICODE
+			natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
+#else
+			reinterpret_cast<ncStr>(tBuf);
+#endif
+		pStream->ReadBytes(tBuf, 256ull);
+		pModel->m_Comment =
+#ifdef _UNICODE
+			natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
+#else
+			reinterpret_cast<ncStr>(tBuf);
+#endif
+
+		// Model info end
+
+		// Vertex start
+		pStream->ReadBytes(tBuf, 4ull);
+		pModel->m_Mesh.m_Vert.resize(*reinterpret_cast<size_t*>(tBuf));
+		pModel->m_Mesh.m_VertAdd.resize(*reinterpret_cast<size_t*>(tBuf));
+
+		for (nuInt i = 0u; i < *reinterpret_cast<size_t*>(tBuf); ++i)
+		{
+			auto& vert = pModel->m_Mesh.m_Vert[i];
+			auto& vertadd = pModel->m_Mesh.m_VertAdd[i];
+			pStream->ReadBytes(reinterpret_cast<nData>(&vert.vert), 12ull);
+			vert.vert.z = -vert.vert.z;
+			pStream->ReadBytes(reinterpret_cast<nData>(&vert.normal), 12ull);
+			vert.normal.z = -vert.normal.z;
+			pStream->ReadBytes(reinterpret_cast<nData>(&vert.uv), 8ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&vertadd.TargetBone), 4ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&vertadd.Weight), 1ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&vertadd.EdgeFlag), 1ull);
+		}
+
+		pStream->ReadBytes(tBuf, 4ull);
+		pModel->m_Mesh.m_Index.resize(*reinterpret_cast<size_t*>(tBuf));
+		pStream->ReadBytes(reinterpret_cast<nData>(pModel->m_Mesh.m_Index.data()), *reinterpret_cast<size_t*>(tBuf) * 2ull);
+		// Vertex end
+
+		// Material start
+		pStream->ReadBytes(tBuf, 4ull);
+		pModel->m_Mesh.m_Materials.resize(*reinterpret_cast<size_t*>(tBuf));
+
+		nuInt start = 0u;
+		tBuf[20] = 0u;
+		for (auto& mat : pModel->m_Mesh.m_Materials)
+		{
+			nFloat alpha = 0.0f;
+			pStream->ReadBytes(reinterpret_cast<nData>(&mat.BaseMaterial.Diffuse), 12ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&alpha), 4ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&mat.BaseMaterial.Shininess), 4ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&mat.BaseMaterial.Specular), 12ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&mat.BaseMaterial.Ambient), 12ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&mat.Toon), 2ull);
+
+			mat.BaseMaterial.Ambient[3] = alpha;
+			mat.BaseMaterial.Diffuse[3] = alpha;
+			mat.BaseMaterial.Specular[3] = 1.0f;
+
+			mat.BaseMaterial.Both_sided = false;
+			mat.BaseMaterial.Strength = 1.0f;
+			mat.BaseMaterial.WireFrame = false;
+			mat.BaseMaterial.Emission = natVec4<>(0.0f, 0.0f, 0.0f, 1.0f);
+
+			mat.Start = start;
+			pStream->ReadBytes(reinterpret_cast<nData>(&mat.Length), 4ull);
+			//mat.Length /= 3u;
+			start += mat.Length;
+			mat.End = start;
+
+			pStream->ReadBytes(tBuf, 20ull);
+
+			nTString tStr =
+#ifdef _UNICODE
+				natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
+#else
+				reinterpret_cast<ncStr>(tBuf);
+#endif
+
+			std::replace(tStr.begin(), tStr.end(), _T('/'), _T('\\'));
+			auto SplitResult = natUtil::split(tStr, _T("*"));
+
+			if (SplitResult.size() > 2)
+			{
+#ifdef _DEBUG
+				natLog::GetInstance().LogWarn(_T("Texture and spa filename count dismatch, continue anyway"));
+#endif
+			}
+
+			mat.BaseMaterial.Texture = new n2dTexture2DImpl;
+			if (SplitResult[0] != _T("") && !mat.BaseMaterial.Texture->LoadTexture(SplitResult[0]))
+			{
+				natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Unable to load texture file \"%s\""), SplitResult[0].c_str()).c_str());
+				mat.BaseMaterial.Texture = m_DefaultTexture;
+			}
+
+			if (SplitResult.size() >= 2 && SplitResult[1] != _T(""))
+			{
+				mat.Spa = new n2dTexture2DImpl;
+				if (!mat.Spa->LoadTexture(SplitResult[1]))
+				{
+					natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Unable to load spa file \"%s\""), SplitResult[1].c_str()).c_str());
+					mat.Spa = m_DefaultTexture;
+				}
+			}
+		}
+		// Material end
+
+		// Bones start
+		pStream->ReadBytes(tBuf, 2ull);
+		pModel->m_Mesh.m_Bones.resize(*reinterpret_cast<nuShort*>(tBuf));
+		pModel->m_Mesh.m_BoneMap.resize(*reinterpret_cast<nuShort*>(tBuf));
+
+		tBuf[20] = 0u;
+		for (auto& tBone : pModel->m_Mesh.m_Bones)
+		{
+			pStream->ReadBytes(tBuf, 20ull);
+			tBone.Name =
+#ifdef _UNICODE
+				natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
+#else
+				reinterpret_cast<ncStr>(tBuf);
+#endif
+			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Parent), 2ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Child), 2ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Type), 1ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Target), 2ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Pos), 12ull);
+			tBone.Pos[2] = -tBone.Pos[2];
+		}
+		// Bones end
+
+		// IKs start
+		pStream->ReadBytes(tBuf, 2ull);
+		pModel->m_Mesh.m_IKs.resize(*reinterpret_cast<nuShort*>(tBuf));
+		pModel->m_Mesh.m_IK.resize(*reinterpret_cast<nuShort*>(tBuf));
+
+		for (auto& tIK : pModel->m_Mesh.m_IKs)
+		{
+			pStream->ReadBytes(reinterpret_cast<nData>(&tIK.Target), 2ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&tIK.Effector), 2ull);
+
+			pStream->ReadBytes(tBuf, 1ull);
+			tIK.LinkList.resize(*tBuf);
+
+			pStream->ReadBytes(reinterpret_cast<nData>(&tIK.MaxIteration), 2ull);
+			pStream->ReadBytes(reinterpret_cast<nData>(&tIK.MaxRotation), 4ull);
+
+			pStream->ReadBytes(reinterpret_cast<nData>(tIK.LinkList.data()), 2ull * tIK.LinkList.size());
+		}
+		// IKs end
+
+		// Morphes start
+		pStream->ReadBytes(tBuf, 2ull);
+		pModel->m_Mesh.m_Morphes.resize(*reinterpret_cast<nuShort*>(tBuf));
+		pModel->m_Mesh.m_MorphMap.resize(*reinterpret_cast<nuShort*>(tBuf));
+
+		tBuf[20] = 0u;
+		for (auto& tMorph : pModel->m_Mesh.m_Morphes)
+		{
+			pStream->ReadBytes(tBuf, 20ull);
+			tMorph.Name =
+#ifdef _UNICODE
+				natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
+#else
+				reinterpret_cast<ncStr>(tBuf);
+#endif
+			pStream->ReadBytes(tBuf, 4ull);
+			tMorph.Vertexes.resize(*reinterpret_cast<nuInt*>(tBuf));
+			tMorph.Translation.resize(*reinterpret_cast<nuInt*>(tBuf));
+			pStream->ReadBytes(reinterpret_cast<nData>(&tMorph.Type), 1ull);
+			for (nuInt i = 0u; i < *reinterpret_cast<nuInt*>(tBuf); ++i)
+			{
+				pStream->ReadBytes(reinterpret_cast<nData>(&tMorph.Vertexes[i]), 4ull);
+				pStream->ReadBytes(reinterpret_cast<nData>(&tMorph.Translation[i]), 12ull);
+				tMorph.Translation[i][2] = -tMorph.Translation[i][2];
+			}
+		}
+		// Morphes end
+
+		pModel->m_Mesh.m_Selekton = std::make_shared<n2dSelekton>();
+		pModel->m_Mesh.m_Selekton->CreateFromDynamicModel(pModel);
+		for (nuInt i = 0u; i < pModel->m_Mesh.m_IK.size(); ++i)
+		{
+			pModel->m_Mesh.m_IK[i].CreateFromDynamicModel(pModel, i);
+		}
+		for (nuInt i = 1u; i < pModel->m_Mesh.m_Morphes.size(); ++i)
+		{
+			pModel->m_Mesh.m_Expression[pModel->m_Mesh.m_Morphes[i].Name] = i;
+		}
+	}
+	else if (0 == strcmp("PMX", reinterpret_cast<ncStr>(tBuf)))
+	{
+		pStream->ReadBytes(tBuf, 1ull);
+		if (*tBuf != 20u)
+			return NatErr_InternalErr;
+
+		// To be implemented
+		return NatErr_NotImpl;
+	}
+	else
+	{
+		return NatErr_InternalErr;
+	}
+
+	*pOut = pModel;
+	return NatErr_OK;
+}
+
+nResult n2dModelLoaderImpl::CreateDynamicModelFromFile(ncTStr lpPath, n2dModelData ** pOut)
+{
+	natStream* pStream = new natFileStream(lpPath, true, false);
+	nResult tRet = CreateDynamicModelFromStream(pStream, pOut);
+	SafeRelease(pStream);
 	return tRet;
 }
 
 void n2dModelLoaderImpl::SetDefaultTexture(n2dTexture2D* Texture)
 {
-	m_DefaultTexture = Texture;
-}
-
-n2dModelData* n2dModelLoaderImpl::GetModel()
-{
-	return m_Model;
-}
-
-nuInt n2dModelLoaderImpl::GetVertexBuffer()
-{
-	if (m_VertexBuffer == 0u)
+	if (Texture)
 	{
-		glGenBuffers(1, &m_VertexBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(natVec3<>), m_Vertices.data(), GL_STATIC_DRAW);
+		m_DefaultTexture = Texture;
 	}
-
-	return m_VertexBuffer;
 }
 
-nuInt n2dModelLoaderImpl::GetUVBuffer()
-{
-	if (m_UVBuffer == 0u)
-	{
-		glGenBuffers(1, &m_UVBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m_UVBuffer);
-		glBufferData(GL_ARRAY_BUFFER, m_UVs.size() * sizeof(natVec2<>), m_UVs.data(), GL_STATIC_DRAW);
-	}
-
-	return m_UVBuffer;
-}
-
-nuInt n2dModelLoaderImpl::GetNormalBuffer()
-{
-	if (m_NormalBuffer == 0u)
-	{
-		glGenBuffers(1, &m_NormalBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m_NormalBuffer);
-		glBufferData(GL_ARRAY_BUFFER, m_Normals.size() * sizeof(natVec3<>), m_Normals.data(), GL_STATIC_DRAW);
-	}
-
-	return m_NormalBuffer;
-}
-
-nuInt n2dModelLoaderImpl::GetIndexBuffer()
-{
-	if (m_ElementBuffer == 0u)
-	{
-		glGenBuffers(1, &m_ElementBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ElementBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_ElementIndexes.size() * sizeof(nuShort), &m_ElementIndexes[0], GL_STATIC_DRAW);
-	}
-
-	return m_ElementBuffer;
-}
-
-nuInt n2dModelLoaderImpl::GetVertexCount() const
-{
-	return m_Vertices.size();
-}
-
-nuInt n2dModelLoaderImpl::GetIndexCount() const
-{
-	return m_ElementIndexes.size();
-}
-
-void n2dModelLoaderImpl::loadMeshData(const aiScene* pScene, const aiNode* pNode, nFloat fScale)
+void n2dModelLoaderImpl::loadMeshData(n2dStaticModelDataImpl* pModel, const aiScene* pScene, const aiNode* pNode, nFloat fScale) const
 {
 	natMat4<> m(pNode->mTransformation[0]);
 	m = natTransform::scale(m, natVec3<>(fScale));
@@ -168,13 +346,18 @@ void n2dModelLoaderImpl::loadMeshData(const aiScene* pScene, const aiNode* pNode
 
 		aiMaterial* pMaterial = pScene->mMaterials[tMesh->mMaterialIndex];
 		
-		n2dMeshDataImpl::Material tMaterial;
+		n2dStaticMeshDataImpl::Material tMaterial;
 		memset(&tMaterial, 0, sizeof(tMaterial));
 
 		aiString tTexPath;
 		tMaterial.Texture = new n2dTexture2DImpl;
 		if (AI_SUCCESS != pMaterial->GetTexture(aiTextureType_DIFFUSE, 0u, &tTexPath) || !tMaterial.Texture->LoadTexture(natUtil::C2Wstr(tTexPath.C_Str())))
 		{
+			if (tTexPath.length > 0)
+			{
+				natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Cannot load texture \"%s\", use default texture instead"), natUtil::C2Wstr(tTexPath.data).c_str()).c_str());
+			}
+
 			tMaterial.Texture = m_DefaultTexture;
 		}
 
@@ -235,24 +418,17 @@ void n2dModelLoaderImpl::loadMeshData(const aiScene* pScene, const aiNode* pNode
 			throw natException(_T("n2dModelLoaderImpl::loadMeshData"), _T("Not Supported model"));
 		}
 
-		n2dMeshDataImpl* pMesh = new n2dMeshDataImpl;
-		m_Model->m_Meshes.push_back(pMesh);
+		n2dStaticMeshDataImpl* pMesh = new n2dStaticMeshDataImpl;
+		pModel->m_Meshes.push_back(pMesh);
 
 		pMesh->m_VertCount = tMesh->mNumVertices;
 		pMesh->m_Vert.resize(tMesh->mNumVertices);
-		/*pMesh->m_Vertex.reserve(tMesh->mNumVertices);
-		pMesh->m_UV.reserve(tMesh->mNumVertices);
-		pMesh->m_Normal.reserve(tMesh->mNumVertices);*/
 		for (nuInt iv = 0u; iv < tMesh->mNumVertices; ++iv)
 		{
 			n2dGraphics3DVertex& tVert = pMesh->m_Vert[iv];
 			tVert.vert = natVec3<>(&tMesh->mVertices[iv][0]);
 			tVert.uv = natVec2<>(&tMesh->mTextureCoords[0][iv][0]);
 			tVert.normal = natVec3<>(&tMesh->mNormals[iv][0]);
-			
-			/*pMesh->m_Vertex.emplace_back(natVec3<>(&tMesh->mVertices[iv][0]));
-			pMesh->m_UV.emplace_back(natVec2<>(&tMesh->mTextureCoords[0][iv][0]));
-			pMesh->m_Normal.emplace_back(natVec3<>(&tMesh->mNormals[iv][0]));*/
 		}
 
 		pMesh->ApplyMaterial(tMaterial);
@@ -272,6 +448,6 @@ void n2dModelLoaderImpl::loadMeshData(const aiScene* pScene, const aiNode* pNode
 
 	for (nuInt i = 0u; i < pNode->mNumChildren; ++i)
 	{
-		loadMeshData(pScene, pNode->mChildren[i], fScale);
+		loadMeshData(pModel, pScene, pNode->mChildren[i], fScale);
 	}
 }

@@ -18,7 +18,7 @@ natFileStream::natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable
 
 	if (m_hFile == INVALID_HANDLE_VALUE)
 	{
-		throw natException(_T("natFileStream::natFileStream"), natUtil::FormatString(_T("Open file \"%s\" failed"), lpFilename));
+		throw natWinException(_T("natFileStream::natFileStream"), natUtil::FormatString(_T("Open file \"%s\" failed"), lpFilename).c_str());
 	}
 }
 
@@ -191,9 +191,9 @@ void natFileStream::Unlock()
 	m_Section.UnLock();
 }
 
-nTString natFileStream::GetFilename() const
+ncTStr natFileStream::GetFilename() const
 {
-	return m_Filename;
+	return m_Filename.c_str();
 }
 
 natFileStream::~natFileStream()

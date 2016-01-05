@@ -11,14 +11,17 @@
 
 n2dShaderWrapperImpl::n2dShaderWrapperImpl(n2dRenderDevice* pRenderDevice)
 	: m_pRenderDevice(pRenderDevice),
-	m_DefaultProgram(nullptr)
+	m_DefaultProgram(nullptr),
+	m_MaxBindingPoint(0u)
 {
-	GLint tmax = 0;
-	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &tmax);
-	m_AvailableBindPoint.reserve(tmax);
-	for (int i = 0; i < tmax; ++i)
+	GLint tMax = 0;
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &tMax);
+	m_MaxBindingPoint = tMax;
+	
+	m_AvailableBindingPoint.reserve(m_MaxBindingPoint);
+	for (nuInt i = 3u; i < m_MaxBindingPoint; ++i)
 	{
-		m_AvailableBindPoint.insert(i);
+		m_AvailableBindingPoint.insert(i);
 	}
 }
 
@@ -176,21 +179,53 @@ nResult n2dShaderWrapperImpl::CreateProgramPipeline(n2dProgramPipeline** pOut)
 
 GLuint n2dShaderWrapperImpl::GetAvailableBindPoint()
 {
-	auto tItea = m_AvailableBindPoint.begin();
+	auto tItea = m_AvailableBindingPoint.begin();
 	auto tRet = *tItea;
-	m_AvailableBindPoint.erase(tItea);
+	m_AvailableBindingPoint.erase(tItea);
 	return tRet;
 }
 
-void n2dShaderWrapperImpl::ReleaseBindPoint(GLuint BindPoint)
+void n2dShaderWrapperImpl::UseBindingPoint(GLuint BindingPoint)
 {
-	if (m_AvailableBindPoint.find(BindPoint) != m_AvailableBindPoint.end())
+	if (BindingPoint >= m_MaxBindingPoint)
 	{
-		natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Try to release a bind point %u which is unused, continue anyway"), BindPoint));
+#ifdef _DEBUG
+		natLog::GetInstance().LogErr(natUtil::FormatString(_T("Try to use a binding point %u which is illeagl, continue anyway"), BindingPoint).c_str());
+#endif
 		return;
 	}
 
-	m_AvailableBindPoint.insert(BindPoint);
+	if (m_AvailableBindingPoint.find(BindingPoint) == m_AvailableBindingPoint.end())
+	{
+#ifdef _DEBUG
+		if (BindingPoint > 2u)
+			natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Try to use a binding point %u which is already used, continue anyway"), BindingPoint).c_str());
+#endif
+		return;
+	}
+
+	m_AvailableBindingPoint.erase(BindingPoint);
+}
+
+void n2dShaderWrapperImpl::ReleaseBindingPoint(GLuint BindingPoint)
+{
+	if (BindingPoint >= m_MaxBindingPoint)
+	{
+#ifdef _DEBUG
+		natLog::GetInstance().LogErr(natUtil::FormatString(_T("Try to release a binding point %u which is illeagl, continue anyway"), BindingPoint).c_str());
+#endif
+		return;
+	}
+
+	if (m_AvailableBindingPoint.find(BindingPoint) != m_AvailableBindingPoint.end())
+	{
+#ifdef _DEBUG
+		natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Try to release a binding point %u which is unused, continue anyway"), BindingPoint).c_str());
+#endif
+		return;
+	}
+
+	m_AvailableBindingPoint.insert(BindingPoint);
 }
 
 n2dShaderProgram* n2dShaderWrapperImpl::GetCurrentProgram()
@@ -667,7 +702,7 @@ void n2dShaderProgramImpl::UniformReferenceImpl::GetValue(nuInt Size, void* valu
 		break;
 
 	default:
-		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::GetValue"), natUtil::FormatString(_T("Unknown type : %u"), m_Type));
+		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::GetValue"), natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
 	}
 
 	if (glGetError() == GL_INVALID_OPERATION)
@@ -797,7 +832,7 @@ void n2dShaderProgramImpl::UniformReferenceImpl::SetValue(nuInt count, const voi
 		break;
 
 	default:
-		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::SetValue"), natUtil::FormatString(_T("Unknown type : %u"), m_Type));
+		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::SetValue"), natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
 	}
 
 	/*if (glGetError() != GL_NO_ERROR)

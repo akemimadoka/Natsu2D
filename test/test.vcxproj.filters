@@ -13,6 +13,16 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="extern">
+      <UniqueIdentifier>{afae7632-0b71-43b7-ac46-b33c3aa21ec0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="extern\sqrat">
+      <UniqueIdentifier>{55603c3c-9059-430b-9cef-7bfef5595d85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="extern\sqrat\sqrat">
+      <UniqueIdentifier>{939e2ecf-37e3-4faa-8d41-b8a3cda983eb}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -22,6 +32,60 @@
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqmodule.h">
+      <Filter>extern\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat.h">
+      <Filter>extern\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqratimport.h">
+      <Filter>extern\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratAllocator.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratArray.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratClass.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratClassType.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratConst.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratFunction.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratGlobalMethods.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratMemberMethods.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratObject.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratOverloadMethods.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratScript.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratTable.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratTypes.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratUtil.h">
+      <Filter>extern\sqrat\sqrat</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sqrat\sqrat\sqratVM.h">
+      <Filter>extern\sqrat\sqrat</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

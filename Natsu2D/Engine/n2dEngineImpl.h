@@ -7,8 +7,8 @@
 
 #include <Windows.h>
 #include <unordered_map>
+#include <unordered_set>
 #include "n2dWindowImpl.h"
-#include "..\n2dKeyState.h"
 #include <natEvent.h>
 #include <natMultiThread.h>
 #include <natType.h>
@@ -83,7 +83,6 @@ public:
 		~WndMsgEventImpl();
 
 		nuInt Register(EventHandler func, DWORD WndMsg, nInt priority = Priority::Normal) override;
-		nBool Unregister(nuInt HandlerIndex, DWORD WndMsg, nInt Priority) override;
 		void Unregister(DWORD WndMsg, EventHandler Handler) override;
 
 		nBool Activate(DWORD WndMsg, nInt PriorityLimitmin = Priority::Low, nInt PriorityLimitmax = Priority::High) override;
@@ -95,7 +94,7 @@ public:
 
 		n2dEngineImpl* GetEngine() override;
 	private:
-		std::unordered_map<DWORD, std::map<nInt, std::vector<EventHandler>>> m_EventHandler;
+		std::unordered_map<DWORD, std::map<nInt, std::unordered_set<EventHandler>>> m_EventHandler;
 		n2dEngineImpl* m_pEngine;
 	};
 
@@ -125,8 +124,10 @@ public:
 	///	@brief	获得窗口
 	n2dWindow* GetWindow() override
 	{ return &m_Window; }
-	n2dRenderDevice* GetRenderDevice() override
-	{ return m_pRenderer; }
+
+	n2dRenderDevice* GetRenderDevice() override;
+	n2dSoundSys* GetSoundSys() override;
+
 	n2dEngineEventListener* GetListener() override
 	{ return m_pListener; }
 
@@ -172,6 +173,7 @@ private:
 	ThreadMode				m_ThreadMode;
 
 	n2dRenderDevice*		m_pRenderer;
+	n2dSoundSys*			m_pSoundSys;
 
 	///	@brief	当前按键状况
 	///	@note	仅当当前窗口激活时有效

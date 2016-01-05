@@ -688,12 +688,15 @@ public:
 	n2dShaderProgram* GetDefaultProgram() const override;
 
 	GLuint GetAvailableBindPoint();
-	void ReleaseBindPoint(GLuint BindPoint);
+	void UseBindingPoint(GLuint BindingPoint);
+	void ReleaseBindingPoint(GLuint BindingPoint);
 private:
-	std::unordered_set<nuInt> m_AvailableBindPoint;
+	std::unordered_set<nuInt> m_AvailableBindingPoint;
 	std::unordered_map<GLhandle, natRefPointer<n2dShaderProgramImpl>> m_Programs;
 	std::unordered_map<GLhandle, natRefPointer<n2dProgramPipelineImpl>> m_ProgramPipelines;
 
 	n2dRenderDevice* m_pRenderDevice;
 	n2dShaderProgramImpl* m_DefaultProgram;
+
+	nuInt m_MaxBindingPoint;
 };

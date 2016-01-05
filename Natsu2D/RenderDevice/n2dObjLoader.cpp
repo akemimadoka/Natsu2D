@@ -16,9 +16,9 @@ n2dObjLoader::n2dObjLoader()
 
 n2dObjLoader::n2dObjLoader(ncTStr filename)
 {
-	if (!LoadFromFile(filename))
+	if (!CreateStaticModelFromFile(filename, nullptr))
 	{
-		throw natException(_T("n2dObjLoader::n2dObjLoader"), natUtil::FormatString(_T("Load object model \"%s\" failed"), filename));
+		throw natException(_T("n2dObjLoader::n2dObjLoader"), natUtil::FormatString(_T("Load object model \"%s\" failed"), filename).c_str());
 	}
 }
 
@@ -27,16 +27,16 @@ n2dObjLoader::~n2dObjLoader()
 	init();
 }
 
-nResult n2dObjLoader::LoadFromFile(ncTStr lpPath)
+nResult n2dObjLoader::CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut)
 {
 	natStream* tpStream = new natFileStream(lpPath, true, false);
-	nResult tRet = LoadFromStream(tpStream);
+	nResult tRet = CreateStaticModelFromStream(tpStream, pOut);
 	SafeRelease(tpStream);
 
 	return tRet;
 }
 
-nResult n2dObjLoader::LoadFromStream(natStream* pStream)
+nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut)
 {
 	init();
 

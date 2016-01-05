@@ -3,6 +3,7 @@
 #include <natStream.h>
 #include "n2dFPSControllerImpl.h"
 #include "..\RenderDevice\n2dRenderDeviceImpl.h"
+#include "..\Sound\n2dSoundSysImpl.h"
 #include "..\n2dCommon.h"
 #include "..\RenderDevice\OpenGL.h"
 #include "natLog.h"
@@ -51,6 +52,36 @@ namespace n2dGlobal
 	///	@brief	异常事件
 	///	@note	data为natException，不可取消
 	natEvent<natException*> EventException(nullptr, false);
+
+	extern ncTStr Logfile;
+
+	extern "C"
+	{
+		void N2DFUNC SetLogFile(ncTStr Path)
+		{
+			Logfile = Path;
+		}
+
+		void N2DFUNC LogMsg(ncTStr Str)
+		{
+			natLog::GetInstance().LogMsg(Str);
+		}
+
+		void N2DFUNC LogWarn(ncTStr Str)
+		{
+			natLog::GetInstance().LogWarn(Str);
+		}
+
+		void N2DFUNC LogErr(ncTStr Str)
+		{
+			natLog::GetInstance().LogErr(Str);
+		}
+
+		void N2DFUNC RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func)
+		{
+			natLog::GetInstance().RegisterLogUpdateEventFunc(func);
+		}
+	}
 
 #ifndef Natsu2DStatic
 	HMODULE hDll;
@@ -105,6 +136,26 @@ void n2dEngineImpl::Show(nBool show)
 	m_Window.Show(show);
 }
 
+n2dRenderDevice* n2dEngineImpl::GetRenderDevice()
+{
+	if (!m_pRenderer)
+	{
+		m_pRenderer = new n2dRenderDeviceImpl(this);
+	}
+
+	return m_pRenderer;
+}
+
+n2dSoundSys * n2dEngineImpl::GetSoundSys()
+{
+	if (!m_pSoundSys)
+	{
+		m_pSoundSys = new n2dSoundSysImpl(this);
+	}
+
+	return m_pSoundSys;
+}
+
 n2dEngineImpl::ThreadMode n2dEngineImpl::GetThreadMode() const
 {
 	return m_ThreadMode;
@@ -129,7 +180,7 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	m_ResizeDraw(false),
 	m_hInstance(hInstance),
 	m_ThreadMode(threadMode),
-	m_pRenderer(nullptr),
+	m_pRenderer(nullptr), m_pSoundSys(nullptr),
 	m_EventMSG(this)
 {
 	if (!m_pListener)
@@ -155,16 +206,12 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	{
 		throw natException(_T("n2dEngineImpl::n2dEngineImpl"), _T("Failed to register window"));
 	}
-
-	m_pRenderer = new n2dRenderDeviceImpl(this);
 }
 
 n2dEngineImpl::~n2dEngineImpl()
 {
-	if (m_pRenderer)
-	{
-		delete m_pRenderer;
-	}
+	SafeRelease(m_pRenderer);
+	SafeRelease(m_pSoundSys);
 }
 
 nBool n2dEngineImpl::IsKeyPressed(nuInt Key) const
@@ -329,7 +376,7 @@ void n2dEngineImpl::CommonInit()
 	glewExperimental = true;
 	if ((tRet = glewInit()) != GLEW_OK)
 	{
-		throw natException(_T("n2dGlobal::InitGlew"), natUtil::FormatString(_T("GLEW initializing failed, id=%d, description:%s"), tRet, reinterpret_cast<const char *>(glewGetErrorString(tRet))));
+		throw natException(_T("n2dGlobal::InitGlew"), natUtil::FormatString(_T("GLEW initializing failed, id=%d, description:%s"), tRet, reinterpret_cast<const char *>(glewGetErrorString(tRet))).c_str());
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -358,7 +405,7 @@ void n2dEngineImpl::CommonInit()
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 		if (!pShader[0]->Compiled())
 		{
-			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog()));
+			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog()).c_str());
 		}
 		SafeRelease(pStream);
 
@@ -366,7 +413,7 @@ void n2dEngineImpl::CommonInit()
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
 		if (!pShader[1]->Compiled())
 		{
-			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog()));
+			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog()).c_str());
 		}
 		SafeRelease(pStream);
 
@@ -376,7 +423,7 @@ void n2dEngineImpl::CommonInit()
 		pProgram->Link();
 		if (!pProgram->IsLinked())
 		{
-			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Link DefaultShaderProgram Failed, Log: %s"), pProgram->GetInfoLog()));
+			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Link DefaultShaderProgram Failed, Log: %s"), pProgram->GetInfoLog()).c_str());
 		}
 		pProgram->Use();
 
@@ -479,6 +526,7 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 	{
 		TerminateApplication();
 	}
+
 
 	while (m_IsProgramLooping)
 	{
@@ -707,28 +755,8 @@ n2dEngineImpl::WndMsgEventImpl::~WndMsgEventImpl()
 nuInt n2dEngineImpl::WndMsgEventImpl::Register(EventHandler func, DWORD WndMsg, nInt priority)
 {
 	auto& vec = m_EventHandler[WndMsg][priority];
-	vec.push_back(func);
+	vec.insert(func);
 	return vec.size() - 1u;
-}
-
-nBool n2dEngineImpl::WndMsgEventImpl::Unregister(nuInt HandlerIndex, DWORD WndMsg, nInt Priority)
-{
-	auto itea = m_EventHandler.find(WndMsg);
-	if (itea != m_EventHandler.end())
-	{
-		auto itea1 = itea->second.find(Priority);
-		if (itea1 != itea->second.end())
-		{
-			auto& vec = itea1->second;
-			if (HandlerIndex < vec.size())
-			{
-				vec.erase(vec.begin() + HandlerIndex);
-				return true;
-			}
-		}
-	}
-	
-	return false;
 }
 
 void n2dEngineImpl::WndMsgEventImpl::Unregister(DWORD WndMsg, EventHandler Handler)
@@ -736,11 +764,7 @@ void n2dEngineImpl::WndMsgEventImpl::Unregister(DWORD WndMsg, EventHandler Handl
 	auto itea = m_EventHandler[WndMsg];
 	for each (auto itea2 in itea)
 	{
-		std::vector<EventHandler>::iterator itea3;
-		while ((itea3 = std::find(itea2.second.begin(), itea2.second.end(), Handler)) != itea2.second.end())
-		{
-			itea2.second.erase(itea3);
-		}
+		itea2.second.erase(Handler);
 	}
 }
 

@@ -1,16 +1,16 @@
-#version 430 core
+#version 450 core
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
 layout(location = 1) in vec2 vertexUV;
 layout(location = 2) in vec3 vertexNormal_modelspace;
 
-layout(std430, binding = 0) buffer DebugBuffer
+layout(std430, binding = 3) buffer DebugBuffer
 {
-	int first;
-	vec3 vert;
+	vec4 vert;
 	vec2 uv;
 	vec3 normal;
+	mat4 m;
 };
 
 // Output data ; will be interpolated for each fragment.
@@ -27,7 +27,11 @@ out vec3 EyeDirection_cameraspace;
 out vec3 LightDirection_cameraspace;
 
 // Values that stay constant for the whole mesh.
-uniform mat4 MVP;
+layout(binding = 0) uniform InternalData
+{
+	mat4 MVP;
+};
+
 uniform mat4 V;
 uniform mat4 M;
 uniform vec3 LightPosition_worldspace;
@@ -46,6 +50,10 @@ void main()
 	// Output position of the vertex, in clip space : MVP * position
 	//gl_Position = positionShader();
 	gl_Position = MVP * vec4(vertexPosition_modelspace, 1.0f);
+	vert = gl_Position;
+	uv = vertexUV;
+	normal = vertexNormal_modelspace;
+	m = MVP;
 	
 	// Position of the vertex, in worldspace : M * position
 	Position_worldspace = (M * vec4(vertexPosition_modelspace,1)).xyz;

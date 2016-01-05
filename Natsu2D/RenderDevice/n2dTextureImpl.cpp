@@ -1,76 +1,75 @@
 #include "n2dTextureImpl.h"
-#include "..\n2dCommon.h"
-#include "OpenGL.h"
 #include "..\include\CxImage\ximage.h"
 #include "..\extern\nv_dds\nv_dds.h"
-#include <algorithm>
-#include <memory>
 #include <natStream.h>
+#include <natLog.h>
 
-n2dImage* LoadPicture(natRefPointer<natStream> const& pStream, DWORD dTypeId)
+namespace
 {
-	pStream->Lock();
-	pStream->SetPosition(NatSeek::Beg, 0l);
-	nLen lSize = pStream->GetSize();
-	nData pBuf = new nByte[static_cast<nuInt>(lSize)];
-	if (pStream->ReadBytes(pBuf, lSize) != lSize || pStream->GetLastErr() != NatErr_OK)
+	n2dImage* LoadPicture(natRefPointer<natStream> const& pStream, DWORD dTypeId)
 	{
+		pStream->Lock();
+		//pStream->SetPosition(NatSeek::Beg, 0l);
+		nLen lSize = pStream->GetSize() - pStream->GetPosition();
+		nData pBuf = new nByte[static_cast<nuInt>(lSize)];
+		if (pStream->ReadBytes(pBuf, lSize) != lSize || pStream->GetLastErr() != NatErr_OK)
+		{
+			SafeDelArr(pBuf);
+			return nullptr;
+		}
+		pStream->Unlock();
+
+		CxImage ci(pBuf, static_cast<DWORD>(lSize), dTypeId);
+
+		n2dImage* retimage = new n2dImage;
+
+		retimage->width = ci.GetWidth();
+		retimage->height = ci.GetHeight();
+		auto colorType = ci.GetColorType();
+		switch (colorType)
+		{
+		case 2:
+			retimage->PixelFormat = GL_RGB;
+			retimage->InternalFormat = GL_RGB;
+			break;
+		case 4:
+			retimage->PixelFormat = GL_RGBA;
+			retimage->InternalFormat = GL_RGBA;
+			break;
+		default:
+			delete retimage;
+			return nullptr;
+		}
+
+		nByte* tmpbuf = nullptr;
+		long lRet;
+		ci.Encode2RGBA(tmpbuf, lRet, true);
+
+		retimage->data = new nByte[lRet];
+		memcpy_s(retimage->data, lRet, tmpbuf, lRet);
+		retimage->length = lRet;
+
+		ci.FreeMemory(tmpbuf);
 		SafeDelArr(pBuf);
-		return nullptr;
+
+		return retimage;
 	}
-	pStream->Unlock();
 
-	CxImage ci(pBuf, static_cast<DWORD>(lSize), dTypeId);
-
-	n2dImage* retimage = new n2dImage;
-
-	retimage->width = ci.GetWidth();
-	retimage->height = ci.GetHeight();
-	auto colorType = ci.GetColorType();
-	if (colorType == 2)
+	nv_dds::CDDSImage* LoadDDSData(natRefPointer<natStream> const& pStream)
 	{
-		retimage->PixelFormat = GL_RGB;
-		retimage->Channels = 3;
+		nv_dds::CDDSImage* image = new nv_dds::CDDSImage;
+
+		if (!image->load(pStream))
+		{
+			delete image;
+			return nullptr;
+		}
+
+		return image;
 	}
-	else if (colorType == 4)
-	{
-		retimage->PixelFormat = GL_RGBA;
-		retimage->Channels = 4;
-	}
-	else
-	{
-		delete retimage;
-		return nullptr;
-	}
-
-	nByte* tmpbuf = nullptr;
-	long lRet;
-	ci.Encode2RGBA(tmpbuf, lRet, true);
-
-	retimage->data = new nByte[lRet];
-	memcpy_s(retimage->data, lRet, tmpbuf, lRet);
-	retimage->length = lRet;
-
-	ci.FreeMemory(tmpbuf);
-	SafeDelArr(pBuf);
-
-	return retimage;
 }
 
-nv_dds::CDDSImage* LoadDDSData(natRefPointer<natStream> const& pStream)
-{
-	nv_dds::CDDSImage* image = new nv_dds::CDDSImage;
-
-	if (!image->load(pStream))
-	{
-		delete image;
-		return nullptr;
-	}
-
-	return image;
-}
-
-n2dTexture2DImpl::n2dTexture2DImpl(): m_TextureID(UINT_MAX)
+n2dTexture2DImpl::n2dTexture2DImpl() : m_TextureID(0u)
 {
 }
 
@@ -82,14 +81,27 @@ n2dTexture2DImpl::~n2dTexture2DImpl()
 nBool n2dTexture2DImpl::LoadTexture(nTString const& filename)
 {
 	auto tName = filename.substr(filename.find_last_of(_T('.')) + 1u);
-	natFileStream* pStream = new natFileStream(filename.c_str(), true, false);
 
-	if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
+	try
 	{
-		return LoadDDS(pStream);
-	}
+		natFileStream* pStream = new natFileStream(filename.c_str(), true, false);
 
-	return LoadTexture(pStream, CxImage::GetTypeIdFromName(tName.c_str()));
+		if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
+		{
+			return LoadDDS(pStream);
+		}
+
+		return LoadTexture(pStream, CxImage::GetTypeIdFromName(tName.c_str()));
+	}
+	catch (natException& e)
+	{
+		natLog::GetInstance().LogErr(natUtil::FormatString(_T("Exception caught during loading texture \"%s\", in %s, desc : %s"), filename.c_str(), e.GetSource(), e.GetDesc()).c_str());
+		return false;
+	}
+	catch (...)
+	{
+		return false;
+	}
 }
 
 nBool n2dTexture2DImpl::LoadTexture(natStream* pStream, DWORD dwFileType)
@@ -107,7 +119,7 @@ nBool n2dTexture2DImpl::LoadTexture(const std::shared_ptr<n2dImage>& image)
 	glGenTextures(1, &m_TextureID);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, image->PixelFormat, image->width, image->height, 0, image->PixelFormat, GL_UNSIGNED_BYTE, image->data);
+	glTexImage2D(GL_TEXTURE_2D, 0, image->InternalFormat, image->width, image->height, 0, image->PixelFormat, GL_UNSIGNED_BYTE, image->data);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -146,6 +158,8 @@ nBool n2dTexture2DImpl::LoadDDS(natStream* pStream)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	image->clear();
 
 	return true;
 }

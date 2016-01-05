@@ -86,6 +86,7 @@ enum NatErr
 	NatErr_InvalidArg	=	NATMAKEERR(3),	///< @brief	无效参数
 	NatErr_InternalErr	=	NATMAKEERR(4),	///< @brief	内部错误
 	NatErr_OutOfRange	=	NATMAKEERR(5),	///< @brief	超出范围
+	NatErr_NotImpl		=	NATMAKEERR(6),	///< @brief	未实现
 };
 
 ///	@}

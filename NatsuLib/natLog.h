@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "natEvent.h"
-#include "..\NatsuLib\natType.h"
+#include "natType.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	日志类实现
@@ -30,46 +30,46 @@ public:
 	static natLog& GetInstance();
 	
 	template <typename ...Arg>
-	void LogMsg(nTString const& Msg, Arg &&... arg);
+	void LogMsg(ncTStr Msg, Arg &&... arg);
 
 	///	@brief	记录信息
-	void LogMsg(nTString const& Msg);
+	void LogMsg(ncTStr Msg);
 
 	template <typename ...Arg>
-	void LogErr(nTString const& Err, Arg &&... arg);
+	void LogErr(ncTStr Err, Arg &&... arg);
 
 	///	@brief	记录错误
-	void LogErr(nTString const& Err);
+	void LogErr(ncTStr Err);
 
 	template <typename ...Arg>
-	void LogWarn(nTString const& Warn, Arg &&... arg);
+	void LogWarn(ncTStr Warn, Arg &&... arg);
 
 	///	@brief	记录警告
-	void LogWarn(nTString const& Warn);
+	void LogWarn(ncTStr Warn);
 
 	template <typename ...Arg>
-	void Log(LogType type, nTString const& content, Arg &&... arg);
+	void Log(LogType type, ncTStr content, Arg &&... arg);
 
 	///	@brief	记录
-	void Log(LogType type, nTString const& content);
+	void Log(LogType type, ncTStr content);
 
 	///	@brief	获得日志文件名
-	nTString GetLogFile() const;
+	ncTStr GetLogFile() const;
 
 	///	@brief	获得最新日志
-	nTString GetLastLog() const;
+	ncTStr GetLastLog() const;
 
 	///	@brief	注册日志更新事件处理函数
-	void RegisterLogUpdateEventFunc(natEvent<nTString>::EventHandle func);
+	void RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func);
 private:
-	explicit natLog(nTString const& logfile);
+	explicit natLog(ncTStr const& logfile);
 	~natLog();
 
 	nTString m_LogFile;
 	std::basic_ofstream<nTChar> m_fstr;
 	nTString m_LastLog;
 
-	natEvent<nTString> EventLogUpdate;
+	natEvent<ncTStr> EventLogUpdate;
 
-	static ncWStr ParseLogType(LogType logtype);
+	static ncTStr ParseLogType(LogType logtype);
 };

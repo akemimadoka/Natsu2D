@@ -134,6 +134,11 @@ public:
 		return m_pPointer;
 	}
 
+	T* Get() const
+	{
+		return m_pPointer;
+	}
+
 	template <typename P>
 	operator natRefPointer<P>() const
 	{

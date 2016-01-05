@@ -1,10 +1,57 @@
-#version 430 core
+#version 450 core
 
 /*uniform float     u_time;
 
 const float step_w = 0.0015625;
 const float step_h = 0.0027778;
 const float maxW   = 0.01;*/
+
+struct LightProperties
+{
+	bool isEnabled;
+	bool isLocal;
+	bool isSpot;
+	vec3 ambient;
+	vec3 color;
+	vec3 position;
+	vec3 halfVector;
+	vec3 coneDirection;
+	float spotCosCutoff;
+	float spotExponent;
+	float constantAttenuation;
+	float linearAttenuation;
+	float quadraticAttenuation;
+};
+
+struct MaterialProperties
+{
+	vec4 Diffuse;
+	vec4 Specular;
+	vec4 Ambient;
+	vec4 Emission;
+	float Shininess;
+	float Strength;
+};
+
+const int MaxLights = 10;
+
+const float Shininess = 1.0f;
+const float Strength = 1.0f;
+
+// Values that stay constant for the whole mesh.
+
+layout(std140, binding = 1) uniform Light
+{
+	LightProperties Lights[MaxLights];
+};
+
+layout(std140, binding = 2) uniform Mater
+{
+	MaterialProperties Material;
+};
+
+uniform sampler2D TextureSampler;
+uniform vec3 LightPosition_worldspace;
 
 // Interpolated values from the vertex shaders
 in vec2 UV;
@@ -16,17 +63,80 @@ in vec3 LightDirection_cameraspace;
 // Output data
 out vec4 color;
 
-// Values that stay constant for the whole mesh.
-uniform sampler2D TextureSampler;
-uniform vec3 LightPosition_worldspace;
-
 void main()
 {
+	vec3 scatteredLight = vec3(0.0f);
+	vec3 reflectedLight = vec3(0.0f);
+
+	for (int i = 0; i < MaxLights; ++i)
+	{
+		if (!Lights[i].isEnabled)
+		{
+			continue;
+		}
+
+		vec3 halfVector;
+		vec3 lightDirection = Lights[i].position;
+		float attenuation = 1.0f;
+
+		if (Lights[i].isLocal)
+		{
+			lightDirection -= vec3(Position_worldspace);
+			float lightDistance = length(lightDirection);
+			lightDirection /= lightDistance;
+
+			attenuation /=
+				Lights[i].constantAttenuation
+				+ Lights[i].linearAttenuation 	* lightDistance
+				+ Lights[i].quadraticAttenuation* lightDistance * lightDistance;
+
+			if (Lights[i].isSpot)
+			{
+				float spotCos = dot(lightDirection, -Lights[i].coneDirection);
+
+				if (spotCos < Lights[i].spotCosCutoff)
+				{
+					attenuation = 0.0f;
+				}
+				else
+				{
+					attenuation *= pow(spotCos, Lights[i].spotExponent);
+				}
+			}
+
+			halfVector = normalize(lightDirection + EyeDirection_cameraspace);
+		}
+		else
+		{
+			halfVector = Lights[i].halfVector;
+		}
+
+		float diffuse = max(0.0f, dot(Normal_cameraspace, lightDirection));
+		float specular = max(0.0f, dot(Normal_cameraspace, halfVector));
+
+		if (diffuse == 0.0f)
+		{
+			specular = 0.0f;
+		}
+		else
+		{
+			specular = pow(specular, Shininess) * Strength;
+		}
+
+		scatteredLight += 	Lights[i].ambient * attenuation +
+							Lights[i].color * diffuse * attenuation;
+
+		reflectedLight +=	Lights[i].color * specular * attenuation;
+	}
+
+	vec4 TexColor = texture2D( TextureSampler, UV ).rgba;
+	color = vec4(min(TexColor.rgb * scatteredLight + reflectedLight, vec3(1.0f)), TexColor.a);
+
     // Output color = color of the texture at the specified UV
 
     // Light emission properties
 	// You probably want to put them as uniforms
-	vec4 LightColor = vec4(1,1,1,1);
+	/*vec4 LightColor = vec4(1,1,1,1);
 	float LightPower = 2000.0f;
 	
 	// Material properties
@@ -72,7 +182,7 @@ void main()
 		// Diffuse : "color" of the object
 		MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +
 		// Specular : reflective highlight, like a mirror
-		MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
+		MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);*/
 
 	//color = texture2D(myTextureSampler, UV).rgba;
 	//color = vec4(color.r, color.r, color.r, 1);

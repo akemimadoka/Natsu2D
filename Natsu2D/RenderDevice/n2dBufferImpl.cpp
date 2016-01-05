@@ -18,7 +18,7 @@ n2dBufferImpl::n2dBufferImpl(BufferTarget DefaultTarget, n2dShaderWrapperImpl* p
 
 n2dBufferImpl::~n2dBufferImpl()
 {
-	m_pShaderWrapper->ReleaseBindPoint(m_BindPoint);
+	m_pShaderWrapper->ReleaseBindingPoint(m_BindPoint);
 	glDeleteBuffers(1, &m_Buffer);
 }
 
@@ -51,10 +51,11 @@ void n2dBufferImpl::BindBase(nuInt BindingPoint)
 {
 	if (m_BindPoint != std::numeric_limits<GLuint>::max())
 	{
-		m_pShaderWrapper->ReleaseBindPoint(m_BindPoint);
+		m_pShaderWrapper->ReleaseBindingPoint(m_BindPoint);
 	}
 
 	m_BindPoint = BindingPoint;
+	m_pShaderWrapper->UseBindingPoint(BindingPoint);
 	BindBase();
 }
 
@@ -67,7 +68,7 @@ void n2dBufferImpl::BindRange(nuInt BindingPoint, nInt Offset, nuInt size)
 {
 	if (m_BindPoint != std::numeric_limits<GLuint>::max())
 	{
-		m_pShaderWrapper->ReleaseBindPoint(m_BindPoint);
+		m_pShaderWrapper->ReleaseBindingPoint(m_BindPoint);
 	}
 
 	m_BindPoint = BindingPoint;
@@ -78,28 +79,28 @@ void n2dBufferImpl::AllocData(nuInt Size, ncData pInitData, BufferUsage Usage)
 {
 	Bind();
 	glBufferData(m_Target, Size, pInitData, GetBufferUsage(Usage));
-	glGetIntegerv(GL_BUFFER_SIZE, reinterpret_cast<GLint*>(m_Size));
+	glGetBufferParameteriv(m_Target, GL_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_Size));
 }
 
 void n2dBufferImpl::AllocSubData(nuInt Offset, nuInt Size, ncData pData)
 {
 	Bind();
 	glBufferSubData(m_Target, Offset, Size, pData);
-	glGetIntegerv(GL_BUFFER_SIZE, reinterpret_cast<GLint*>(m_Size));
+	glGetBufferParameteriv(m_Target, GL_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_Size));
 }
 
 void n2dBufferImpl::ClearData(InternalFormat internalFormat, GLenum Format, GLenum Type, ncData pData)
 {
 	Bind();
 	glClearBufferData(m_Target, GetInternalFormat(internalFormat), Format, Type, pData);
-	glGetIntegerv(GL_BUFFER_SIZE, reinterpret_cast<GLint*>(m_Size));
+	glGetBufferParameteriv(m_Target, GL_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_Size));
 }
 
 void n2dBufferImpl::ClearSubData(InternalFormat internalFormat, nuInt Offset, nuInt Size, GLenum Format, GLenum Type, ncData pData)
 {
 	Bind();
 	glClearBufferSubData(m_Target, GetInternalFormat(internalFormat), Offset, Size, Format, Type, pData);
-	glGetIntegerv(GL_BUFFER_SIZE, reinterpret_cast<GLint*>(m_Size));
+	glGetBufferParameteriv(m_Target, GL_BUFFER_SIZE, reinterpret_cast<GLint*>(&m_Size));
 }
 
 void n2dBufferImpl::CopySubDataTo(BufferTarget Target, nuInt ReadOffset, nuInt WriteOffset, nuInt Size)

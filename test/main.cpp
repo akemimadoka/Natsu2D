@@ -4,10 +4,16 @@
 #include <iostream>
 #include <sstream>
 
+#include <sqrat.h>
+#include <sqstdsystem.h>
+#include <sqstdstring.h>
+#include <sqstdblob.h>
+#include <sqstdmath.h>
+
 #include "resource.h"
 
 //#define Natsu2DStatic 1
-#include "..\Natsu2D\Natsu2D.h"
+#include <Natsu2D.h>
 
 #ifdef _DEBUG
 #	ifdef Natsu2DStatic
@@ -16,7 +22,6 @@
 #		pragma comment (lib, "../Natsu2D/bin/Natsu2D_d.lib")
 #	endif
 #	pragma comment (lib, "../NatsuLib/bin/NatsuLib_d.lib")
-#	pragma comment (lib, "../Natsu2D/extern/glew/bin/Debug/glew.lib")
 #else
 #	ifdef Natsu2DStatic
 #		pragma comment (lib, "../Natsu2D/bin/Natsu2D_s.lib")
@@ -24,29 +29,48 @@
 #		pragma comment (lib, "../Natsu2D/bin/Natsu2D.lib")
 #	endif
 #	pragma comment (lib, "../NatsuLib/bin/NatsuLib.lib")
-#	pragma comment (lib, "../Natsu2D/extern/glew/bin/Release/glew.lib")
 #endif
-
-#pragma comment (lib, "opengl32.lib")
 
 #include <n2dFont.h>
 
 #include <n2dCommon.h>
-#include <n2dFPSController.h>
 #include <n2dRenderDevice.h>
 #include <n2dGraphics.h>
 #include <n2dUtil.h>
-#include <n2dTexture.h>
 #include <n2dModel.h>
 
 #include <natException.h>
 #include <natMath.h>
-#include <natLog.h>
 #include <natStream.h>
+#include <natStopWatch.h>
 
 #pragma endregion
 
 void custom_invalid_parameter(ncTStr expression, ncTStr function, ncTStr file, nuInt line, uintptr_t pReserved);
+
+struct DebugBuffer
+{
+	natVec4<> vert;
+	natVec2<> uv;
+	natVec3<> normal;
+	natMat4<> mvp;
+};
+
+void printfunc(HSQUIRRELVM, const SQChar *s, ...)
+{
+	va_list vl;
+	va_start(vl, s);
+	n2dGlobal::LogMsg(natUtil::FormatStringv(s, vl).c_str());
+	va_end(vl);
+}
+
+void errorfunc(HSQUIRRELVM, const SQChar *s, ...)
+{
+	va_list vl;
+	va_start(vl, s);
+	n2dGlobal::LogErr(natUtil::FormatStringv(s, vl).c_str());
+	va_end(vl);
+}
 
 ///	@brief	测试用App类
 ///	@note	仅用于测试
@@ -106,8 +130,29 @@ public:
 
 	static void KeyDown(n2dEngine::WndMsgEvent& e)
 	{
+		test* pTest = dynamic_cast<test*>(e.GetEngine()->GetListener());
 		switch (e.Data.wParam)
 		{
+		case VK_RETURN:
+		{
+			auto state = pTest->m_soundsrc->GetState();
+			switch (state)
+			{
+			case n2dSoundSource::SourceState::Initial:
+			case n2dSoundSource::SourceState::Paused:
+				pTest->m_soundsrc->Play();
+				break;
+			case n2dSoundSource::SourceState::Playing:
+				pTest->m_soundsrc->Pause();
+				break;
+			case n2dSoundSource::SourceState::Stopped:
+				pTest->m_soundsrc->Rewind();
+				break;
+			default:
+				break;
+			}
+			break;
+		}
 		case VK_F1:
 			e.GetEngine()->ToggleFullscreen();
 			break;
@@ -128,47 +173,69 @@ public:
 			throw natException(_T("test::test"), _T("Failed to create Natsu2D engine"));
 		}
 
-		m_pEngine->GetRenderDevice()->CreateGraphics2D(&m_pGraphics);
-		m_pEngine->GetRenderDevice()->CreateTexture(&m_texture);
-		m_pEngine->GetRenderDevice()->CreateTexture(&m_texture2);
-		m_pEngine->GetRenderDevice()->CreateTexture(&m_texture3);
-		m_pEngine->GetRenderDevice()->CreateModelLoader(&m_model);
-		m_pEngine->GetRenderDevice()->CreateModelLoader(&m_model2);
-		m_pEngine->GetRenderDevice()->CreateModelLoader(&m_model3);
-
 		//n2dGlobal::pCurrentApp = m_pEngine;
 		m_pEngine->MainLoop(_T("夏之幻想"), 6000u);
 	}
 	~test()
 	{
-
 	}
 
 	nBool EngineInit() override
 	{
+		// 脚本初始化
+		// 语言是Squirrel
+		HSQUIRRELVM vm = sq_open(1024);
+		sqstd_seterrorhandlers(vm);
+		sq_setprintfunc(vm, printfunc, errorfunc);
+
+		sq_pushroottable(vm);
+
+		sqstd_register_systemlib(vm);
+		sqstd_register_iolib(vm);
+		sqstd_register_stringlib(vm);
+		sqstd_register_bloblib(vm);
+		sqstd_register_mathlib(vm);
+
+		Sqrat::DefaultVM::Set(vm);
+
+		Sqrat::Script script;
+		script.CompileFile(_SC(R"(script\boot.nut)"));
+		script.Run();
+
 		return true;
 	}
 
 	void EngineUninit() override
 	{
-
+		sq_close(Sqrat::DefaultVM::Get());
+		n2dGlobal::LogMsg(_T("GLAPP quit"));
 	}
-
-	struct Test
-	{
-		int first;
-		n2dGraphics3DVertex vert;
-	};
 
 	nBool WindowInit() override
 	{
-		if (!m_pGraphics3D)
+		static bool inited = false;
+		n2dRenderDevice* renderdevice = m_pEngine->GetRenderDevice();
+
+		if (!inited)
 		{
-			m_pEngine->GetRenderDevice()->CreateGraphics3D(&m_pGraphics3D);
+			inited = true;
+			renderdevice->CreateGraphics2D(&m_pGraphics);
+			renderdevice->CreateTexture(&m_texture);
+			renderdevice->CreateTexture(&m_texture2);
+			renderdevice->CreateTexture(&m_texture3);
+			renderdevice->CreateModelLoader(&m_modelloader);
+			// 用于调试的缓存
+			renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, &m_DebugBuffer);
+			renderdevice->CreateMotionManager(&m_MotionManager);
 		}
 
-		natLog::GetInstance().LogMsg(n2dUtil::FormatString(TEXT("GLAPP initialized as %s thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? TEXT("single") : TEXT("multi"))));
-		natLog::GetInstance().LogMsg(_T("GLAPP start initializing"));
+		if (!m_pGraphics3D)
+		{
+			renderdevice->CreateGraphics3D(&m_pGraphics3D);
+		}
+		
+		n2dGlobal::LogMsg(n2dUtil::FormatString(_T("GLAPP initialized as %s thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
+		n2dGlobal::LogMsg(_T("GLAPP start initializing"));
 		m_Mutex = CreateMutex(NULL, FALSE, _T("GLAPP"));
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
@@ -181,7 +248,6 @@ public:
 		}
 
 		n2dWindow* window = m_pEngine->GetWindow();
-		n2dRenderDevice* renderdevice = m_pEngine->GetRenderDevice();
 
 		if (!window->FullScreen)
 		{
@@ -193,8 +259,9 @@ public:
 
 		SetActiveWindow(window->GetWnd());
 
-		renderdevice->SetSwapInterval(1u);
+		renderdevice->SetSwapInterval(0u);
 
+		//renderdevice->DisableCapability(n2dRenderDevice::Capability::Blend);
 		renderdevice->EnableCapability(n2dRenderDevice::Capability::Blend);
 		renderdevice->SetBlendMode(n2dRenderDevice::BlendFactor::SrcAlpha, n2dRenderDevice::BlendFactor::OneMinusSrcAlpha);
 
@@ -205,7 +272,15 @@ public:
 		sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 		if (!pShader[0]->Compiled())
 		{
-			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Compile Shader0 Failed, Log: %s"), pShader[0]->GetInfoLog()));
+			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Compile Shader0 Failed, Log: %s"), pShader[0]->GetInfoLog()).c_str());
+		}
+		else
+		{
+			ncTStr pLog = pShader[0]->GetInfoLog();
+			if (_tcslen(pLog) > 1)
+			{
+				n2dGlobal::LogWarn(natUtil::FormatString(_T("Compile0Log: %s"), pLog).c_str());
+			}
 		}
 
 		SafeRelease(pStream);
@@ -213,7 +288,15 @@ public:
 		sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
 		if (!pShader[1]->Compiled())
 		{
-			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Compile Shader1 Failed, Log: %s"), pShader[1]->GetInfoLog()));
+			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Compile Shader1 Failed, Log: %s"), pShader[1]->GetInfoLog()).c_str());
+		}
+		else
+		{
+			ncTStr pLog = pShader[1]->GetInfoLog();
+			if (_tcslen(pLog) > 1)
+			{
+				n2dGlobal::LogWarn(natUtil::FormatString(_T("Compile1Log: %s"), pLog).c_str());
+			}
 		}
 
 		SafeRelease(pStream);
@@ -223,7 +306,15 @@ public:
 		sp->Link();
 		if (!sp->IsLinked())
 		{
-			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Link ShaderProgram Failed, Log: %s"), sp->GetInfoLog()));
+			throw natException(_T("test::WindowInit"), natUtil::FormatString(_T("Link ShaderProgram Failed, Log: %s"), sp->GetInfoLog()).c_str());
+		}
+		else
+		{
+			ncTStr pLog = sp->GetInfoLog();
+			if (_tcslen(pLog) > 1)
+			{
+				n2dGlobal::LogWarn(natUtil::FormatString(_T("LinkLog: %s"), pLog).c_str());
+			}
 		}
 
 		sp->Use();
@@ -234,7 +325,6 @@ public:
 		SafeRelease(pShader[0]);
 		SafeRelease(pShader[1]);
 
-		Matrix = sp->GetUniformReference(_T("MVP"));
 		/*posID = glGetSubroutineUniformLocation(programID, n2dShaderWrapperImpl::Vertex, "positionShader");
 		if (posID >= 0)
 		{
@@ -252,87 +342,34 @@ public:
 			SafeDelArr(indices);
 		}*/
 
-
 		ViewMatrix = sp->GetUniformReference(_T("V"));
 		ModelMatrix = sp->GetUniformReference(_T("M"));
 		Light = sp->GetUniformReference(_T("LightPosition_worldspace"));
-		//TimeID = glGetUniformLocation(programID, "Time");
-
-		n2dBuffer* pBuf = nullptr;
-		renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, &pBuf);
-		pBuf->AllocData(sizeof(Test), nullptr, n2dBuffer::BufferUsage::DynamicCopy);
-		pBuf->BindBase(0u);
-		/*glGenBuffers(1, &TestID);
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, TestID);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Test), nullptr, GL_DYNAMIC_COPY);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0u, TestID);*/
-
-		/*GLsizei length;
-		GLchar tmpName[10] = "";*/
-		/*glGetActiveUniformBlockName(programID, 0, 10, &length, tmpName);
-		GLuint Materid = glGetUniformBlockIndex(programID, "Mater");
-		GLuint Lightid = glGetUniformBlockIndex(programID, "Light");*/
-		
-		struct LightProperties
-		{
-			nBool isEnabled;
-			nBool isLocal;
-			nBool isSpot;
-			natVec3<> ambient;
-			natVec3<> color;
-			natVec3<> position;
-			natVec3<> halfVector;
-			natVec3<> coneDirection;
-			nFloat spotCosCutoff;
-			nFloat spotExponent;
-			nFloat constantAttenuation;
-			nFloat linearAttenuation;
-			nFloat quadraticAttenuation;
-		};
-
-		struct MaterialProperties
-		{
-			natVec4<> Diffuse;
-			natVec4<> Specular;
-			natVec4<> Ambient;
-			natVec4<> Emission;
-			nFloat Shininess;
-			nFloat Strength;
-		};
-
-		//glGetError();
-		/*n2dBuffer* pBuf = nullptr;
-		renderdevice->CreateBuffer(n2dBuffer::UniformBuffer, &pBuf);
-		pBuf->AllocData(sizeof(MaterialProperties), nullptr, n2dBuffer::StaticDraw);
-		glBindBufferBase(GL_UNIFORM_BUFFER, Materid, pBuf->GetBuffer());*/
-		//auto e = glGetError();
-		pStream = pBuf->MapBuffer(n2dBuffer::BufferAccess::WriteOnly);
-		MaterialProperties tm = { natVec4<>(), natVec4<>() ,natVec4<>() ,natVec4<>() ,1.0f,1.0f };
-		pStream->WriteBytes(reinterpret_cast<ncData>(&tm), sizeof(MaterialProperties));
-		pStream = nullptr;
-		pBuf->UnmapBuffer();
 		
 		m_pEngine->AddMessageHandler(MouseClick, WM_LBUTTONDOWN);
 		m_pEngine->AddMessageHandler(MouseMove, WM_MOUSEMOVE);
 		m_pEngine->AddMessageHandler(MouseWheel, WM_MOUSEWHEEL);
 		m_pEngine->AddMessageHandler(KeyDown, WM_KEYDOWN);
 
-		// Projection matrix : 45?Field of View, 4:3 ratio, display range : 0.1 unit <-> infinite units
 		renderdevice->SubmitProjMat(natTransform::perspective(45.0f, 4.0f / 3.0f, 0.1f));
-		// Camera matrix
 		renderdevice->SubmitViewMat(natTransform::lookAt(
-			natVec3<>(0, 100, 500), // Camera
-			natVec3<>(0, 0, 0), // looks at the origin
-			natVec3<>(0, 1, 0)  // Head
+			natVec3<>(0, 100, 500),
+			natVec3<>(0, 0, 0),
+			natVec3<>(0, 1, 0)
 			));
-		// Model matrix : an identity matrix (model will be at the origin)
 		renderdevice->SubmitModelMat(natMat4<>(1.0f));
 
-		/*GLuint light = glGetUniformBlockIndex(programID, "Lights");
-		GLuint lb = 0u;
-		glGenBuffers(1, &lb);
-		glBindBuffer(GL_UNIFORM_BUFFER, lb);*/
+		renderdevice->SetMaxLights(10u);
+		n2dLightController* pLight = renderdevice->GetLightController(0u);
+		auto prop = pLight->GetProperties();
+		prop.isEnabled = true;
+		prop.ambient = natVec3<>(0.0f, 0.0f, 0.0f);
+		prop.color = natVec3<>(1.0f, 1.0f, 1.0f);
+		prop.position = natVec3<>(100.f, 500.f, 0.f);
+		pLight->SetProperties(prop);
 
+		m_DebugBuffer->AllocData(sizeof(DebugBuffer), nullptr, n2dBuffer::BufferUsage::DynamicRead);
+		m_DebugBuffer->BindBase(3u);
 
 		//f->InitFont(renderdevice, _T("fz.ttf"), 32, 32);
 		//f->InitText(_T("23"), 2);
@@ -350,33 +387,55 @@ public:
 			throw natException(_T("test::WindowInit"), _T("Unable to load texture"));
 		}
 
-		MessageBox(window->GetWnd(), _T("即将开始加载模型，请等待\n按上下左右进行旋转，点击鼠标左键开始移动，滚动鼠标滚轮进行缩放"), _T("提示"), MB_OK | MB_ICONINFORMATION);
-		natLog::GetInstance().LogMsg(_T("Loading model"));
-		m_model2->SetDefaultTexture(m_texture);
-		if (NATFAIL(m_model2->LoadFromFile(_T("comb.obj"))))
+		n2dSoundSys* pSound = m_pEngine->GetSoundSys();
+		pStream = new natFileStream(_T("Lamb.wav"), true, false);
+		pSound->CreateWaveSoundBufferFromStream(pStream, &m_soundbuf);
+		SafeRelease(pStream);
+		pSound->CreateSoundSource(&m_soundsrc);
+		m_soundsrc->BindBuffer(m_soundbuf);
+		m_soundsrc->SetLooping(false);
+
+		//MessageBox(window->GetWnd(), _T("即将开始加载模型，请等待\n按上下左右进行旋转，点击鼠标左键开始移动，滚动鼠标滚轮进行缩放"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		n2dGlobal::LogMsg(_T("Loading model"));
+		//m_modelloader->SetDefaultTexture(m_texture);
+		//if (NATFAIL(m_modelloader->CreateStaticModelFromFile(_T("comb.obj"), &m_model2)))
+		if (NATFAIL(m_modelloader->CreateDynamicModelFromFile(_T("cirno.pmd"), &m_model2)))
 		{
-			throw natException(_T("test::WindowInit"), _T("Unable to load obj model"));
+			throw natException(_T("test::WindowInit"), _T("Unable to load model"));
 		}
 
-		m_model->SetDefaultTexture(m_texture2);
-		if (NATFAIL(m_model->LoadFromFile(_T("table.obj"))))
+		m_modelloader->SetDefaultTexture(m_texture2);
+		if (NATFAIL(m_modelloader->CreateStaticModelFromFile(_T("table.obj"), &m_model)))
 		{
-			throw natException(_T("test::WindowInit"), _T("Unable to load obj model"));
+			throw natException(_T("test::WindowInit"), _T("Unable to load model"));
 		}
 
-		natLog::GetInstance().LogMsg(_T("Loaded model successfully"));
+		if (NATFAIL(m_MotionManager->LoadMotionFromFile(_T("lamb"), _T("Lamb.vmd"))))
+		{
+			throw natException(_T("test::WindowInit"), _T("Unable to load motion"));
+		}
 
-		natLog::GetInstance().LogMsg(_T("GLAPP initialized successfully"));
+		if (NATFAIL(m_MotionManager->ApplyToModel(_T("lamb"), m_model2)))
+		{
+			throw natException(_T("test::WindowInit"), _T("Unable to apply motion to model"));
+		}
+
+		//m_model2->SetZoom(0.1f);
+
+		n2dGlobal::LogMsg(_T("Loaded model successfully"));
+
+		n2dGlobal::LogMsg(_T("GLAPP initialized successfully"));
+		m_soundsrc->Play();
 		return true;
 	}
 
 	void WindowUninit() override
 	{
 		CloseHandle(m_Mutex);
-		natLog::GetInstance().LogMsg(_T("GLAPP exit"));
+		n2dGlobal::LogMsg(_T("GLAPP exit"));
 	}
 
-	void Update(nDouble, n2dFPSController*) override
+	void Update(nDouble, n2dFPSController* pFPSController) override
 	{
 		if (m_pEngine->IsKeyPressed(VK_SPACE))
 		{
@@ -399,7 +458,6 @@ public:
 			SetWindowText(m_pEngine->GetWindow()->GetWnd(), n2dUtil::FormatString(_T("夏之幻想 | FPS=%f"), pFPSController->FPS).c_str());
 		}
 
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		pRenderDevice->Clear(n2dRenderDevice::ClearBit_Color | n2dRenderDevice::ClearBit_Depth);
 
 		if (NATFAIL(m_pGraphics->Begin()) || NATFAIL(m_pGraphics3D->Begin()))
@@ -407,40 +465,8 @@ public:
 			throw natException(_T("test::Render"), _T("Failed to prepare graphic renderer"));
 		}
 
-		//glColor3f(1.f, 0.5f, 0.f);
 		//f.PrintFont(m_pGraphics, _T("2333"), 0.f, 0.f, 10.f);
-		//glUseProgram(programID);
 
-		//m_pGraphics->DrawRaw(m_texture, m_model2);
-		//m_pGraphics->DrawRaw(m_texture2, m_model);
-
-		natVec3<> lightPos = natVec3<>(100, 100, 200);
-		//glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-		Light->SetValue(1u, &lightPos[0]);
-
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-
-		/*natMat4<> tmatL(
-			cos(natTransform::DegtoRad(m_RotateL)),0, -sin(natTransform::DegtoRad(m_RotateL)),	0,
-			0,									1, 0,											0,
-			sin(natTransform::DegtoRad(m_RotateL)),0, cos(natTransform::DegtoRad(m_RotateL)),	0,
-			0,									0, 0,											1
-			);
-
-		natMat4<> tmatH(
-			1	,0,										0,										0,
-			0,	cos(natTransform::DegtoRad(m_RotateH)),	sin(natTransform::DegtoRad(m_RotateH)),	0,
-			0,	-sin(natTransform::DegtoRad(m_RotateH)),cos(natTransform::DegtoRad(m_RotateH)),	0,
-			0,	0,										0,										1
-			);
-
-		natMat4<> tmat2(
-			1.0f,		0.0f,		0.0f,		0.0f,
-			0.0f,		1.0f,		0.0f,		0.0f,
-			0.0f,		0.0f,		1.0f,		0.0f,
-			m_Speed.x,	m_Speed.y,	m_Speed.z,	1.0f);*/
-		
 		pRenderDevice->SubmitViewMat(natTransform::move(
 			natTransform::rotate(
 				natTransform::rotate(
@@ -453,45 +479,30 @@ public:
 				),
 			m_Speed));
 
-		Matrix->SetValue(1, &pRenderDevice->GetMVPMat()[0][0]);
 		ModelMatrix->SetValue(1, &pRenderDevice->GetCurModelMat()[0][0]);
 		ViewMatrix->SetValue(1, &pRenderDevice->GetCurViewMat()[0][0]);
-		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &pRenderDevice->GetMVPMat()[0][0]);
-		//glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &pRenderDevice->GetCurModelMat()[0][0]);
-		//glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &pRenderDevice->GetCurViewMat()[0][0]);
-		//glUniform1f(TimeID, static_cast<GLfloat>(pFPSController->GetTotalFrame()));
 
-		m_pGraphics3D->RenderModel(m_model->GetModel());
-		m_pGraphics3D->RenderModel(m_model2->GetModel());
+		//m_pGraphics3D->RenderModel(m_model);
+		m_model2->Update(static_cast<nuInt>(m_soundsrc->GetSecOffset() * 30));
+		m_pGraphics3D->RenderModel(m_model2);
 
 		sp->Use();
 
 		m_pGraphics3D->End();
 
-		m_pGraphics->DrawQuad(m_texture3,
+		/*m_pGraphics->DrawQuad(m_texture3,
 			n2dGraphics2DVertex{ natVec3<>(-100, 0, 200), 0, natVec2<>(0, 0) },
 			n2dGraphics2DVertex{ natVec3<>(100, 0, 200), 0, natVec2<>(1, 0) },
 			n2dGraphics2DVertex{ natVec3<>(100, 200, 200), 0, natVec2<>(1, 1) },
-			n2dGraphics2DVertex{ natVec3<>(-100, 200, 200), 0, natVec2<>(0, 1) });
+			n2dGraphics2DVertex{ natVec3<>(-100, 200, 200), 0, natVec2<>(0, 1) });*/
 
 		n2dShaderProgram* pd = sw->GetDefaultProgram();
 		pd->Use();
-		auto um = pd->GetUniformReference(_T("MVP"));
-		natMat4<> t;
-		um->SetValue(1, &t/*pRenderDevice->GetMVPMat()[0][0]*/);
 
 		m_pGraphics->End();
 
-		//Test data;
-
-		//GLint b = 0;
-		//glGetBufferParameteriv(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &b);
-		/*if (b > 0)
-		{
-			memcpy_s(&data, sizeof(data), glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY), b);
-		}
-
-		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);*/
+		//DebugBuffer db;
+		//m_DebugBuffer->GetSubData(0u, sizeof(DebugBuffer), reinterpret_cast<nData>(&db));
 
 		m_pEngine->GetWindow()->SwapBuffers();
 	}
@@ -509,34 +520,28 @@ private:
 
 	natRefPointer<n2dFont>			f;
 	n2dShaderWrapper*				sw;
-	n2dShaderProgram*				sp;
+	natRefPointer<n2dShaderProgram>	sp;
 
-	n2dShaderProgram::UniformReference* Matrix;
 	n2dShaderProgram::UniformReference* ViewMatrix;
 	n2dShaderProgram::UniformReference* ModelMatrix;
 	n2dShaderProgram::UniformReference* Light;
-
-	GLuint							pipelineID;
-	GLuint							programID;
-	GLuint							posID;
-	//GLuint						MatrixID;
-	//GLuint						ViewMatrixID;
-	//GLuint						ModelMatrixID;
-	//GLuint						LightID;
-	GLuint							TimeID;
-
-	GLuint							TestID;
 
 	HANDLE							m_Mutex;
 	natRefPointer<n2dTexture2D>		m_texture;
 	natRefPointer<n2dTexture2D>		m_texture2;
 	natRefPointer<n2dTexture2D>		m_texture3;
-	natRefPointer<n2dModelLoader>	m_model;
-	natRefPointer<n2dModelLoader>	m_model2;
-	natRefPointer<n2dModelLoader>	m_model3;
+	natRefPointer<n2dModelLoader>	m_modelloader;
+	natRefPointer<n2dModelData>		m_model, m_model2, m_model3;
+
+	natRefPointer<n2dSoundBuffer>	m_soundbuf;
+	natRefPointer<n2dSoundSource>	m_soundsrc;
+
+	natRefPointer<n2dBuffer>		m_DebugBuffer;
+
+	natRefPointer<n2dMotionManager> m_MotionManager;
 };
 
-void LogEvent(natEvent<nTString>& e)
+void LogEvent(natEvent<ncTStr>& e)
 {
 	//OutputDebugString((e.GetData() + TEXT("\n")).c_str());
 
@@ -562,7 +567,7 @@ void ExceptionHandler(natEvent<natException*>& e)
 			ss << _T("Caused by exception: In ") << ex->GetSource() << _T(" : ") << ex->GetDesc() << std::endl;
 		}
 
-		natLog::GetInstance().LogErr(ss.str());
+		n2dGlobal::LogErr(ss.str().c_str());
 
 		MessageBox(nullptr, ss.str().c_str(), _T("Uncaught exception"), MB_OK | MB_ICONERROR);
 	}
@@ -578,10 +583,14 @@ int main()
 	try
 	{
 		//std::locale::global(std::locale(std::locale(), "", LC_CTYPE));
-		std::locale::global(std::locale("", LC_CTYPE));
-		_set_invalid_parameter_handler(custom_invalid_parameter);
-		natLog::GetInstance().RegisterLogUpdateEventFunc(LogEvent);
+		auto loc = std::locale("chs", LC_CTYPE);
+		std::locale::global(loc);
+		std::wcout.imbue(loc);
+		//_set_invalid_parameter_handler(custom_invalid_parameter);
+		//n2dGlobal::SetLogFile(_T("NatsuLog.log"));
+		n2dGlobal::RegisterLogUpdateEventFunc(LogEvent);
 		n2dGlobal::EventException += ExceptionHandler;
+		n2dGlobal::LogMsg(_T("中文测试"));
 
 		test (GetModuleHandle(NULL));
 	}
@@ -591,8 +600,8 @@ int main()
 	}
 	catch (...)
 	{
-		natLog::GetInstance().LogErr(TEXT("Unknown exception"));
-		MessageBox(nullptr, TEXT("Unknown exception"), TEXT("Uncaught exception"), MB_OK | MB_ICONERROR);
+		n2dGlobal::LogErr(TEXT("Unknown exception"));
+		MessageBox(NULL, TEXT("Unknown exception"), TEXT("Uncaught exception"), MB_OK | MB_ICONERROR);
 	}
 
 	return 0;
@@ -604,6 +613,6 @@ void custom_invalid_parameter(ncTStr expression, ncTStr function, ncTStr file, n
 
 	ss << "In " << file << ", line " << line << ": " << expression;
 
-	natException ex(function, ss.str());
+	natException ex(function, ss.str().c_str());
 	n2dGlobal::EventException(&ex);
 }

@@ -8,7 +8,8 @@ namespace natUtil
 	///	@brief		格式化字符串
 	///	@warning	非类型安全
 	///	@param[in]	str		字符串格式
-	nTString FormatString(LPCTSTR str, ...);
+	nTString FormatString(ncTStr lpStr, ...);
+	nTString FormatStringv(ncTStr lpStr, va_list vl);
 
 	///	@brief	获得本地时间
 	///	@return	包含时间信息的字符串
@@ -30,13 +31,22 @@ namespace natUtil
 	{
 		return std::string(str.begin(), str.end());
 	}
+	
+	///	@brief	多字节转Unicode
+	std::wstring MultibyteToUnicode(ncStr Str, nuInt CodePage = CP_INSTALLED);
+	///	@brief	宽字符转多字节
+	std::string WidecharToMultibyte(ncWStr Str, nuInt CodePage = CP_INSTALLED);
 
 	///	@brief	获得资源字符串
 	///	@param[in]	ResourceID	资源ID
-	///	@param[in]	hInstance	实例句柄，默认为当前句柄
+	///	@param[in]	hInstance	实例句柄，默认为NULL
 	nTString GetResourceString(DWORD ResourceID, HINSTANCE hInstance = NULL);
 
-	std::vector<nByte> GetResourceData(DWORD ResourceID, LPCTSTR lpType, HINSTANCE hInstance = NULL);
+	///	@brief	获得资源数据
+	///	@param[in]	ResourceID	资源ID
+	///	@param[in]	lpType		资源类型
+	///	@param[in]	hInstance	实例句柄，默认为NULL
+	std::vector<nByte> GetResourceData(DWORD ResourceID, ncTStr lpType, HINSTANCE hInstance = NULL);
 
 	///	@brief	字符串分割函数
 	///	@note	char版

@@ -13,18 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="头文件\extern">
-      <UniqueIdentifier>{44a43ec6-8000-4e7e-ac80-df9f17da75ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\extern\nv_dds">
-      <UniqueIdentifier>{c56e4740-12fb-4dc1-bff5-f9b50c0ca42f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\extern">
-      <UniqueIdentifier>{de021bce-048b-44bd-9c48-4c143cf01adf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\extern\nv_dds">
-      <UniqueIdentifier>{6df2bf6b-cf09-4abf-85b7-d70b096d8ab3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\include">
       <UniqueIdentifier>{24f62364-a871-4fdd-ba1b-c15ef8ab3c85}</UniqueIdentifier>
     </Filter>
@@ -61,11 +49,33 @@
       <UniqueIdentifier>{df1bab4c-1a42-49b5-8f3b-e393ab51cc31}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{864f84ca-0c7b-4bee-a167-7a2a20def87d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\header">
+      <UniqueIdentifier>{9e06be58-b234-4f97-bab8-7ab53ba1b722}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Sound\source">
+      <UniqueIdentifier>{588026b8-a60d-42d1-b9ef-9ae00066103f}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="extern">
+      <UniqueIdentifier>{fa510b36-daf8-421a-a8c7-f08ffe9df370}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="extern\nv_dds">
+      <UniqueIdentifier>{c56e4740-12fb-4dc1-bff5-f9b50c0ca42f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="extern\nv_dds\header">
+      <UniqueIdentifier>{32342b3e-f419-494f-b752-f619f400bc1f}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="extern\nv_dds\source">
+      <UniqueIdentifier>{686b3a36-98cb-4c42-b68c-6288300361d2}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="extern\nv_dds\nv_dds.cpp">
-      <Filter>源文件\extern\nv_dds</Filter>
-    </ClCompile>
     <ClCompile Include="n2dUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -111,15 +121,27 @@
     <ClCompile Include="RenderDevice\n2dBufferImpl.cpp">
       <Filter>RenderDevice\source</Filter>
     </ClCompile>
+    <ClCompile Include="Sound\n2dSoundSysImpl.cpp">
+      <Filter>Sound\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound\n2dSoundBufferImpl.cpp">
+      <Filter>Sound\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound\n2dSoundSourceImpl.cpp">
+      <Filter>Sound\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dLightControllerImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
+    <ClCompile Include="extern\nv_dds\nv_dds.cpp">
+      <Filter>extern\nv_dds\source</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderDevice\n2dMotionManagerImpl.cpp">
+      <Filter>RenderDevice\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="extern\nv_dds\nv_dds.h">
-      <Filter>头文件\extern\nv_dds</Filter>
-    </ClInclude>
     <ClInclude Include="n2dCommon.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="n2dKeyState.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="n2dUtil.h">
@@ -149,9 +171,6 @@
     <ClInclude Include="Engine\n2dEngineImpl.h">
       <Filter>Engine\header</Filter>
     </ClInclude>
-    <ClInclude Include="n2dTexture.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="RenderDevice\n2dTextureImpl.h">
       <Filter>RenderDevice\header</Filter>
     </ClInclude>
@@ -176,9 +195,6 @@
     <ClInclude Include="RenderDevice\n2dGraphicsImpl.h">
       <Filter>RenderDevice\header</Filter>
     </ClInclude>
-    <ClInclude Include="n2dFPSController.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\n2dFPSControllerImpl.h">
       <Filter>Engine\header</Filter>
     </ClInclude>
@@ -201,6 +217,30 @@
       <Filter>RenderDevice\header</Filter>
     </ClInclude>
     <ClInclude Include="RenderDevice\OpenGL.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dSoundSys.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\n2dSoundSysImpl.h">
+      <Filter>Sound\header</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\n2dSoundBufferImpl.h">
+      <Filter>Sound\header</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\n2dSoundSourceImpl.h">
+      <Filter>Sound\header</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\OpenAL.h">
+      <Filter>Sound\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dLightControllerImpl.h">
+      <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="extern\nv_dds\nv_dds.h">
+      <Filter>extern\nv_dds\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice\n2dMotionManagerImpl.h">
       <Filter>RenderDevice\header</Filter>
     </ClInclude>
   </ItemGroup>

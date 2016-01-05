@@ -87,6 +87,9 @@
     <ClInclude Include="extern\unzip\zip.h">
       <Filter>Extern\minizip</Filter>
     </ClInclude>
+    <ClInclude Include="natQuat.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

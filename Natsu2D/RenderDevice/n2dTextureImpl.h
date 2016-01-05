@@ -6,9 +6,37 @@
 
 #include <memory>
 #include <natType.h>
-#include "..\n2dTexture.h"
+#include "OpenGL.h"
+#include "..\n2dRenderDevice.h"
 
 struct natStream;
+
+struct n2dImage final
+{
+	explicit n2dImage(GLenum internalFormat = 0u, GLenum pixelFormat = 0u, ncData pdata = nullptr, nLong llength = 0l, nuInt iwidth = 0u, nuInt iheight = 0u)
+		: InternalFormat(internalFormat),
+		PixelFormat(pixelFormat),
+		data(nullptr),
+		length(llength),
+		width(iwidth),
+		height(iheight)
+	{
+		data = new nByte[static_cast<nuInt>(length)];
+		memcpy_s(data, static_cast<rsize_t>(length), pdata, static_cast<rsize_t>(llength));
+	}
+
+	~n2dImage()
+	{
+		SafeDelArr(data);
+	}
+
+	GLenum InternalFormat;
+	GLenum PixelFormat;
+	nData data;
+	nLong length;
+	nuInt width;
+	nuInt height;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	2DŒ∆¿Ì

@@ -1,10 +1,11 @@
 #pragma once
 #include "..\n2dModel.h"
+#include "n2dRenderDeviceImpl.h"
 #include <vector>
 #include <natVec.h>
 
-class n2dModelDataImpl;
-class n2dMeshDataImpl;
+class n2dStaticModelDataImpl;
+class n2dStaticMeshDataImpl;
 struct aiScene;
 struct aiNode;
 
@@ -12,32 +13,19 @@ class n2dModelLoaderImpl
 	: public natRefObjImpl<n2dModelLoader>
 {
 public:
-	n2dModelLoaderImpl();
+	n2dModelLoaderImpl(n2dRenderDeviceImpl* pRenderDevice);
 
-	nResult LoadFromStream(natStream* pStream) override;
-	nResult LoadFromFile(ncTStr lpPath) override;
+	nResult CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut) override;
+	nResult CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut) override;
+
+	nResult CreateDynamicModelFromStream(natStream* pStream, n2dModelData** pOut) override;
+	nResult CreateDynamicModelFromFile(ncTStr lpPath, n2dModelData** pOut) override;
 
 	void SetDefaultTexture(n2dTexture2D* Texture) override;
-
-	n2dModelData* GetModel() override;
-
-	nuInt GetVertexBuffer() override;
-	nuInt GetUVBuffer() override;
-	nuInt GetNormalBuffer() override;
-	nuInt GetIndexBuffer() override;
-
-	nuInt GetVertexCount() const override;
-	nuInt GetIndexCount() const override;
 private:
-	void loadMeshData(const aiScene* pScene, const aiNode* pNode, nFloat fScale);
+	void loadMeshData(n2dStaticModelDataImpl* pModel, const aiScene* pScene, const aiNode* pNode, nFloat fScale) const;
 
-	std::vector<natVec3<>> m_Vertices;
-	std::vector<natVec2<>> m_UVs;
-	std::vector<natVec3<>> m_Normals;
-	std::vector<nuShort> m_ElementIndexes;
-
-	nuInt m_VertexBuffer, m_UVBuffer, m_NormalBuffer, m_ElementBuffer;
-
-	n2dModelDataImpl* m_Model;
 	natRefPointer<n2dTexture2D> m_DefaultTexture;
+
+	n2dRenderDeviceImpl* m_pRenderDevice;
 };

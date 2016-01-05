@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "natException.h"
 
-natException::natException(nTString const& Src, nTString const& Desc, const natException* pCausedby)
+natException::natException(ncTStr Src, ncTStr Desc, const natException* pCausedby)
 	: m_Time(GetTickCount()), m_Source(Src), m_Description(Desc), m_pCausedby(pCausedby)
 {
 }
@@ -11,14 +11,14 @@ nuInt natException::GetTime() const
 	return m_Time;
 }
 
-nTString const& natException::GetSource() const
+ncTStr natException::GetSource() const
 {
-	return m_Source;
+	return m_Source.c_str();
 }
 
-nTString const& natException::GetDesc() const
+ncTStr natException::GetDesc() const
 {
-	return m_Description;
+	return m_Description.c_str();
 }
 
 const natException* natException::GetCausedbyException() const
@@ -26,7 +26,7 @@ const natException* natException::GetCausedbyException() const
 	return m_pCausedby;
 }
 
-natWinException::natWinException(nTString const& Src, nTString const& Desc)
+natWinException::natWinException(ncTStr Src, ncTStr Desc)
 	: natException(Src, Desc, nullptr), m_LastErr(GetLastError())
 {
 	nTChar tErrnoStr[16] = { _T('\0') };

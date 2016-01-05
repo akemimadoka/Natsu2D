@@ -48,6 +48,12 @@ natVec2<T> operator##op(U const& Scalar, natVec2<T> const& v)\
 
 struct natVec {};
 
+template <typename T>
+struct natVec3;
+
+template <typename T>
+struct natVec4;
+
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	2Œ¨œÚ¡ø
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +142,12 @@ struct natVec2 final
 
 	natVec2(natVec2 const& v) = default;
 	natVec2(natVec2 && v) = default;
+
+	template <typename U>
+	explicit natVec2(natVec3<U> const& v);
+
+	template <typename U>
+	explicit natVec2(natVec4<U> const& v);
 
 	natVec2& operator=(natVec2 const& v) = default;
 	natVec2& operator=(natVec2 && v) = default;
@@ -425,6 +437,21 @@ struct natVec3 final
 
 	natVec3(natVec3 const& v) = default;
 	natVec3(natVec3 && v) = default;
+
+	template <typename U, typename V>
+	natVec3(natVec2<U> const& v, V const& a)
+		: x(static_cast<T>(v.x)), y(static_cast<T>(v.y)), z(static_cast<T>(a))
+	{
+	}
+
+	template <typename U, typename V>
+	natVec3(U const& a, natVec2<V> const& v)
+		: x(static_cast<T>(a)), y(static_cast<T>(v.x)), z(static_cast<T>(v.y))
+	{
+	}
+
+	template <typename U>
+	explicit natVec3(natVec4<U> const& v);
 
 	natVec3& operator=(natVec3 const& v) = default;
 	natVec3& operator=(natVec3 && v) = default;
@@ -718,6 +745,36 @@ struct natVec4 final
 	natVec4(natVec4 const& v) = default;
 	natVec4(natVec4 && v) = default;
 
+	template <typename U, typename V, typename W>
+	natVec4(natVec2<U> const& v, V const& a, W const& b)
+		: x(static_cast<T>(v.x)), y(static_cast<T>(v.y)), z(static_cast<T>(a)), w(static_cast<T>(b))
+	{
+	}
+
+	template <typename U, typename V, typename W>
+	natVec4(U const& a, natVec2<V> const& v, W const& b)
+		: x(static_cast<T>(a)), y(static_cast<T>(v.x)), z(static_cast<T>(v.y)), w(static_cast<T>(b))
+	{
+	}
+
+	template <typename U, typename V, typename W>
+	natVec4(U const& a, V const& b, natVec2<W> const& v)
+		: x(static_cast<T>(a)), y(static_cast<T>(b)), z(static_cast<T>(v.x)), w(static_cast<T>(v.y))
+	{
+	}
+
+	template <typename U, typename V>
+	natVec4(natVec3<U> const& v, V const& a)
+		: x(static_cast<T>(v.x)), y(static_cast<T>(v.y)), z(static_cast<T>(v.z)), w(static_cast<T>(a))
+	{
+	}
+
+	template <typename U, typename V>
+	natVec4(U const& a, natVec3<V> const& v)
+		: x(static_cast<T>(a)), y(static_cast<T>(v.x)), z(static_cast<T>(v.y)), w(static_cast<T>(v.z))
+	{
+	}
+
 	natVec4& operator=(natVec4 const& v) = default;
 	natVec4& operator=(natVec4 && v) = default;
 
@@ -883,5 +940,26 @@ TOPERATORSCALARNM(>> );
 #ifdef TOPERATORSCALARNM
 #	undef TOPERATORSCALARNM
 #endif
+
+template <typename T>
+template <typename U>
+natVec2<T>::natVec2(natVec3<U> const& v)
+	: x(static_cast<T>(v.x)), y(static_cast<T>(v.y))
+{
+}
+
+template <typename T>
+template <typename U>
+natVec2<T>::natVec2(natVec4<U> const& v)
+	: x(static_cast<T>(v.x)), y(static_cast<T>(v.y))
+{
+}
+
+template <typename T>
+template <typename U>
+natVec3<T>::natVec3(natVec4<U> const& v)
+	: x(static_cast<T>(v.x)), y(static_cast<T>(v.y)), z(static_cast<T>(v.z))
+{
+}
 
 ///	@}

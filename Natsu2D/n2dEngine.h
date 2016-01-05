@@ -1,12 +1,31 @@
 #pragma once
+#include <Windows.h>
 #include <natEvent.h>
 #include <natException.h>
+#include <natLog.h>
 #include "n2dInterface.h"
-#include <Windows.h>
 #include "n2dWindow.h"
+#include "n2dSoundSys.h"
+
+//	由于Natsu2D已经不支持生成静态库，这个宏定义即将不再支持
+#ifdef Natsu2DStatic
+#	ifdef N2DEXPORT
+#		define N2DFUNC
+#	else
+#		define N2DFUNC extern
+#	endif // N2DEXPORT
+#	define N2DOBJECT extern
+#else
+#	ifdef N2DEXPORT
+#		define N2DFUNC __declspec(dllexport)
+#	else
+#		define N2DFUNC __declspec(dllimport)
+#	endif // N2DEXPORT
+#	define N2DOBJECT extern N2DFUNC
+#endif // Natsu2DStatic
 
 struct n2dRenderDevice;
-struct n2dFPSController;
+class natStopWatch;
 
 ///	@brief	全局变量
 namespace n2dGlobal
@@ -21,8 +40,81 @@ namespace n2dGlobal
 		__declspec(dllimport)
 #	endif
 #endif
-	natEvent<natException*> EventException;
+		natEvent<natException*> EventException;
+
+	extern "C"
+	{
+		///	@brief	设置日志文件存储目录
+		///	@note	仅在第一次使用日志之前有效
+		void N2DFUNC SetLogFile(ncTStr Path);
+		///	@brief	记录信息
+		void N2DFUNC LogMsg(ncTStr Str);
+		///	@brief	记录警告
+		void N2DFUNC LogWarn(ncTStr Str);
+		///	@brief	记录错误
+		void N2DFUNC LogErr(ncTStr Str);
+		///	@brief	注册日志更新事件处理函数
+		void N2DFUNC RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func);
+	}
 }
+
+struct n2dFPSController
+	: n2dInterface
+{
+	///	@brief	更新
+	virtual nDouble Update(natStopWatch& watch) = 0;
+
+	///	@brief	获得FPS限制
+	virtual nuInt GetFPSLimit() const = 0;
+	///	@brief	设置FPS限制
+	virtual void SetFPSLimit(nuInt FPSLimit) = 0;
+
+	///	@brief	获得当前FPS
+	virtual nDouble GetFPS() const = 0;
+
+	///	@brief	获得总共帧数
+	virtual nuInt GetTotalFrame() const = 0;
+	///	@brief	获得总共时间
+	virtual nDouble GetTotalTime() const = 0;
+
+	///	@brief	获得平均FPS
+	virtual nDouble GetAvgFPS() const = 0;
+	///	@brief	获得最大FPS
+	virtual nDouble GetMaxFPS() const = 0;
+
+	///	@brief	当前FPS（属性）
+	__declspec(property(get = GetFPS))
+		nDouble FPS;
+
+	///	@brief	FPS限制（属性）
+	__declspec(property(get = GetFPSLimit, put = SetFPSLimit))
+		nuInt FPSLimit;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+///	@brief	键盘类实现，表示键盘的按键按下情况
+////////////////////////////////////////////////////////////////////////////////
+class n2dKeyState final
+{
+public:
+	n2dKeyState() {};
+	~n2dKeyState() = default;
+
+	///	@brief	清除当前状态
+	void Clear() { memset(m_KeyDown, 0, MAX_KEYS); };
+	///	@brief	获得按键状态
+	nBool IsPressed(nuInt key) const { return key < MAX_KEYS ? m_KeyDown[key] : false; };
+	///	@brief	设置按键按下
+	void SetPressed(nuInt key) { if (key < MAX_KEYS) m_KeyDown[key] = true; };
+	///	@brief	设置按键释放
+	void SetReleased(nuInt key) { if (key < MAX_KEYS) m_KeyDown[key] = false; };
+private:
+	enum : nuInt
+	{
+		MAX_KEYS = 256u		///< @brief	最大按键数
+	};
+	nBool m_KeyDown[MAX_KEYS];
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	EventMSG使用的窗口消息结构体
@@ -85,23 +177,34 @@ struct n2dEngine
 		MultiThread		///< @brief	多线程模式
 	};
 
+	////////////////////////////////////////////////////////////////////////////////
+	///	@brief	窗口消息事件
+	///	@note	可以仅触发指定的事件的处理函数
+	////////////////////////////////////////////////////////////////////////////////
 	struct WndMsgEvent
 		: natEvent<Msgdata>
 	{
 		typedef void(*EventHandler)(WndMsgEvent&);
 
 		WndMsgEvent() : natEvent(true) {}
+		
+		///	@brief	注册处理函数
 		virtual nuInt Register(EventHandler func, DWORD WndMsg, nInt priority = Priority::Normal) = 0;
-		virtual nBool Unregister(nuInt HandlerIndex, DWORD WndMsg, nInt Priority) = 0;
+		///	@brief	反注册处理函数
 		virtual void Unregister(DWORD WndMsg, EventHandler Handler) = 0;
 
+		///	@brief	激活事件
 		virtual nBool Activate(DWORD WndMsg, nInt PriorityLimitmin = Priority::Low, nInt PriorityLimitmax = Priority::High) = 0;
+		///	@brief	激活事件
 		virtual nBool Activate(DWORD WndMsg, dataType const& data, nInt PriorityLimitmin, nInt PriorityLimitmax) = 0;
 
+		///	@brief	激活事件
 		virtual nBool operator()(DWORD WndMsg, dataType const& data) = 0;
 
+		///	@brief	释放事件
 		virtual void Release() override = 0;
-
+		
+		///	@brief	获得关联的引擎
 		virtual n2dEngine* GetEngine() = 0;
 	};
 
@@ -117,10 +220,16 @@ struct n2dEngine
 	virtual void SwapBuffers() = 0;
 	///	@brief	获得窗口
 	virtual n2dWindow* GetWindow() = 0;
+	///	@brief	获得渲染设备
 	virtual n2dRenderDevice* GetRenderDevice() = 0;
+	///	@brief	获得声音系统
+	virtual n2dSoundSys* GetSoundSys() = 0;
+	///	@brief	获得关联的引擎监听器
 	virtual n2dEngineEventListener* GetListener() = 0;
 
+	///	@brief	获得线程模式
 	virtual ThreadMode GetThreadMode() const = 0;
+	///	@brief	获得实例句柄
 	virtual HINSTANCE GetHInstance() const = 0;
 
 	///	@brief	注册窗口消息处理函数

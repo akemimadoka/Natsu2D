@@ -14,13 +14,13 @@
 class natException
 {
 public:
-	natException(nTString const& Src, nTString const& Desc, const natException* pCausedby = nullptr);
+	natException(ncTStr Src, ncTStr Desc, const natException* pCausedby = nullptr);
 
 	virtual ~natException() = default;
 
 	nuInt GetTime() const;
-	nTString const& GetSource() const;
-	nTString const& GetDesc() const;
+	ncTStr GetSource() const;
+	ncTStr GetDesc() const;
 	const natException* GetCausedbyException() const;
 
 protected:
@@ -38,7 +38,7 @@ class natWinException
 	: public natException
 {
 public:
-	natWinException(nTString const& Src, nTString const& Desc);
+	natWinException(ncTStr Src, ncTStr Desc);
 
 	DWORD GetLastErr() const;
 

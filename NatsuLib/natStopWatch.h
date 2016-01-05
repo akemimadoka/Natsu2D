@@ -30,7 +30,7 @@ public:
 
 	///	@brief	获得流逝时间
 	///	@note	单位为秒
-	double GetElpased();
+	nDouble GetElpased();
 private:
 	LARGE_INTEGER	m_cFreq,	///< @brief	cpu频率
 					m_cLast,	///< @brief	上一次时间

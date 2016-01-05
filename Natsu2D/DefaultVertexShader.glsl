@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
@@ -9,7 +9,10 @@ layout(location = 2) in vec3 vertexNormal_modelspace;
 out vec2 UV;
 
 // Values that stay constant for the whole mesh.
-uniform mat4 MVP;
+layout(binding = 0) uniform InternalData
+{
+	mat4 MVP;
+};
 
 void main(){
 

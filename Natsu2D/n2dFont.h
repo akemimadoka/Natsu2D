@@ -1,10 +1,10 @@
 #pragma once
 #include "n2dInterface.h"
-#include "n2dTexture.h"
 
 struct n2dRenderDevice;
 struct natStream;
 struct n2dGraphics2D;
+struct n2dTexture2D;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	×Ö·ûÎÆÀí
@@ -21,7 +21,10 @@ struct n2dCharTexture final
 	nuInt			delta_y;
 
 	n2dCharTexture()
-		: adv_x(0u),
+		: CharTexture(nullptr),
+		Width(0),
+		Height(0),
+		adv_x(0u),
 		adv_y(0u),
 		delta_x(0u),
 		delta_y(0u)

@@ -14,6 +14,7 @@
 
 #include "natVec.h"
 #include "natMat.h"
+#include "natQuat.h"
 
 #include "natTransform.h"
 

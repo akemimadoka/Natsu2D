@@ -47,6 +47,12 @@ natMat2<T> operator##op(U const& Scalar, natMat2<T> const& m)\
 	return natMat2<T>(static_cast<T>(Scalar) op m[0], static_cast<T>(Scalar) op m[1]);\
 }
 
+template <typename T>
+struct natMat3;
+
+template <typename T>
+struct natMat4;
+
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	2½×¾ØÕó
 ////////////////////////////////////////////////////////////////////////////////
@@ -157,6 +163,12 @@ public:
 
 	natMat2(natMat2 const& m) = default;
 	natMat2(natMat2 && m) = default;
+
+	template <typename U>
+	explicit natMat2(natMat3<U> const& m);
+
+	template <typename U>
+	explicit natMat2(natMat4<U> const& m);
 
 	natMat2& operator=(natMat2 const& m) = default;
 	natMat2& operator=(natMat2 && m) = default;
@@ -472,6 +484,17 @@ public:
 
 	natMat3(natMat3 const& m) = default;
 	natMat3(natMat3 && m) = default;
+
+	template <typename U>
+	explicit natMat3(natMat2<U> const& m)
+	{
+		value[0] = col_type(m[0], 0);
+		value[1] = col_type(m[1], 0);
+		value[2] = col_type(0, 0, 1);
+	}
+
+	template <typename U>
+	explicit natMat3(natMat4<U> const& m);
 
 	natMat3& operator=(natMat3 const& m) = default;
 	natMat3& operator=(natMat3 && m) = default;
@@ -860,6 +883,24 @@ public:
 	natMat4(natMat4 const& m) = default;
 	natMat4(natMat4 && m) = default;
 
+	template <typename U>
+	explicit natMat4(natMat2<U> const& m)
+	{
+		value[0] = col_type(m[0], 0, 0);
+		value[1] = col_type(m[1], 0, 0);
+		value[2] = col_type(0, 0, 1, 0);
+		value[3] = col_type(0, 0, 0, 1);
+	}
+
+	template <typename U>
+	explicit natMat4(natMat3<U> const& m)
+	{
+		value[0] = col_type(m[0], 0);
+		value[1] = col_type(m[1], 0);
+		value[2] = col_type(m[2], 0);
+		value[3] = col_type(0, 0, 0, 1);
+	}
+
 	natMat4& operator=(natMat4 const& m) = default;
 	natMat4& operator=(natMat4 && m) = default;
 
@@ -993,12 +1034,25 @@ TOPERATORSCALARNM(/ );
 template <typename T, typename U>
 natVec4<T> operator*(natMat4<T> const& m, natVec4<U> const& v)
 {
-	return natVec4<T>(
+	typename natMat4<T>::col_type const Mov0(v[0]);
+	typename natMat4<T>::col_type const Mov1(v[1]);
+	typename natMat4<T>::col_type const Mul0 = m[0] * Mov0;
+	typename natMat4<T>::col_type const Mul1 = m[1] * Mov1;
+	typename natMat4<T>::col_type const Add0 = Mul0 + Mul1;
+	typename natMat4<T>::col_type const Mov2(v[2]);
+	typename natMat4<T>::col_type const Mov3(v[3]);
+	typename natMat4<T>::col_type const Mul2 = m[2] * Mov2;
+	typename natMat4<T>::col_type const Mul3 = m[3] * Mov3;
+	typename natMat4<T>::col_type const Add1 = Mul2 + Mul3;
+	typename natMat4<T>::col_type const Add2 = Add0 + Add1;
+	return Add2;
+
+	/*return natVec4<T>(
 		m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z + m[3][0] * v.w,
 		m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1] * v.w,
 		m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2] * v.w,
 		m[0][3] * v.x + m[1][3] * v.y + m[2][3] * v.z + m[3][3] * v.w
-		);
+		);*/
 }
 
 template <typename T, typename U>
@@ -1043,5 +1097,30 @@ natVec4<T> operator/(natVec4<U> const& v, natMat4<T> const& m)
 #ifdef TOPERATORSCALARNM
 #	undef TOPERATORSCALARNM
 #endif
+
+template <typename T>
+template <typename U>
+natMat2<T>::natMat2(natMat3<U> const& m)
+{
+	value[0] = col_type(m[0]);
+	value[1] = col_type(m[1]);
+}
+
+template <typename T>
+template <typename U>
+natMat2<T>::natMat2(natMat4<U> const& m)
+{
+	value[0] = col_type(m[0]);
+	value[1] = col_type(m[1]);
+}
+
+template <typename T>
+template <typename U>
+natMat3<T>::natMat3(natMat4<U> const& m)
+{
+	value[0] = col_type(m[0]);
+	value[1] = col_type(m[1]);
+	value[2] = col_type(m[2]);
+}
 
 /// @}

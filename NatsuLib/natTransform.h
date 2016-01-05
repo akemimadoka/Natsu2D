@@ -103,7 +103,7 @@ namespace natTransform
 	auto inversesqrt(vectype<T> const& v) -> decltype(v.call(sqrt))
 	{
 		static_assert(std::is_base_of<natVec, vectype<T>>::value, "T should be an arithmetic type or natVec");
-		return v.call(sqrt);
+		return static_cast<T>(1) / v.call(sqrt);
 	}
 
 	template <template <typename> class vectype>
@@ -170,6 +170,54 @@ namespace natTransform
 			x.x * y.y - y.x * x.y);
 	}
 
+	template <typename T, typename U>
+	T mix(T const& x, T const& y, U const& a)
+	{
+		static_assert(std::is_floating_point<U>::value, "type of a should be floating-point");
+
+		return static_cast<T>(static_cast<U>(x) + a * static_cast<U>(y - x));
+	}
+
+	template <typename T>
+	T mix(T const& x, T const& y, nBool a)
+	{
+		return a ? y : x;
+	}
+
+	template <typename T, typename U, template<typename> class vecType>
+	vecType<T> mix(vecType<T> const& x, vecType<T> const& y, vecType<U> const& a)
+	{
+		static_assert(std::is_floating_point<U>::value, "type of a should be floating-point");
+
+		return vecType<T>(vecType<U>(x) + a * vecType<U>(y - x));
+	}
+
+	template <typename T, template<typename> class vecType>
+	vecType<T> mix(vecType<T> const& x, vecType<T> const& y, vecType<nBool> const& a)
+	{
+		vecType<T> Result;
+		for (nuInt i = 0u; i < x.length(); ++i)
+		{
+			Result[i] = a[i] ? y[i] : x[i];
+		}
+
+		return Result;
+	}
+
+	template <typename T, typename U, template<typename> class vecType>
+	vecType<T> mix(vecType<T> const& x, vecType<T> const& y, U const& a)
+	{
+		static_assert(std::is_floating_point<U>::value, "type of a should be floating-point");
+
+		return vecType<T>(vecType<U>(x) + a * vecType<U>(y - x));
+	}
+
+	template <typename T, template<typename> class vecType>
+	vecType<T> mix(vecType<T> const& x, vecType<T> const& y, nBool a)
+	{
+		return a ? y : x;
+	}
+
 	template <typename T>
 	natMat4<T> move(natMat4<T> m, natVec3<T> const& v)
 	{
@@ -187,6 +235,13 @@ namespace natTransform
 		a[13] += v.y * a[15];
 		a[14] += v.z * a[15];
 
+		return m;
+	}
+
+	template <typename T>
+	natMat4<T> translate(natMat4<T> m, natVec3<T> const& v)
+	{
+		m[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
 		return m;
 	}
 

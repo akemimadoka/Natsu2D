@@ -13,7 +13,7 @@ namespace n2dGlobal
 	ncTStr Logfile = _T("Log.log");
 }
 
-natLog::natLog(nTString const& logfile)
+natLog::natLog(ncTStr const& logfile)
 	: m_LogFile(logfile),
 	m_fstr(m_LogFile)
 {
@@ -25,18 +25,18 @@ natLog::~natLog()
 	m_fstr.close();
 }
 
-ncWStr natLog::ParseLogType(LogType logtype)
+ncTStr natLog::ParseLogType(LogType logtype)
 {
 	switch (logtype)
 	{
 	case LogType::Msg:
-		return L"Message";
+		return _T("Message");
 	case LogType::Err:
-		return L"Error";
+		return _T("Error");
 	case LogType::Warn:
-		return L"Warning";
+		return _T("Warning");
 	default:
-		return L"Unknown";
+		return _T("Unknown");
 	}
 }
 
@@ -47,64 +47,64 @@ NATNOINLINE natLog& natLog::GetInstance()
 }
 
 template <typename ...Arg>
-void natLog::LogMsg(nTString const & Msg, Arg &&... arg)
+void natLog::LogMsg(ncTStr Msg, Arg &&... arg)
 {
 	Log(LogType::Msg, Msg, std::forward<Arg>(arg)...);
 }
 
-void natLog::LogMsg(nTString const& Msg)
+void natLog::LogMsg(ncTStr Msg)
 {
 	Log(LogType::Msg, Msg);
 }
 
 template <typename ... Arg>
-void natLog::LogErr(nTString const& Err, Arg &&... arg)
+void natLog::LogErr(ncTStr Err, Arg &&... arg)
 {
 	Log(LogType::Err, Err, std::forward<Arg>(arg)...);
 }
 
-void natLog::LogErr(nTString const & Err)
+void natLog::LogErr(ncTStr Err)
 {
 	Log(LogType::Err, Err);
 }
 
 template <typename ... Arg>
-void natLog::LogWarn(nTString const& Warn, Arg &&... arg)
+void natLog::LogWarn(ncTStr Warn, Arg &&... arg)
 {
 	Log(LogType::Warn, Warn, std::forward<Arg>(arg)...);
 }
 
-void natLog::LogWarn(nTString const & Warn)
+void natLog::LogWarn(ncTStr Warn)
 {
 	Log(LogType::Warn, Warn);
 }
 
 template <typename ... Arg>
-void natLog::Log(LogType type, nTString const& content, Arg &&... arg)
+void natLog::Log(LogType type, ncTStr content, Arg &&... arg)
 {
-	m_LastLog = natUtil::FormatString(natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content.c_str()).c_str(), std::forward<Arg>(arg)...);
+	m_LastLog = natUtil::FormatString(natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content).c_str(), std::forward<Arg>(arg)...);
 	m_fstr << GetLastLog() << std::endl;
 	EventLogUpdate(GetLastLog());
 }
 
-void natLog::Log(LogType type, nTString const& content)
+void natLog::Log(LogType type, ncTStr content)
 {
-	m_LastLog = natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content.c_str());
+	m_LastLog = natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content).c_str();
 	m_fstr << GetLastLog() << std::endl;
 	EventLogUpdate(GetLastLog());
 }
 
-nTString natLog::GetLogFile() const
+ncTStr natLog::GetLogFile() const
 {
-	return m_LogFile;
+	return m_LogFile.c_str();
 }
 
-nTString natLog::GetLastLog() const
+ncTStr natLog::GetLastLog() const
 {
-	return m_LastLog;
+	return m_LastLog.c_str();
 }
 
-void natLog::RegisterLogUpdateEventFunc(natEvent<nTString>::EventHandle func)
+void natLog::RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func)
 {
 	EventLogUpdate += func;
 }

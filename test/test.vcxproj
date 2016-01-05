@@ -54,12 +54,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_MBCS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Natsu2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -75,13 +77,16 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Natsu2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -91,6 +96,24 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\sqrat\sqmodule.h" />
+    <ClInclude Include="include\sqrat\sqrat.h" />
+    <ClInclude Include="include\sqrat\sqratimport.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratAllocator.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratArray.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratClass.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratClassType.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratConst.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratFunction.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratGlobalMethods.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratMemberMethods.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratObject.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratOverloadMethods.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratScript.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratTable.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratTypes.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratUtil.h" />
+    <ClInclude Include="include\sqrat\sqrat\sqratVM.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

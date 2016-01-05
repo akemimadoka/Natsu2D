@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <string>
-#include "natType.h"
 #include "natRefObj.h"
 #include "natMultiThread.h"
 
@@ -103,7 +102,7 @@ public:
 	nResult TryLock() override;
 	void Unlock() override;
 
-	nTString GetFilename() const;
+	ncTStr GetFilename() const;
 
 protected:
 	~natFileStream();

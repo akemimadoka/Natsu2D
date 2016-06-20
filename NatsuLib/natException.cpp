@@ -1,40 +1,59 @@
 #include "stdafx.h"
 #include "natException.h"
+#include "natUtil.h"
 
-natException::natException(ncTStr Src, ncTStr Desc, const natException* pCausedby)
-	: m_Time(GetTickCount()), m_Source(Src), m_Description(Desc), m_pCausedby(pCausedby)
+natException::natException(ncTStr Src, ncTStr Desc, ...) noexcept
+	: m_Time(GetTickCount()), m_Source(Src)
+{
+	va_list vl;
+	va_start(vl, Desc);
+	m_Description = natUtil::FormatStringv(Desc, vl);
+	va_end(vl);
+}
+
+natException::natException(ncTStr Src, ncTStr Desc, va_list vl) noexcept
+	: m_Time(GetTickCount()), m_Source(Src), m_Description(natUtil::FormatStringv(Desc, vl))
 {
 }
 
-nuInt natException::GetTime() const
+nuInt natException::GetTime() const noexcept
 {
 	return m_Time;
 }
 
-ncTStr natException::GetSource() const
+ncTStr natException::GetSource() const noexcept
 {
 	return m_Source.c_str();
 }
 
-ncTStr natException::GetDesc() const
+ncTStr natException::GetDesc() const noexcept
 {
 	return m_Description.c_str();
 }
 
-const natException* natException::GetCausedbyException() const
+natWinException::natWinException(ncTStr Src, ncTStr Desc, ...) noexcept
+	: m_LastErr(GetLastError())
 {
-	return m_pCausedby;
+	m_Time = GetTickCount();
+	m_Source = Src;
+	va_list vl;
+	va_start(vl, Desc);
+	m_Description = natUtil::FormatStringv(Desc, vl) + natUtil::FormatString(_T(" ( LastErr = %d)"), m_LastErr);
+	va_end(vl);
 }
 
-natWinException::natWinException(ncTStr Src, ncTStr Desc)
-	: natException(Src, Desc, nullptr), m_LastErr(GetLastError())
+natWinException::natWinException(ncTStr Src, DWORD LastErr, ncTStr Desc, ...) noexcept
+	: m_LastErr(LastErr)
 {
-	nTChar tErrnoStr[16] = { _T('\0') };
-	_itot_s(m_LastErr, tErrnoStr, 10);
-	m_Description = m_Description + _T(" ( LastErr=") + tErrnoStr + _T(" )");
+	m_Time = GetTickCount();
+	m_Source = Src;
+	va_list vl;
+	va_start(vl, Desc);
+	m_Description = natUtil::FormatStringv(Desc, vl) + natUtil::FormatString(_T(" ( LastErr = %d)"), m_LastErr);
+	va_end(vl);
 }
 
-DWORD natWinException::GetLastErr() const
+DWORD natWinException::GetErrNo() const noexcept
 {
 	return m_LastErr;
 }

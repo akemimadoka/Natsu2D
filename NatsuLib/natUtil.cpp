@@ -23,7 +23,7 @@ namespace natUtil
 		return FormatStringv(lpStr, vl);
 	}
 
-	nTString FormatStringv(ncTStr lpStr, va_list vl)
+	nTString FormatStringv(ncTStr lpStr, const va_list vl)
 	{
 		int nLen;
 		std::vector<nTChar> tBuf(lstrlen(lpStr) + 1u);
@@ -33,12 +33,12 @@ namespace natUtil
 			do
 			{
 				tBuf.resize(tBuf.size() * 2u);
-				nLen = _vsntprintf_s(tBuf.data(), _TRUNCATE, tBuf.size() - 1, lpStr, vl);
+				nLen = _vsntprintf_s(tBuf.data(), tBuf.size() - 1, _TRUNCATE, lpStr, vl);
 			} while (nLen < 0 || tBuf.size() - nLen <= FIXCHAR);
 		}
 		catch (std::bad_alloc&)
 		{
-			throw natException(_T("n2dUtil::FormatString"), _T("Allocate memory failed"));
+			nat_Throw(natException, _T("Allocate memory failed"));
 		}
 
 		return tBuf.data();
@@ -77,7 +77,7 @@ namespace natUtil
 		}
 		catch (std::bad_alloc&)
 		{
-			throw natException(_T("n2dUtil::GetResourceString"), _T("Allocate memory failed"));
+			nat_Throw(natException, _T("Allocate memory failed"));
 		}
 
 		return tBuf.data();
@@ -104,36 +104,5 @@ namespace natUtil
 		}
 
 		return std::vector<nByte>();
-	}
-
-	// 分割字符串实现
-	template <typename T>
-	std::vector<T> _splithelper(T str, T const& pattern)
-	{
-		typename T::size_type pos;
-		std::vector<T> result;
-		str += pattern;//扩展字符串以方便操作
-		auto size = str.size();
-
-		for (size_t i = 0u; i<size; ++i)
-		{
-			pos = str.find(pattern, i);
-			if (pos < size)
-			{
-				result.push_back(str.substr(i, pos - i));
-				i = pos + pattern.size() - 1;
-			}
-		}
-		return result;
-	}
-
-	std::vector<std::string> split(std::string const& str, std::string const& pattern)
-	{
-		return _splithelper(str, pattern);
-	}
-
-	std::vector<std::wstring> split(std::wstring const& str, std::wstring const& pattern)
-	{
-		return _splithelper(str, pattern);
 	}
 }

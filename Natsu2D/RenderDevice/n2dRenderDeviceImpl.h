@@ -23,62 +23,62 @@ class n2dRenderDeviceImpl final
 	{
 		switch (cp)
 		{
-		case n2dRenderDevice::Capability::Blend:
+		case Capability::Blend:
 			return GL_BLEND;
-		case n2dRenderDevice::Capability::ColorLogicOp:
+		case Capability::ColorLogicOp:
 			return GL_COLOR_LOGIC_OP;
-		case n2dRenderDevice::Capability::CullFace:
+		case Capability::CullFace:
 			return GL_CULL_FACE;
-		case n2dRenderDevice::Capability::DebugOutput:
+		case Capability::DebugOutput:
 			return GL_DEBUG_OUTPUT;
-		case n2dRenderDevice::Capability::DebugOutputSynchronous:
+		case Capability::DebugOutputSynchronous:
 			return GL_DEBUG_OUTPUT_SYNCHRONOUS;
-		case n2dRenderDevice::Capability::DepthClamp:
+		case Capability::DepthClamp:
 			return GL_DEPTH_CLAMP;
-		case n2dRenderDevice::Capability::DepthTest:
+		case Capability::DepthTest:
 			return GL_DEPTH_TEST;
-		case n2dRenderDevice::Capability::Dither:
+		case Capability::Dither:
 			return GL_DITHER;
-		case n2dRenderDevice::Capability::Framebuffer_SRGB:
+		case Capability::Framebuffer_SRGB:
 			return GL_FRAMEBUFFER_SRGB;
-		case n2dRenderDevice::Capability::LineSmooth:
+		case Capability::LineSmooth:
 			return GL_LINE_SMOOTH;
-		case n2dRenderDevice::Capability::Multisample:
+		case Capability::Multisample:
 			return GL_MULTISAMPLE;
-		case n2dRenderDevice::Capability::PolygonOffsetFill:
+		case Capability::PolygonOffsetFill:
 			return GL_POLYGON_OFFSET_FILL;
-		case n2dRenderDevice::Capability::PolygonOffsetLine:
+		case Capability::PolygonOffsetLine:
 			return GL_POLYGON_OFFSET_LINE;
-		case n2dRenderDevice::Capability::PolygonOffsetPoint:
+		case Capability::PolygonOffsetPoint:
 			return GL_POLYGON_OFFSET_POINT;
-		case n2dRenderDevice::Capability::PolygonSmooth:
+		case Capability::PolygonSmooth:
 			return GL_POLYGON_SMOOTH;
-		case n2dRenderDevice::Capability::PrimitiveRestart:
+		case Capability::PrimitiveRestart:
 			return GL_PRIMITIVE_RESTART;
-		case n2dRenderDevice::Capability::PrimitiveRestartFixedIndex:
+		case Capability::PrimitiveRestartFixedIndex:
 			return GL_PRIMITIVE_RESTART_FIXED_INDEX;
-		case n2dRenderDevice::Capability::RasterizerDiscard:
+		case Capability::RasterizerDiscard:
 			return GL_RASTERIZER_DISCARD;
-		case n2dRenderDevice::Capability::SampleAlphaToCoverage:
+		case Capability::SampleAlphaToCoverage:
 			return GL_SAMPLE_ALPHA_TO_COVERAGE;
-		case n2dRenderDevice::Capability::SampleAlphaToOne:
+		case Capability::SampleAlphaToOne:
 			return GL_SAMPLE_ALPHA_TO_ONE;
-		case n2dRenderDevice::Capability::SampleCoverage:
+		case Capability::SampleCoverage:
 			return GL_SAMPLE_COVERAGE;
-		case n2dRenderDevice::Capability::SampleShading:
+		case Capability::SampleShading:
 			return GL_SAMPLE_SHADING;
-		case n2dRenderDevice::Capability::SampleMask:
+		case Capability::SampleMask:
 			return GL_SAMPLE_MASK;
-		case n2dRenderDevice::Capability::ScissorTest:
+		case Capability::ScissorTest:
 			return GL_SCISSOR_TEST;
-		case n2dRenderDevice::Capability::StencilTest:
+		case Capability::StencilTest:
 			return GL_STENCIL_TEST;
-		case n2dRenderDevice::Capability::TextureCubeMapSeamless:
+		case Capability::TextureCubeMapSeamless:
 			return GL_TEXTURE_CUBE_MAP_SEAMLESS;
-		case n2dRenderDevice::Capability::ProgramPointSize:
+		case Capability::ProgramPointSize:
 			return GL_PROGRAM_POINT_SIZE;
 		default:
-			throw natException(_T("n2dRenderDeviceImpl::GetCapabilityEnum"), _T("Not an available Capability enum"));
+			nat_Throw(natException, _T("Not an available Capability enum"));
 		}
 	}
 
@@ -86,10 +86,10 @@ class n2dRenderDeviceImpl final
 	{
 		switch (cp)
 		{
-		case n2dRenderDevice::CapabilityI::ClipDistance:
+		case CapabilityI::ClipDistance:
 			return GL_CLIP_DISTANCE0;
 		default:
-			throw natException(_T("n2dRenderDeviceImpl::GetCapabilityIEnum"), _T("Not an available CapabilityI enum"));
+			nat_Throw(natException, _T("Not an available CapabilityI enum"));
 		}
 	}*/
 
@@ -97,53 +97,53 @@ class n2dRenderDeviceImpl final
 	{
 		switch (blendfactor)
 		{
-		case n2dRenderDevice::BlendFactor::Zero:
+		case BlendFactor::Zero:
 			return GL_ZERO;
-		case n2dRenderDevice::BlendFactor::One:
+		case BlendFactor::One:
 			return GL_ONE;
-		case n2dRenderDevice::BlendFactor::SrcColor:
+		case BlendFactor::SrcColor:
 			return GL_SRC_COLOR;
-		case n2dRenderDevice::BlendFactor::OneMinusSrcColor:
+		case BlendFactor::OneMinusSrcColor:
 			return GL_ONE_MINUS_SRC_COLOR;
-		case n2dRenderDevice::BlendFactor::DstColor:
+		case BlendFactor::DstColor:
 			return GL_DST_COLOR;
-		case n2dRenderDevice::BlendFactor::OneMinusDstColor:
+		case BlendFactor::OneMinusDstColor:
 			return GL_ONE_MINUS_DST_COLOR;
-		case n2dRenderDevice::BlendFactor::SrcAlpha:
+		case BlendFactor::SrcAlpha:
 			return GL_SRC_ALPHA;
-		case n2dRenderDevice::BlendFactor::OneMinusSrcAlpha:
+		case BlendFactor::OneMinusSrcAlpha:
 			return GL_ONE_MINUS_SRC_ALPHA;
-		case n2dRenderDevice::BlendFactor::DstAlpha:
+		case BlendFactor::DstAlpha:
 			return GL_DST_ALPHA;
-		case n2dRenderDevice::BlendFactor::OneMinusDstAlpha:
+		case BlendFactor::OneMinusDstAlpha:
 			return GL_ONE_MINUS_DST_ALPHA;
-		case n2dRenderDevice::BlendFactor::ConstantColor:
+		case BlendFactor::ConstantColor:
 			return GL_CONSTANT_COLOR;
-		case n2dRenderDevice::BlendFactor::OneMinusConstantColor:
+		case BlendFactor::OneMinusConstantColor:
 			return GL_ONE_MINUS_CONSTANT_COLOR;
-		case n2dRenderDevice::BlendFactor::ConstantAlpha:
+		case BlendFactor::ConstantAlpha:
 			return GL_CONSTANT_ALPHA;
-		case n2dRenderDevice::BlendFactor::OneMinusConstantAlpha:
+		case BlendFactor::OneMinusConstantAlpha:
 			return GL_ONE_MINUS_CONSTANT_ALPHA;
-		case n2dRenderDevice::BlendFactor::SrcAlphaSaturate:
+		case BlendFactor::SrcAlphaSaturate:
 			return GL_SRC_ALPHA_SATURATE;
-		case n2dRenderDevice::BlendFactor::Src1Color:
+		case BlendFactor::Src1Color:
 			return GL_SRC1_COLOR;
-		case n2dRenderDevice::BlendFactor::OneMinusSrc1Color:
+		case BlendFactor::OneMinusSrc1Color:
 			return GL_ONE_MINUS_SRC1_COLOR;
-		case n2dRenderDevice::BlendFactor::Src1Alpha:
+		case BlendFactor::Src1Alpha:
 			return GL_SRC1_ALPHA;
-		case n2dRenderDevice::BlendFactor::OneMinusSrc1Alpha:
+		case BlendFactor::OneMinusSrc1Alpha:
 			return GL_ONE_MINUS_SRC1_ALPHA;
 		default:
-			throw natException(_T("n2dRenderDeviceImpl::GetBlendFactorEnum"), _T("Not an available BlendFactor enum"));
+			nat_Throw(natException, _T("Not an available BlendFactor enum"));
 		}
 	}
 public:
 	///	@brief	渲染设备构造函数
 	///	@param[in]	pEngine		要关联的引擎
 	explicit n2dRenderDeviceImpl(n2dEngine* pEngine);
-	~n2dRenderDeviceImpl() = default;
+	~n2dRenderDeviceImpl();
 
 	///	@brief	关联渲染上下文到此线程
 	void MakeCurrent() override;
@@ -239,23 +239,14 @@ public:
 
 	nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut) override;
 
-	///	@brief	创建二维图元渲染器
-	///	@param[out]		pOut	创建的二维图元渲染器
-	///	@return	结果
+	nResult CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) override;
+
 	nResult CreateGraphics2D(n2dGraphics2D** pOut) override;
 
 	nResult CreateGraphics3D(n2dGraphics3D** pOut) override;
 
-	///	@brief	创建纹理
-	///	@param[out]		pOut	创建的纹理
-	///	@return	结果
 	nResult CreateTexture(n2dTexture2D** pOut) override;
 
-	///	@brief	从流中创建纹理
-	///	@param[in]		pStream		流
-	///	@param[in]		dwFileType	文件类型
-	///	@param[out]		pOut		创建的纹理
-	///	@return	结果
 	nResult CreateTextureFromStream(natStream* pStream, DWORD dwFileType, n2dTexture2D** pOut) override;
 
 	nResult CreateModelLoader(n2dModelLoader** pOut) override;
@@ -278,9 +269,9 @@ private:
 
 	natMat4<> m_MVPMat;
 
-	n2dBufferImpl* m_pMVPBuffer;
+	natRefPointer<n2dBufferImpl> m_pMVPBuffer;
 
 	nuInt m_MaxLights;
 	std::vector<natRefPointer<n2dLightControllerImpl>> m_Lights;
-	n2dBufferImpl* m_pLightBuffer;
+	natRefPointer<n2dBufferImpl> m_pLightBuffer;
 };

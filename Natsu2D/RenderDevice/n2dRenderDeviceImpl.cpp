@@ -9,19 +9,22 @@
 #include "n2dBufferImpl.h"
 #include "n2dLightControllerImpl.h"
 #include "n2dMotionManagerImpl.h"
+#include "n2dLayerImpl.h"
 
 n2dRenderDeviceImpl::n2dRenderDeviceImpl(n2dEngine* GLApp)
 	: m_pEngine(GLApp),
 	m_Shader(nullptr),
 	m_bUpdated(false),
-	m_pMVPBuffer(nullptr),
-	m_pLightBuffer(nullptr),
 	m_MaxLights(0u)
 {
 	m_ModelMatStack.push(natMat4<>(1.0f));
 	m_ViewMatStack.push(natMat4<>(1.0f));
 	m_ProjMatStack.push(natMat4<>(1.0f));
 	m_MVPMat = GetCurProjMat() * GetCurViewMat() * GetCurModelMat();
+}
+
+n2dRenderDeviceImpl::~n2dRenderDeviceImpl()
+{
 }
 
 void n2dRenderDeviceImpl::MakeCurrent()
@@ -73,7 +76,7 @@ void n2dRenderDeviceImpl::SetBlendModeI(n2dBuffer* Buf, BlendFactor Source, Blen
 {
 	if (!Buf || Buf->GetTarget() != n2dBuffer::BufferTarget::DrawIndirectBuffer)
 	{
-		throw natException(_T("n2dRenderDeviceImpl::SetBlendModeI"), _T("Buf is not a draw buffer"));
+		nat_Throw(natException, _T("Buf is not a draw buffer"));
 	}
 
 	glBlendFunci(Buf->GetBuffer(), GetBlendFactorEnum(Source), GetBlendFactorEnum(Destination));
@@ -234,14 +237,14 @@ nuInt n2dRenderDeviceImpl::GetMaxLight() const
 
 void n2dRenderDeviceImpl::SetMaxLights(nuInt value)
 {
-	if (m_MaxLights > 0u || m_pLightBuffer)
+	if (m_pLightBuffer || m_MaxLights > 0u)
 	{
 		return;
 	}
 
 	m_MaxLights = value;
 	m_Lights.resize(m_MaxLights);
-	m_pLightBuffer = new n2dBufferImpl(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(GetShaderWrapper()));
+	m_pLightBuffer = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(GetShaderWrapper()));
 	m_pLightBuffer->AllocData(sizeof(n2dLightController::LightProperties) * m_MaxLights, nullptr, n2dBuffer::BufferUsage::DynamicDraw);
 	m_pLightBuffer->BindBase(1u);
 }
@@ -253,13 +256,13 @@ n2dLightController* n2dRenderDeviceImpl::GetLightController(nuInt Index)
 		return nullptr;
 	}
 
-	n2dLightControllerImpl* pLight;
+	nUnsafePtr<n2dLightControllerImpl> pLight;
 
 	pLight = m_Lights[Index];
 	if (pLight != nullptr)
 		return pLight;
 	
-	m_Lights[Index] = pLight = new n2dLightControllerImpl(Index, m_pLightBuffer);
+	pLight = m_Lights[Index] = make_ref<n2dLightControllerImpl>(Index, m_pLightBuffer);
 	return pLight;
 }
 
@@ -277,11 +280,43 @@ nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget,
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateBuffer"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+	}
+	catch (...)
+	{
+		return NatErr_Unknown;
+	}
+
+	return NatErr_OK;
+}
+
+nResult n2dRenderDeviceImpl::CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order, ncTStr Name, natNode* pParent)
+{
+	if (pOut == nullptr)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	try
+	{
+		*pOut = new n2dLayerImpl(RenderHandler, UpdateHandler, Order, Name, pParent);
+	}
+	catch (std::bad_alloc&)
+	{
+		natException e(_T(__FUNCTION__), _T("Failed to allocate memory"));
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+	}
+	catch (natException& e)
+	{
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -305,11 +340,13 @@ nResult n2dRenderDeviceImpl::CreateGraphics2D(n2dGraphics2D** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateGraphics2D"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -333,11 +370,13 @@ nResult n2dRenderDeviceImpl::CreateGraphics3D(n2dGraphics3D** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateGraphics3D"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -361,11 +400,13 @@ nResult n2dRenderDeviceImpl::CreateTexture(n2dTexture2D** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateTexture"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -395,11 +436,13 @@ nResult n2dRenderDeviceImpl::CreateTextureFromStream(natStream* pStream, DWORD d
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateTextureFromStream"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -423,11 +466,13 @@ nResult n2dRenderDeviceImpl::CreateModelLoader(n2dModelLoader** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateModelLoader"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -451,11 +496,13 @@ nResult n2dRenderDeviceImpl::CreateObjLoader(n2dModelLoader** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateObjLoader"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -479,11 +526,13 @@ nResult n2dRenderDeviceImpl::CreateMotionManager(n2dMotionManager ** pOut)
 	catch (std::bad_alloc&)
 	{
 		natException e(_T("n2dRenderDeviceImpl::CreateObjLoader"), _T("Failed to allocate memory"));
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
-		n2dGlobal::EventException(&e);
+		n2dGlobal::natExceptionEvent event(e);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -502,7 +551,7 @@ void n2dRenderDeviceImpl::updateMVP()
 	m_bUpdated = true;
 	if (!m_pMVPBuffer)
 	{
-		m_pMVPBuffer = new n2dBufferImpl(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(GetShaderWrapper()));
+		m_pMVPBuffer = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(GetShaderWrapper()));
 		m_pMVPBuffer->BindBase(0u);
 	}
 

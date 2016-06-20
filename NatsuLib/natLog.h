@@ -18,6 +18,29 @@
 class natLog final
 {
 public:
+	class EventLogUpdated final
+		: public natEventBase
+	{
+	public:
+		explicit EventLogUpdated(ncTStr data)
+			: m_Data(data)
+		{
+		}
+
+		bool CanCancel() const noexcept override
+		{
+			return false;
+		}
+
+		ncTStr GetData() const noexcept
+		{
+			return m_Data;
+		}
+
+	private:
+		ncTStr m_Data;
+	};
+
 	///	@brief	日志类型
 	enum class LogType
 	{
@@ -60,7 +83,7 @@ public:
 	ncTStr GetLastLog() const;
 
 	///	@brief	注册日志更新事件处理函数
-	void RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func);
+	void RegisterLogUpdateEventFunc(natEventBus::EventListenerFunc func);
 private:
 	explicit natLog(ncTStr const& logfile);
 	~natLog();
@@ -68,8 +91,6 @@ private:
 	nTString m_LogFile;
 	std::basic_ofstream<nTChar> m_fstr;
 	nTString m_LastLog;
-
-	natEvent<ncTStr> EventLogUpdate;
 
 	static ncTStr ParseLogType(LogType logtype);
 };

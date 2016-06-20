@@ -90,6 +90,15 @@
     <ClInclude Include="natQuat.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="natNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="natNamedPipe.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="natMisc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -127,6 +136,9 @@
     </ClCompile>
     <ClCompile Include="extern\unzip\zip.c">
       <Filter>Extern\minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="natNamedPipe.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

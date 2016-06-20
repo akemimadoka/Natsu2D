@@ -28,22 +28,22 @@
 		return *this;\
 	}
 
-#define TOPERATORSCALAR(op) template <typename U>\
-	natVec2 operator##op(U const& Scalar) const\
-	{\
-		return natVec2(x op static_cast<T>(Scalar), y op static_cast<T>(Scalar));\
-	}
-
-#define TOPERATORSELF(op) template <typename U>\
-	natVec2 operator##op(natVec2<U> const& v) const\
-	{\
-		return natVec2(x op static_cast<T>(v.x), y op static_cast<T>(v.y));\
-	}
+#define TOPERATORSCALARNML(op) template <typename T, typename U>\
+auto operator##op(natVec2<T> const& v, U const& Scalar)\
+{\
+	return natVec2<decltype(v.x op Scalar)>(v.x op Scalar, v.y op Scalar);\
+}
 
 #define TOPERATORSCALARNM(op) template <typename T, typename U>\
-natVec2<T> operator##op(U const& Scalar, natVec2<T> const& v)\
+auto operator##op(U const& Scalar, natVec2<T> const& v)\
 {\
-	return natVec2<T>(static_cast<T>(Scalar) op v.x, static_cast<T>(Scalar) op v.y);\
+	return natVec2<decltype(Scalar op v.x)>(Scalar op v.x, Scalar op v.y);\
+}
+
+#define TOPERATORSELFNM(op) template <typename T, typename U>\
+auto operator##op(natVec2<T> const& v1, natVec2<U> const& v2)\
+{\
+	return natVec2<decltype(v1.x op v2.x)>(v1.x op v2.x, v1.y op v2.y);\
 }
 
 struct natVec {};
@@ -75,7 +75,7 @@ struct natVec2 final
 		};
 	};
 
-	constexpr nuInt length() const
+	static constexpr nuInt length() noexcept
 	{
 		return 2u;
 	}
@@ -84,7 +84,7 @@ struct natVec2 final
 	{
 		if (i >= length())
 		{
-			throw natException(_T("natVec2::operator[]"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 		}
 
 		return (&x)[i];
@@ -241,57 +241,40 @@ struct natVec2 final
 
 	OPERATORSCALAR(>>= );
 	OPERATORSELF(>>= );
-
-	TOPERATORSCALAR(+);
-	TOPERATORSELF(+);
-
-	TOPERATORSCALAR(-);
-	TOPERATORSELF(-);
-
-	TOPERATORSCALAR(*);
-	TOPERATORSELF(*);
-
-	TOPERATORSCALAR(/ );
-	TOPERATORSELF(/ );
-
-	TOPERATORSCALAR(%);
-	TOPERATORSELF(%);
-
-	TOPERATORSCALAR(&);
-	TOPERATORSELF(&);
-
-	TOPERATORSCALAR(| );
-	TOPERATORSELF(| );
-
-	TOPERATORSCALAR(^);
-	TOPERATORSELF(^);
-
-	TOPERATORSCALAR(<< );
-	TOPERATORSELF(<< );
-
-	TOPERATORSCALAR(>> );
-	TOPERATORSELF(>> );
 };
 
+TOPERATORSCALARNML(+);
+TOPERATORSCALARNML(-);
+TOPERATORSCALARNML(*);
+TOPERATORSCALARNML(/ );
+TOPERATORSCALARNML(%);
+TOPERATORSCALARNML(&);
+TOPERATORSCALARNML(| );
+TOPERATORSCALARNML(^);
+TOPERATORSCALARNML(<< );
+TOPERATORSCALARNML(>> );
+
 TOPERATORSCALARNM(+);
-
 TOPERATORSCALARNM(-);
-
 TOPERATORSCALARNM(*);
-
 TOPERATORSCALARNM(/ );
-
 TOPERATORSCALARNM(%);
-
 TOPERATORSCALARNM(&);
-
 TOPERATORSCALARNM(| );
-
 TOPERATORSCALARNM(^);
-
 TOPERATORSCALARNM(<< );
-
 TOPERATORSCALARNM(>> );
+
+TOPERATORSELFNM(+);
+TOPERATORSELFNM(-);
+TOPERATORSELFNM(*);
+TOPERATORSELFNM(/ );
+TOPERATORSELFNM(%);
+TOPERATORSELFNM(&);
+TOPERATORSELFNM(| );
+TOPERATORSELFNM(^);
+TOPERATORSELFNM(<< );
+TOPERATORSELFNM(>> );
 
 #ifdef OPERATORSCALAR
 #	undef OPERATORSCALAR
@@ -301,16 +284,16 @@ TOPERATORSCALARNM(>> );
 #	undef OPERATORSELF
 #endif
 
-#ifdef TOPERATORSCALAR
-#	undef TOPERATORSCALAR
-#endif
-
-#ifdef TOPERATORSELF
-#	undef TOPERATORSELF
+#ifdef TOPERATORSCALARNML
+#	undef TOPERATORSCALARNML
 #endif
 
 #ifdef TOPERATORSCALARNM
 #	undef TOPERATORSCALARNM
+#endif
+
+#ifdef TOPERATORSELFNM
+#	undef TOPERATORSELFNM
 #endif
 
 #define OPERATORSCALAR(op) template <typename U>\
@@ -331,22 +314,22 @@ TOPERATORSCALARNM(>> );
 		return *this;\
 	}
 
-#define TOPERATORSCALAR(op) template <typename U>\
-	natVec3 operator##op(U const& Scalar) const\
-	{\
-		return natVec3(x op static_cast<T>(Scalar), y op static_cast<T>(Scalar), z op static_cast<T>(Scalar));\
-	}
-
-#define TOPERATORSELF(op) template <typename U>\
-	natVec3 operator##op(natVec3<U> const& v) const\
-	{\
-		return natVec3(x op static_cast<T>(v.x), y op static_cast<T>(v.y), z op static_cast<T>(v.z));\
-	}
+#define TOPERATORSCALARNML(op) template <typename T, typename U>\
+auto operator##op(natVec3<T> const& v, U const& Scalar)\
+{\
+	return natVec3<decltype(v.x op Scalar)>(v.x op Scalar, v.y op Scalar, v.z op Scalar);\
+}
 
 #define TOPERATORSCALARNM(op) template <typename T, typename U>\
-natVec3<T> operator##op(U const& Scalar, natVec3<T> const& v)\
+auto operator##op(U const& Scalar, natVec3<T> const& v)\
 {\
-	return natVec3<T>(static_cast<T>(Scalar) op v.x, static_cast<T>(Scalar) op v.y, static_cast<T>(Scalar) op v.z);\
+	return natVec3<decltype(Scalar op v.x)>(Scalar op v.x, Scalar op v.y, Scalar op v.z);\
+}
+
+#define TOPERATORSELFNM(op) template <typename T, typename U>\
+auto operator##op(natVec3<T> const& v1, natVec3<U> const& v2)\
+{\
+	return natVec3<decltype(v1.x op v2.x)>(v1.x op v2.x, v1.y op v2.y, v1.z op v2.z);\
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -370,7 +353,7 @@ struct natVec3 final
 		};
 	};
 
-	constexpr nuInt length() const
+	static constexpr nuInt length() noexcept
 	{
 		return 3u;
 	}
@@ -379,7 +362,7 @@ struct natVec3 final
 	{
 		if (i >= length())
 		{
-			throw natException(_T("natVec3::operator[]"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 		}
 
 		return *(&x + i);
@@ -546,57 +529,40 @@ struct natVec3 final
 
 	OPERATORSCALAR(>>= );
 	OPERATORSELF(>>= );
-
-	TOPERATORSCALAR(+);
-	TOPERATORSELF(+);
-
-	TOPERATORSCALAR(-);
-	TOPERATORSELF(-);
-
-	TOPERATORSCALAR(*);
-	TOPERATORSELF(*);
-
-	TOPERATORSCALAR(/ );
-	TOPERATORSELF(/ );
-
-	TOPERATORSCALAR(%);
-	TOPERATORSELF(%);
-
-	TOPERATORSCALAR(&);
-	TOPERATORSELF(&);
-
-	TOPERATORSCALAR(| );
-	TOPERATORSELF(| );
-
-	TOPERATORSCALAR(^);
-	TOPERATORSELF(^);
-
-	TOPERATORSCALAR(<< );
-	TOPERATORSELF(<< );
-
-	TOPERATORSCALAR(>> );
-	TOPERATORSELF(>> );
 };
 
+TOPERATORSCALARNML(+);
+TOPERATORSCALARNML(-);
+TOPERATORSCALARNML(*);
+TOPERATORSCALARNML(/ );
+TOPERATORSCALARNML(%);
+TOPERATORSCALARNML(&);
+TOPERATORSCALARNML(| );
+TOPERATORSCALARNML(^);
+TOPERATORSCALARNML(<< );
+TOPERATORSCALARNML(>> );
+
 TOPERATORSCALARNM(+);
-
 TOPERATORSCALARNM(-);
-
 TOPERATORSCALARNM(*);
-
 TOPERATORSCALARNM(/ );
-
 TOPERATORSCALARNM(%);
-
 TOPERATORSCALARNM(&);
-
 TOPERATORSCALARNM(| );
-
 TOPERATORSCALARNM(^);
-
 TOPERATORSCALARNM(<< );
-
 TOPERATORSCALARNM(>> );
+
+TOPERATORSELFNM(+);
+TOPERATORSELFNM(-);
+TOPERATORSELFNM(*);
+TOPERATORSELFNM(/ );
+TOPERATORSELFNM(%);
+TOPERATORSELFNM(&);
+TOPERATORSELFNM(| );
+TOPERATORSELFNM(^);
+TOPERATORSELFNM(<< );
+TOPERATORSELFNM(>> );
 
 #ifdef OPERATORSCALAR
 #	undef OPERATORSCALAR
@@ -606,16 +572,16 @@ TOPERATORSCALARNM(>> );
 #	undef OPERATORSELF
 #endif
 
-#ifdef TOPERATORSCALAR
-#	undef TOPERATORSCALAR
-#endif
-
-#ifdef TOPERATORSELF
-#	undef TOPERATORSELF
+#ifdef TOPERATORSCALARNML
+#	undef TOPERATORSCALARNML
 #endif
 
 #ifdef TOPERATORSCALARNM
 #	undef TOPERATORSCALARNM
+#endif
+
+#ifdef TOPERATORSELFNM
+#	undef TOPERATORSELFNM
 #endif
 
 #define OPERATORSCALAR(op) template <typename U>\
@@ -638,22 +604,22 @@ TOPERATORSCALARNM(>> );
 		return *this;\
 	}
 
-#define TOPERATORSCALAR(op) template <typename U>\
-	natVec4 operator##op(U const& Scalar) const\
-	{\
-		return natVec4(x op static_cast<T>(Scalar), y op static_cast<T>(Scalar), z op static_cast<T>(Scalar), w op static_cast<T>(Scalar));\
-	}
-
-#define TOPERATORSELF(op) template <typename U>\
-	natVec4 operator##op(natVec4<U> const& v) const\
-	{\
-		return natVec4(x op static_cast<T>(v.x), y op static_cast<T>(v.y), z op static_cast<T>(v.z), w op static_cast<T>(v.w));\
-	}
+#define TOPERATORSCALARNML(op) template <typename T, typename U>\
+auto operator##op(natVec4<T> const& v, U const& Scalar)\
+{\
+	return natVec4<decltype(v.x op Scalar)>(v.x op Scalar, v.y op Scalar, v.z op Scalar, v.w op Scalar);\
+}
 
 #define TOPERATORSCALARNM(op) template <typename T, typename U>\
-natVec4<T> operator##op(U const& Scalar, natVec4<T> const& v)\
+auto operator##op(U const& Scalar, natVec4<T> const& v)\
 {\
-	return natVec4<T>(static_cast<T>(Scalar) op v.x, static_cast<T>(Scalar) op v.y, static_cast<T>(Scalar) op v.z, static_cast<T>(Scalar) op v.w);\
+	return natVec4<decltype(Scalar op v.x)>(Scalar op v.x, Scalar op v.y, Scalar op v.z, Scalar op v.w);\
+}
+
+#define TOPERATORSELFNM(op) template <typename T, typename U>\
+auto operator##op(natVec4<T> const& v1, natVec4<U> const& v2)\
+{\
+	return natVec4<decltype(v1.x op v2.x)>(v1.x op v2.x, v1.y op v2.y, v1.z op v2.z, v1.w op v2.w);\
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -677,7 +643,7 @@ struct natVec4 final
 		};
 	};
 
-	constexpr nuInt length() const
+	static constexpr nuInt length() noexcept
 	{
 		return 4u;
 	}
@@ -686,7 +652,7 @@ struct natVec4 final
 	{
 		if (i >= length())
 		{
-			throw natException(_T("natVec4::operator[]"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 		}
 
 		return (&x)[i];
@@ -869,57 +835,40 @@ struct natVec4 final
 
 	OPERATORSCALAR(>>= );
 	OPERATORSELF(>>= );
-
-	TOPERATORSCALAR(+);
-	TOPERATORSELF(+);
-
-	TOPERATORSCALAR(-);
-	TOPERATORSELF(-);
-
-	TOPERATORSCALAR(*);
-	TOPERATORSELF(*);
-
-	TOPERATORSCALAR(/ );
-	TOPERATORSELF(/ );
-
-	TOPERATORSCALAR(%);
-	TOPERATORSELF(%);
-
-	TOPERATORSCALAR(&);
-	TOPERATORSELF(&);
-
-	TOPERATORSCALAR(| );
-	TOPERATORSELF(| );
-
-	TOPERATORSCALAR(^);
-	TOPERATORSELF(^);
-
-	TOPERATORSCALAR(<< );
-	TOPERATORSELF(<< );
-
-	TOPERATORSCALAR(>> );
-	TOPERATORSELF(>> );
 };
 
+TOPERATORSCALARNML(+);
+TOPERATORSCALARNML(-);
+TOPERATORSCALARNML(*);
+TOPERATORSCALARNML(/ );
+TOPERATORSCALARNML(%);
+TOPERATORSCALARNML(&);
+TOPERATORSCALARNML(| );
+TOPERATORSCALARNML(^);
+TOPERATORSCALARNML(<< );
+TOPERATORSCALARNML(>> );
+
 TOPERATORSCALARNM(+);
-
 TOPERATORSCALARNM(-);
-
 TOPERATORSCALARNM(*);
-
 TOPERATORSCALARNM(/ );
-
 TOPERATORSCALARNM(%);
-
 TOPERATORSCALARNM(&);
-
 TOPERATORSCALARNM(| );
-
 TOPERATORSCALARNM(^);
-
 TOPERATORSCALARNM(<< );
-
 TOPERATORSCALARNM(>> );
+
+TOPERATORSELFNM(+);
+TOPERATORSELFNM(-);
+TOPERATORSELFNM(*);
+TOPERATORSELFNM(/ );
+TOPERATORSELFNM(%);
+TOPERATORSELFNM(&);
+TOPERATORSELFNM(| );
+TOPERATORSELFNM(^);
+TOPERATORSELFNM(<< );
+TOPERATORSELFNM(>> );
 
 #ifdef OPERATORSCALAR
 #	undef OPERATORSCALAR
@@ -929,16 +878,16 @@ TOPERATORSCALARNM(>> );
 #	undef OPERATORSELF
 #endif
 
-#ifdef TOPERATORSCALAR
-#	undef TOPERATORSCALAR
-#endif
-
-#ifdef TOPERATORSELF
-#	undef TOPERATORSELF
+#ifdef TOPERATORSCALARNML
+#	undef TOPERATORSCALARNML
 #endif
 
 #ifdef TOPERATORSCALARNM
 #	undef TOPERATORSCALARNM
+#endif
+
+#ifdef TOPERATORSELFNM
+#	undef TOPERATORSELFNM
 #endif
 
 template <typename T>

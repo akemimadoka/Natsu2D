@@ -45,7 +45,7 @@ private:
 	natMat4<> m_Transform;
 
 	n2dRenderDeviceImpl* m_pRenderDevice;
-	n2dBufferImpl *m_VB, *m_IB;
+	natRefPointer<n2dBufferImpl> m_VB, m_IB;
 
 	nuInt m_VertCount, m_IndexCount;
 
@@ -62,7 +62,7 @@ class n2dDynamicMeshDataImpl
 	friend class n2dMotionManagerImpl;
 	friend class n2dGraphics3DImpl;
 	friend class n2dModelLoaderImpl;
-	friend class n2dSelekton;
+	friend class n2dSkeleton;
 	friend class n2dIK;
 public:
 	n2dDynamicMeshDataImpl();
@@ -121,7 +121,7 @@ private:
 		nFloat MaxRotation;
 	};
 
-	std::shared_ptr<n2dSelekton> m_Selekton;
+	std::shared_ptr<n2dSkeleton> m_Selekton;
 	std::vector<n2dIK> m_IK;
 
 	std::vector<DynamicMaterial> m_Materials;

@@ -49,37 +49,43 @@ extern "C" nResult N2DFUNC CreateN2DEngine(
 ///	@brief	全局变量
 namespace n2dGlobal
 {
-	///	@brief	异常事件
-	///	@note	data为natException，不可取消
-	natEvent<natException*> EventException(nullptr, false);
-
 	extern ncTStr Logfile;
 
 	extern "C"
 	{
-		void N2DFUNC SetLogFile(ncTStr Path)
+		N2DFUNC void SetLogFile(ncTStr Path)
 		{
 			Logfile = Path;
 		}
 
-		void N2DFUNC LogMsg(ncTStr Str)
+		N2DFUNC void LogMsg(ncTStr Str)
 		{
 			natLog::GetInstance().LogMsg(Str);
 		}
 
-		void N2DFUNC LogWarn(ncTStr Str)
+		N2DFUNC void LogWarn(ncTStr Str)
 		{
 			natLog::GetInstance().LogWarn(Str);
 		}
 
-		void N2DFUNC LogErr(ncTStr Str)
+		N2DFUNC void LogErr(ncTStr Str)
 		{
 			natLog::GetInstance().LogErr(Str);
 		}
 
-		void N2DFUNC RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func)
+		N2DFUNC void RegisterLogUpdateEventFunc(natEventBus::EventListenerFunc func)
 		{
 			natLog::GetInstance().RegisterLogUpdateEventFunc(func);
+		}
+
+		N2DFUNC void RegisterExceptionEventFunc(natEventBus::EventListenerFunc func)
+		{
+			natEventBus::GetInstance().RegisterEventListener<natExceptionEvent>(func);
+		}
+
+		N2DFUNC natEventBus& GetEventBus()
+		{
+			return natEventBus::GetInstance();
 		}
 	}
 
@@ -121,7 +127,6 @@ void n2dEngineImpl::TerminateApplication()
 
 	m_Section.Lock();
 	m_IsProgramLooping = false;
-	m_EventMSG.Release();
 	m_Section.UnLock();
 }
 
@@ -166,9 +171,9 @@ HINSTANCE n2dEngineImpl::GetHInstance() const
 	return m_hInstance;
 }
 
-void n2dEngineImpl::AddMessageHandler(WndMsgEvent::EventHandler func, DWORD WndMsg, Priority::Priority priority)
+void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority)
 {
-	m_EventMSG.Register(func, WndMsg, priority);
+	natEventBus::GetInstance().RegisterEventListener<WndMsgEvent>(func, priority);
 }
 
 n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen, HINSTANCE hInstance, ThreadMode threadMode, n2dEngineEventListener* pListener)
@@ -180,9 +185,11 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	m_ResizeDraw(false),
 	m_hInstance(hInstance),
 	m_ThreadMode(threadMode),
-	m_pRenderer(nullptr), m_pSoundSys(nullptr),
-	m_EventMSG(this)
+	m_pRenderer(nullptr), m_pSoundSys(nullptr)
 {
+	natEventBus::GetInstance().RegisterEvent<WndMsgEvent>();
+	natEventBus::GetInstance().RegisterEvent<n2dGlobal::natExceptionEvent>();
+
 	if (!m_pListener)
 	{
 		throw natException(TEXT("n2dEngineImpl::n2dEngineImpl"), TEXT("Null EventListener"));
@@ -204,7 +211,7 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 
 	if (!RegisterClassEx(&windowClass))
 	{
-		throw natException(_T("n2dEngineImpl::n2dEngineImpl"), _T("Failed to register window"));
+		nat_Throw(natException, _T("Failed to register window"));
 	}
 }
 
@@ -240,83 +247,89 @@ void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
 		}
 
 		UnregisterClass(m_ClassName, m_hInstance);
+		m_Window.Destroy();
 	}
 	catch (natException& ex)
 	{
 		natException tEx(_T("n2dEngineImpl::MainLoop"), _T("Main loop exit"), &ex);
-		n2dGlobal::EventException(&tEx);
+		n2dGlobal::natExceptionEvent event(tEx);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 }
 
 LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	Msgdata msg{ hWnd, uMsg, wParam, lParam, 0 };
+	WndMsgEvent event(this, msg);
 	switch (uMsg)
 	{
 	case WM_SYSCOMMAND:
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
+
 		switch (wParam)
 		{
 		case SC_SCREENSAVE:
 		case SC_MONITORPOWER:
-			return 0;
+			return FALSE;
 		default:
 			break;
 		}
 		break;
 
 	case WM_CLOSE:
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
+
 		TerminateApplication();
-		return 0;
+		return FALSE;
 
 	case WM_EXITMENULOOP:
 	case WM_EXITSIZEMOVE:
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
-		return 0;
+		return FALSE;
 
 	case WM_MOVE:
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
 		m_Window.SetPosX(LOWORD(lParam));
 		m_Window.SetPosY(HIWORD(wParam));
-		return 0;
+		return FALSE;
 
 	case WM_PAINT:
 		break;
 
 	case WM_SIZING:
 	{
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
 		RECT *rect = reinterpret_cast<RECT *>(lParam);
 		m_Window.SetWidth(rect->right - rect->left);
 		m_Window.SetHeight(rect->bottom - rect->top);
-		return true;
+		return TRUE;
 	}
 
 	case WM_SIZE:
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
 		switch (wParam)
 		{
 		case SIZE_MINIMIZED:
 			m_IsVisible = false;
-			return 0;
+			return FALSE;
 
 		case SIZE_MAXIMIZED:
 		case SIZE_RESTORED:
@@ -324,25 +337,25 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			m_Window.SetWidth(LOWORD(lParam));
 			m_Window.SetHeight(HIWORD(lParam));
 			m_Window.ReshapeGL();
-			return 0;
+			return FALSE;
 		}
 		break;
 
 	case WM_KEYDOWN:
 		m_Keys.SetPressed(wParam);
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
-		return 0;
+		return FALSE;
 
 	case WM_KEYUP:
 		m_Keys.SetReleased(wParam);
-		if (m_EventMSG(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }))
+		if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 		{
-			return m_EventMSG.GetData().result;
+			return msg.result;
 		}
-		return 0;
+		return FALSE;
 
 	case WM_TOGGLEFULLSCREEN:
 		m_Window.FullScreen = !m_Window.FullScreen;
@@ -362,9 +375,9 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		break;
 	}
 
-	if (m_EventMSG.Activate(uMsg, Msgdata{ hWnd, uMsg, wParam, lParam }, Priority::Low, Priority::High))
+	if (natEventBus::GetInstance().Post<WndMsgEvent>(event))
 	{
-		return m_EventMSG.GetData().result;
+		return msg.result;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -376,7 +389,7 @@ void n2dEngineImpl::CommonInit()
 	glewExperimental = true;
 	if ((tRet = glewInit()) != GLEW_OK)
 	{
-		throw natException(_T("n2dGlobal::InitGlew"), natUtil::FormatString(_T("GLEW initializing failed, id=%d, description:%s"), tRet, reinterpret_cast<const char *>(glewGetErrorString(tRet))).c_str());
+		nat_Throw(natException, _T("GLEW initializing failed, id=%d, description:%s"), tRet, glewGetErrorString(tRet));
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -401,21 +414,19 @@ void n2dEngineImpl::CommonInit()
 		n2dShaderProgramImpl* pProgram = new n2dShaderProgramImpl;
 		
 		n2dShader* pShader[2];
-		natStream* pStream = natMemoryStream::CreateFromExternMemory(&tVert[0], tVert.size(), true, false);
+		auto pStream = natMemoryStream::CreateFromExternMemory(tVert.data(), tVert.size(), true, false);
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 		if (!pShader[0]->Compiled())
 		{
-			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog()).c_str());
+			nat_Throw(natException, _T("Compile DefaultVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog());
 		}
-		SafeRelease(pStream);
 
-		pStream = natMemoryStream::CreateFromExternMemory(&tFrag[0], tFrag.size(), true, false);
+		pStream = natMemoryStream::CreateFromExternMemory(tFrag.data(), tFrag.size(), true, false);
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
 		if (!pShader[1]->Compiled())
 		{
-			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Compile DefaultFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog()).c_str());
+			nat_Throw(natException, _T("Compile DefaultFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog());
 		}
-		SafeRelease(pStream);
 
 		pProgram->AttachShader(pShader[0]);
 		pProgram->AttachShader(pShader[1]);
@@ -423,7 +434,7 @@ void n2dEngineImpl::CommonInit()
 		pProgram->Link();
 		if (!pProgram->IsLinked())
 		{
-			throw natException(_T("n2dEngineImpl::CommonInit"), natUtil::FormatString(_T("Link DefaultShaderProgram Failed, Log: %s"), pProgram->GetInfoLog()).c_str());
+			nat_Throw(natException, _T("Link DefaultShaderProgram Failed, Log: %s"), pProgram->GetInfoLog());
 		}
 		pProgram->Use();
 
@@ -503,7 +514,6 @@ void n2dEngineImpl::SingleThreadMainLoop(ncTStr title, nuInt FPS)
 			}
 
 			m_pListener->WindowUninit();
-			m_Window.Destroy();
 		}
 		else
 		{
@@ -581,7 +591,6 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 			}
 
 			m_pListener->WindowUninit();
-			m_Window.Destroy();
 		}
 		else
 		{
@@ -621,14 +630,17 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	}
 	catch (natException& ex)
 	{
-		n2dGlobal::EventException(&ex);
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 		reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
 	}
 	catch (...)
 	{
 		natException ex(TEXT("Unknown source"), TEXT("Unknown exception"));
-		n2dGlobal::EventException(&ex);
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 		reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
+		throw;
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -670,14 +682,15 @@ nuInt n2dEngineImpl::UpdateThread::ThreadJob()
 	}
 	catch (natException& ex)
 	{
-		natException tEx(_T("n2dEngineImpl::UpdateThread::ThreadJob"), _T("Update break"), &ex);
-		n2dGlobal::EventException(&tEx);
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
-		natException ex(_T("Unknown source"), _T("Unknown exception"));
-		natException tEx(_T("n2dEngineImpl::UpdateThread::ThreadJob"), _T("Update break"), &ex);
-		n2dGlobal::EventException(&tEx);
+		natException ex(_T("n2dEngineImpl::UpdateThread::ThreadJob"), _T("Unknown exception"));
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		throw;
 	}
 
 	return 0u;
@@ -726,84 +739,16 @@ nuInt n2dEngineImpl::RenderThread::ThreadJob()
 	}
 	catch (natException& ex)
 	{
-		natException tEx(_T("n2dEngineImpl::RenderThread::ThreadJob"), _T("Render break"), &ex);
-		n2dGlobal::EventException(&tEx);
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
-		natException ex(_T("Unknown source"), _T("Unknown exception"));
-		natException tEx(_T("n2dEngineImpl::RenderThread::ThreadJob"), _T("Render break"), &ex);
-		n2dGlobal::EventException(&tEx);
+		natException ex(_T("n2dEngineImpl::RenderThread::ThreadJob"), _T("Unknown exception"));
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		throw;
 	}
 
 	return 0u;
-}
-
-n2dEngineImpl::WndMsgEventImpl::WndMsgEventImpl(n2dEngineImpl* App)
-	: m_pEngine(App)
-{
-	if (m_pEngine == nullptr)
-	{
-		natLog::GetInstance().LogWarn(TEXT("App should not be an null pointer, this may be an error, please check"));
-	}
-}
-
-n2dEngineImpl::WndMsgEventImpl::~WndMsgEventImpl()
-{
-}
-
-nuInt n2dEngineImpl::WndMsgEventImpl::Register(EventHandler func, DWORD WndMsg, nInt priority)
-{
-	auto& vec = m_EventHandler[WndMsg][priority];
-	vec.insert(func);
-	return vec.size() - 1u;
-}
-
-void n2dEngineImpl::WndMsgEventImpl::Unregister(DWORD WndMsg, EventHandler Handler)
-{
-	auto itea = m_EventHandler[WndMsg];
-	for each (auto itea2 in itea)
-	{
-		itea2.second.erase(Handler);
-	}
-}
-
-bool n2dEngineImpl::WndMsgEventImpl::Activate(DWORD WndMsg, nInt PriorityLimitmin, nInt PriorityLimitmax)
-{
-	m_isCanceled = false;
-	if (!m_EventHandler.empty())
-	{
-		auto i = m_EventHandler[WndMsg];
-		for (auto i1 = PriorityLimitmax; i1 <= PriorityLimitmin; ++i1)
-		{
-			for each (auto eh in i[i1])
-			{
-				eh(*this);
-			}
-		}
-	}
-
-	return m_isCanceled;
-}
-
-bool n2dEngineImpl::WndMsgEventImpl::Activate(DWORD WndMsg, dataType const& data, nInt PriorityLimitmin, nInt PriorityLimitmax)
-{
-	SetData(data);
-	return Activate(WndMsg, PriorityLimitmin, PriorityLimitmax);
-}
-
-bool n2dEngineImpl::WndMsgEventImpl::operator()(DWORD WndMsg, dataType const& data)
-{
-	return Activate(WndMsg, data, Priority::Low, Priority::High);
-}
-
-void n2dEngineImpl::WndMsgEventImpl::Release()
-{
-	m_EventHandler.clear();
-	//SetCanceled();
-}
-
-n2dEngineImpl* n2dEngineImpl::WndMsgEventImpl::GetEngine()
-{
-	return m_pEngine;
 }

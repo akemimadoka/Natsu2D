@@ -9,7 +9,7 @@ namespace natUtil
 	///	@warning	非类型安全
 	///	@param[in]	str		字符串格式
 	nTString FormatString(ncTStr lpStr, ...);
-	nTString FormatStringv(ncTStr lpStr, va_list vl);
+	nTString FormatStringv(ncTStr lpStr, const va_list vl);
 
 	///	@brief	获得本地时间
 	///	@return	包含时间信息的字符串
@@ -18,7 +18,7 @@ namespace natUtil
 		SYSTEMTIME st;
 		GetLocalTime(&st);
 
-		return FormatString(_T("%d/%d/%d %d:%d:%d"), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+		return FormatString(_T("%04d/%02d/%02d %02d:%02d:%02d"), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
 	}
 
 	///	@brief	string转wstring
@@ -49,16 +49,35 @@ namespace natUtil
 	std::vector<nByte> GetResourceData(DWORD ResourceID, ncTStr lpType, HINSTANCE hInstance = NULL);
 
 	///	@brief	字符串分割函数
-	///	@note	char版
-	///	@param[in]	str		要分割的字符串
-	///	@param[in]	pattern	分割字符
-	///	@return	分割结果，为std::vector
-	std::vector<std::string> split(std::string const& str, std::string const& pattern);
+	///	@param[in]	str			要分割的字符串
+	///	@param[in]	pattern		分割字符
+	///	@param[out]	container	存储结果的容器，应实现emplace_back，接受参数为 字符串, 字符起始位置, 字符串长度
+	template <typename Char_T, typename Container>
+	void split(std::basic_string<Char_T> const& str, std::basic_string<Char_T> const& pattern, Container& container)
+	{
+		typedef typename std::basic_string<Char_T>::size_type pos_t;
+		const auto size = str.size();
 
-	///	@brief	字符串分割函数
-	///	@note	wchar版
-	///	@param[in]	str		要分割的字符串
-	///	@param[in]	pattern	分割字符
-	///	@return	分割结果，为std::vector
-	std::vector<std::wstring> split(std::wstring const& str, std::wstring const& pattern);
+		pos_t pos = 0;
+
+		for (pos_t i = 0u; i < size; ++i)
+		{
+			auto currentchar = str[i];
+			for (auto c : pattern)
+			{
+				if (currentchar == c)
+				{
+					container.emplace_back(str, pos, i - pos);
+
+					pos = i + 1;
+					break;
+				}
+			}
+		}
+
+		if (pos != size)
+		{
+			container.emplace_back(str, pos, size - pos);
+		}
+	}
 }

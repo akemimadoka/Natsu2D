@@ -60,8 +60,9 @@ public:
 		: m_pPointer(nullptr)
 	{
 	}
-	natRefPointer(T* pObj)
-		: m_pPointer(pObj)
+
+	explicit natRefPointer(T* ptr)
+		: m_pPointer(ptr)
 	{
 		if (m_pPointer)
 		{
@@ -76,6 +77,12 @@ public:
 		{
 			m_pPointer->AddRef();
 		}
+	}
+
+	natRefPointer(natRefPointer && other)
+		: m_pPointer(other.m_pPointer)
+	{
+		other.m_pPointer = nullptr;
 	}
 
 	~natRefPointer()
@@ -99,7 +106,7 @@ public:
 		return (m_pPointer == other.m_pPointer);
 	}
 
-	natRefPointer& operator=(natRefPointer const& other)
+	natRefPointer& operator=(natRefPointer const& other)&
 	{
 		if (m_pPointer != other.m_pPointer)
 		{
@@ -111,6 +118,23 @@ public:
 			}
 		}
 
+		return *this;
+	}
+
+	natRefPointer& operator=(natRefPointer && other)&
+	{
+		if (m_pPointer != other.m_pPointer)
+		{
+			m_pPointer = other.m_pPointer;
+			other.m_pPointer = nullptr;
+		}
+
+		return *this;
+	}
+
+	natRefPointer& operator=(nullptr_t)
+	{
+		SafeRelease(m_pPointer);
 		return *this;
 	}
 
@@ -147,3 +171,24 @@ public:
 private:
 	T* m_pPointer;
 };
+
+template <typename T, typename ...Arg>
+NATINLINE natRefPointer<T> make_ref(Arg &&... args)
+{
+	T* pRefObj = new T(std::forward<Arg>(args)...);
+	natRefPointer<T> Ret(pRefObj);
+	SafeRelease(pRefObj);
+	return Ret;
+}
+
+namespace std
+{
+	template <typename T>
+	struct hash<natRefPointer<T>>
+	{
+		size_t operator()(const natRefPointer<T>& _Keyval) const
+		{
+			return hash<T*>()(_Keyval.Get());
+		}
+	};
+}

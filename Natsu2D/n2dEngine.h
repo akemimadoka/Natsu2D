@@ -32,29 +32,41 @@ namespace n2dGlobal
 {
 	///	@brief	异常事件
 	///	@note	data为natException，不可取消
-	extern
-#ifndef Natsu2DStatic
-#	ifdef N2DEXPORT
-		__declspec(dllexport)
-#	else
-		__declspec(dllimport)
-#	endif
-#endif
-		natEvent<natException*> EventException;
+	class natExceptionEvent
+		: public natEventBase
+	{
+	public:
+		explicit natExceptionEvent(natException const& ex)
+			: m_Exception(ex)
+		{
+		}
+
+		natException const& GetData() const noexcept
+		{
+			return m_Exception;
+		}
+
+	private:
+		natException const& m_Exception;
+	};
 
 	extern "C"
 	{
 		///	@brief	设置日志文件存储目录
 		///	@note	仅在第一次使用日志之前有效
-		void N2DFUNC SetLogFile(ncTStr Path);
+		N2DFUNC void SetLogFile(ncTStr Path);
 		///	@brief	记录信息
-		void N2DFUNC LogMsg(ncTStr Str);
+		N2DFUNC void LogMsg(ncTStr Str);
 		///	@brief	记录警告
-		void N2DFUNC LogWarn(ncTStr Str);
+		N2DFUNC void LogWarn(ncTStr Str);
 		///	@brief	记录错误
-		void N2DFUNC LogErr(ncTStr Str);
+		N2DFUNC void LogErr(ncTStr Str);
 		///	@brief	注册日志更新事件处理函数
-		void N2DFUNC RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func);
+		N2DFUNC void RegisterLogUpdateEventFunc(natEventBus::EventListenerFunc func);
+		///	@brief	注册异常事件处理函数
+		N2DFUNC void RegisterExceptionEventFunc(natEventBus::EventListenerFunc func);
+
+		N2DFUNC natEventBus& GetEventBus();
 	}
 }
 
@@ -179,33 +191,34 @@ struct n2dEngine
 
 	////////////////////////////////////////////////////////////////////////////////
 	///	@brief	窗口消息事件
-	///	@note	可以仅触发指定的事件的处理函数
 	////////////////////////////////////////////////////////////////////////////////
-	struct WndMsgEvent
-		: natEvent<Msgdata>
+	class WndMsgEvent
+		: public natEventBase
 	{
-		typedef void(*EventHandler)(WndMsgEvent&);
+	public:
+		WndMsgEvent(n2dEngine* pEngine, Msgdata& Msg)
+			: m_pEngine(pEngine), m_Msg(Msg)
+		{
+		}
 
-		WndMsgEvent() : natEvent(true) {}
-		
-		///	@brief	注册处理函数
-		virtual nuInt Register(EventHandler func, DWORD WndMsg, nInt priority = Priority::Normal) = 0;
-		///	@brief	反注册处理函数
-		virtual void Unregister(DWORD WndMsg, EventHandler Handler) = 0;
+		bool CanCancel() const noexcept override
+		{
+			return true;
+		}
 
-		///	@brief	激活事件
-		virtual nBool Activate(DWORD WndMsg, nInt PriorityLimitmin = Priority::Low, nInt PriorityLimitmax = Priority::High) = 0;
-		///	@brief	激活事件
-		virtual nBool Activate(DWORD WndMsg, dataType const& data, nInt PriorityLimitmin, nInt PriorityLimitmax) = 0;
+		Msgdata& GetMsg() const noexcept
+		{
+			return m_Msg;
+		}
 
-		///	@brief	激活事件
-		virtual nBool operator()(DWORD WndMsg, dataType const& data) = 0;
-
-		///	@brief	释放事件
-		virtual void Release() override = 0;
-		
 		///	@brief	获得关联的引擎
-		virtual n2dEngine* GetEngine() = 0;
+		n2dEngine* GetEngine() const noexcept
+		{
+			return m_pEngine;
+		}
+	private:
+		n2dEngine* m_pEngine;
+		Msgdata& m_Msg;
 	};
 
 	///	@brief	切换全屏
@@ -234,12 +247,11 @@ struct n2dEngine
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数
-	///	@param[in]	WndMsg		要处理的窗口消息
 	///	@param[in]	priority	该消息处理函数的优先级
 	///	@note	函数接受一个参数WndMsgEvent&，请使用WndMsgEvent::getData方法获得窗口消息
 	///	@see	Msgdata
 	///	@see	n2dEngine::WndMsgEvent
-	virtual void AddMessageHandler(WndMsgEvent::EventHandler func, DWORD WndMsg, Priority::Priority priority = Priority::Normal) = 0;
+	virtual void AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority = Priority::Normal) = 0;
 
 	///	@brief	获得按键的状态
 	///	@param[in]	Key		按键键值

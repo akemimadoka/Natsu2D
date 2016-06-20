@@ -13,11 +13,11 @@ n2dGraphics2DImpl::n2dGraphics2DImpl(n2dRenderDeviceImpl* pRenderDevice)
 {
 	if (NATFAIL(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, &m_VB)))
 	{
-		throw natException(_T("n2dGraphics2DImpl::n2dGraphics2DImpl"), _T("Create vertex buffer failed"));
+		nat_Throw(natException, _T("Create vertex buffer failed"));
 	}
 	if (NATFAIL(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, &m_IB)))
 	{
-		throw natException(_T("n2dGraphics2DImpl::n2dGraphics2DImpl"), _T("Create index buffer failed"));
+		nat_Throw(natException, _T("Create index buffer failed"));
 	}
 }
 
@@ -28,7 +28,8 @@ n2dGraphics2DImpl::~n2dGraphics2DImpl()
 		// 析构函数不应当抛出异常
 		// 待解决
 		natException ex(_T("n2dGraphics2DImpl::~n2dGraphics2DImpl"), _T("End should be invoked before destroy"));
-		n2dGlobal::EventException(&ex);
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 		End();
 	}
 }
@@ -194,7 +195,8 @@ n2dGraphics3DImpl::~n2dGraphics3DImpl()
 		// 析构函数不应当抛出异常
 		// 待解决
 		natException ex(_T("n2dGraphics3DImpl::~n2dGraphics3DImpl"), _T("End should be invoked before destroy"));
-		n2dGlobal::EventException(&ex);
+		n2dGlobal::natExceptionEvent event(ex);
+		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
 		n2dGraphics3DImpl::End();
 	}
 }

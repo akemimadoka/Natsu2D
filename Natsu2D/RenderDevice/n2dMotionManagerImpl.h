@@ -5,7 +5,7 @@
 
 class n2dBone
 {
-	friend class n2dSelekton;
+	friend class n2dSkeleton;
 public:
 	n2dBone() = default;
 	n2dBone(natVec3<> const& position, natQuat<> const& orientation, n2dBone* parent, nBool isLimitAngleX);
@@ -33,14 +33,14 @@ private:
 	natMat4<> m_Matrix;
 };
 
-class n2dSelekton
+class n2dSkeleton
 {
 	friend class n2dDynamicMeshDataImpl;
 	friend class n2dMotionManagerImpl;
 	friend class n2dIK;
 public:
-	n2dSelekton() = default;
-	~n2dSelekton() = default;
+	n2dSkeleton() = default;
+	~n2dSkeleton() = default;
 
 	void CreateFromDynamicModel(const n2dDynamicModelDataImpl* pModel);
 	void Update();
@@ -58,7 +58,7 @@ public:
 	void CreateFromDynamicModel(n2dDynamicModelDataImpl* pModel, nuInt IKID);
 	void Solve();
 private:
-	n2dSelekton* m_pSelekton;
+	n2dSkeleton* m_pSelekton;
 	n2dBone* m_Target;
 	n2dBone* m_Effector;
 	std::vector<n2dBone*> m_Chain;

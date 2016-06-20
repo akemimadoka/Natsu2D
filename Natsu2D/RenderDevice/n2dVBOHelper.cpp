@@ -2,6 +2,13 @@
 #include <map>
 #include <algorithm>
 
+#ifdef max
+#	undef max
+#endif
+#ifdef min
+#	undef min
+#endif
+
 namespace n2dVBOHelper
 {
 	struct PackedVertex
@@ -10,7 +17,7 @@ namespace n2dVBOHelper
 		natVec2<> uv;
 		natVec3<> normal;
 
-		bool operator<(const PackedVertex other) const
+		bool operator<(const PackedVertex& other) const
 		{
 			return memcmp(this, &other, sizeof(PackedVertex)) > 0;
 		};
@@ -34,11 +41,7 @@ namespace n2dVBOHelper
 		std::vector<natVec2<>> out_uvs(uvs);
 		std::vector<natVec3<>> out_normals(normals);
 
-		std::map<PackedVertex, unsigned short> VertexToOutIndex;
-
-#ifdef min
-#	undef min
-#endif
+		std::map<PackedVertex, nuShort> VertexToOutIndex;
 
 		nuInt count = std::min({ vertices.size(), uvs.size(), normals.size() });
 
@@ -47,7 +50,7 @@ namespace n2dVBOHelper
 			PackedVertex packed = { vertices[i], uvs[i], normals[i] };
 
 			// Try to find a similar vertex in out_XXXX
-			unsigned short index;
+			nuShort index;
 
 			if (getSimilarVertexIndex(packed, VertexToOutIndex, index))
 			{

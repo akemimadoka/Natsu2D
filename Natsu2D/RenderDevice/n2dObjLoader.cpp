@@ -18,7 +18,7 @@ n2dObjLoader::n2dObjLoader(ncTStr filename)
 {
 	if (!CreateStaticModelFromFile(filename, nullptr))
 	{
-		throw natException(_T("n2dObjLoader::n2dObjLoader"), natUtil::FormatString(_T("Load object model \"%s\" failed"), filename).c_str());
+		nat_Throw(natException, natUtil::FormatString(_T("Load object model \"%s\" failed"), filename).c_str());
 	}
 }
 
@@ -97,7 +97,8 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 			for (nuInt j = 0u; j < 3u; ++j)
 			{
 				ss >> tstr[j];
-				auto vi = natUtil::split(tstr[j], "/");
+				std::vector<std::string> vi;
+				natUtil::split(tstr[j], std::string("/"), vi);
 				std::stringstream tss;
 
 				for (nuInt i = 0u; i < 3u; ++i)

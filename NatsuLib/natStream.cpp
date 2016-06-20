@@ -2,6 +2,7 @@
 #include "natStream.h"
 #include "natException.h"
 #include "natUtil.h"
+#include <algorithm>
 
 natFileStream::natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable)
 	: m_Filename(lpFilename), m_bReadable(bReadable), m_bWritable(bWritable), m_LastErr(NatErr_OK)
@@ -16,7 +17,7 @@ natFileStream::natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable
 		NULL
 		);
 
-	if (m_hFile == INVALID_HANDLE_VALUE)
+	if (!m_hFile || m_hFile == INVALID_HANDLE_VALUE)
 	{
 		throw natWinException(_T("natFileStream::natFileStream"), natUtil::FormatString(_T("Open file \"%s\" failed"), lpFilename).c_str());
 	}
@@ -40,6 +41,11 @@ nBool natFileStream::CanRead() const
 nBool natFileStream::CanResize() const
 {
 	return m_bWritable;
+}
+
+nBool natFileStream::CanSeek() const
+{
+	return true;
 }
 
 nLen natFileStream::GetSize() const
@@ -128,7 +134,7 @@ nLen natFileStream::ReadBytes(nData pData, nLen Length)
 		return tReadBytes;
 	}
 
-	if (ReadFile(m_hFile, pData, static_cast<DWORD>(Length), static_cast<LPDWORD>(&tReadBytes), NULL) == FALSE)
+	if (ReadFile(m_hFile, pData, static_cast<DWORD>(Length), &tReadBytes, NULL) == FALSE)
 	{
 		m_LastErr = NatErr_InternalErr;
 		return tReadBytes;
@@ -176,6 +182,16 @@ nLen natFileStream::WriteBytes(ncData pData, nLen Length)
 	return tWriteBytes;
 }
 
+void natFileStream::Flush()
+{
+	if (m_pMappedFile)
+	{
+		FlushViewOfFile(m_pMappedFile->GetInternalBuffer(), static_cast<SIZE_T>(GetSize()));
+	}
+	
+	FlushFileBuffers(m_hFile);
+}
+
 void natFileStream::Lock()
 {
 	m_Section.Lock();
@@ -191,18 +207,44 @@ void natFileStream::Unlock()
 	m_Section.UnLock();
 }
 
-ncTStr natFileStream::GetFilename() const
+ncTStr natFileStream::GetFilename() const noexcept
 {
 	return m_Filename.c_str();
 }
 
+HANDLE natFileStream::GetUnsafeHandle() const noexcept
+{
+	return m_hFile;
+}
+
+natRefPointer<natMemoryStream> natFileStream::MapToMemoryStream()
+{
+	if (m_pMappedFile)
+	{
+		return m_pMappedFile;
+	}
+
+	m_hMappedFile = CreateFileMapping(m_hFile, NULL, m_bWritable ? PAGE_READWRITE : PAGE_READONLY, NULL, NULL, NULL);
+	if (m_hMappedFile && m_hMappedFile != INVALID_HANDLE_VALUE)
+	{
+		auto pFile = MapViewOfFile(m_hMappedFile, (m_bReadable ? FILE_MAP_READ : 0) | (m_bWritable ? FILE_MAP_WRITE : 0), NULL, NULL, NULL);
+		if (pFile)
+		{
+			m_pMappedFile = natMemoryStream::CreateFromExternMemory(reinterpret_cast<nData>(pFile), GetSize(), m_bReadable, m_bWritable);
+		}
+	}
+
+	return m_pMappedFile;
+}
+
 natFileStream::~natFileStream()
 {
+	CloseHandle(m_hMappedFile);
 	CloseHandle(m_hFile);
 }
 
 natMemoryStream::natMemoryStream(ncData pData, nLen Length, nBool bReadable, nBool bWritable, nBool bResizable)
-	: m_pData(nullptr), m_Length(0ul), m_CurPos(0u), m_bReadable(bReadable), m_bWritable(bWritable), m_bResizable(bResizable)
+	: m_pData(nullptr), m_Length(0ul), m_CurPos(0u), m_bReadable(bReadable), m_bWritable(bWritable), m_bResizable(bResizable), m_bExtern(false), m_LastErr(NatErr_OK)
 {
 	try
 	{
@@ -219,7 +261,7 @@ natMemoryStream::natMemoryStream(ncData pData, nLen Length, nBool bReadable, nBo
 	}
 	catch (std::bad_alloc&)
 	{
-		throw natException(_T("natMemoryStream::natMemoryStream"), _T("Failed to allocate memory"));
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 }
 
@@ -241,6 +283,11 @@ nBool natMemoryStream::CanRead() const
 nBool natMemoryStream::CanResize() const
 {
 	return m_bResizable;
+}
+
+nBool natMemoryStream::CanSeek() const
+{
+	return true;
 }
 
 nLen natMemoryStream::GetSize() const
@@ -340,7 +387,7 @@ nLen natMemoryStream::ReadBytes(nData pData, nLen Length)
 		return tReadBytes;
 	}
 
-	tReadBytes = min(Length, m_Length - m_CurPos);
+	tReadBytes = std::min(Length, m_Length - m_CurPos);
 	memcpy_s(pData + m_CurPos, static_cast<rsize_t>(m_Length - m_CurPos), m_pData, static_cast<rsize_t>(tReadBytes));
 	m_CurPos += tReadBytes;
 
@@ -374,7 +421,7 @@ nLen natMemoryStream::WriteBytes(ncData pData, nLen Length)
 		return tWriteBytes;
 	}
 
-	tWriteBytes = min(Length, m_Length - m_CurPos);
+	tWriteBytes = std::min(Length, m_Length - m_CurPos);
 	memcpy_s(m_pData, static_cast<rsize_t>(tWriteBytes), pData + m_CurPos, static_cast<rsize_t>(tWriteBytes));
 	m_CurPos += tWriteBytes;
 
@@ -384,6 +431,10 @@ nLen natMemoryStream::WriteBytes(ncData pData, nLen Length)
 	}
 
 	return tWriteBytes;
+}
+
+void natMemoryStream::Flush()
+{
 }
 
 void natMemoryStream::Lock()
@@ -401,8 +452,18 @@ void natMemoryStream::Unlock()
 	m_Section.UnLock();
 }
 
+nData natMemoryStream::GetInternalBuffer() noexcept
+{
+	return m_pData;
+}
+
+ncData natMemoryStream::GetInternalBuffer() const noexcept
+{
+	return m_pData;
+}
+
 natMemoryStream::natMemoryStream()
-	: m_pData(nullptr), m_Length(0ul), m_CurPos(0u), m_bReadable(false), m_bWritable(false), m_bResizable(false)
+	: m_pData(nullptr), m_Length(0ul), m_CurPos(0u), m_bReadable(false), m_bWritable(false), m_bResizable(false), m_bExtern(false), m_LastErr(NatErr_OK)
 {
 }
 
@@ -414,9 +475,9 @@ natMemoryStream::~natMemoryStream()
 	}
 }
 
-natStream* natMemoryStream::CreateFromExternMemory(nData pData, nLen Length, nBool bReadable, nBool bWritable)
+natRefPointer<natMemoryStream> natMemoryStream::CreateFromExternMemory(nData pData, nLen Length, nBool bReadable, nBool bWritable)
 {
-	natMemoryStream* pStream = new natMemoryStream;
+	auto pStream = make_ref<natMemoryStream>();
 
 	pStream->m_pData = pData;
 	pStream->m_Length = Length;

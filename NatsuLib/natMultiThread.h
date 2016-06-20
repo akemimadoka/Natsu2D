@@ -25,7 +25,7 @@ public:
 
 	///	@brief		获得线程句柄
 	///	@warning	请勿手动删除
-	HANDLE GetHandle();
+	HANDLE GetHandle() const;
 
 	///	@brief	继续线程执行
 	///	@return	是否成功
@@ -46,7 +46,7 @@ public:
 	nBool Terminate(nuInt ExitCode = nuInt(-1));
 
 	///	@brief	获得退出码
-	nuInt GetExitCode();
+	nuInt GetExitCode() const;
 protected:
 	///	@brief	重写此方法以实现线程工作
 	virtual nuInt ThreadJob() = 0;
@@ -95,7 +95,7 @@ public:
 
 	///	@brief		获得句柄
 	///	@warning	请勿手动释放
-	HANDLE GetHandle();
+	HANDLE GetHandle() const;
 
 	///	@brief		标记事件
 	///	@return		是否成功
@@ -107,12 +107,12 @@ public:
 
 	///	@brief		事件脉冲
 	///	@return		是否成功
-	nBool Pulse();
+	nBool Pulse() const;
 
 	///	@brief		等待事件
 	///	@param[in]	WaitTime	等待时间
 	///	@return		是否成功
-	nBool Wait(nuInt WaitTime = INFINITE);
+	nBool Wait(nuInt WaitTime = INFINITE) const;
 private:
 	HANDLE m_hEvent;
 };

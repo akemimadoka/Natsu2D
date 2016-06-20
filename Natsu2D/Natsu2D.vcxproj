@@ -159,12 +159,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\n2dEngineImpl.cpp" />
+    <ClCompile Include="Engine\n2dFileSystemImpl.cpp" />
     <ClCompile Include="Engine\n2dFPSControllerImpl.cpp" />
     <ClCompile Include="Engine\n2dWindowImpl.cpp" />
     <ClCompile Include="extern\nv_dds\nv_dds.cpp" />
     <ClCompile Include="n2dUtil.cpp" />
     <ClCompile Include="RenderDevice\n2dBufferImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dGraphicsImpl.cpp" />
+    <ClCompile Include="RenderDevice\n2dLayerImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dLightControllerImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dMeshDataImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dModelImpl.cpp" />
@@ -182,22 +184,27 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\n2dEngineImpl.h" />
+    <ClInclude Include="Engine\n2dFileSystemImpl.h" />
     <ClInclude Include="Engine\n2dFPSControllerImpl.h" />
     <ClInclude Include="Engine\n2dWindowImpl.h" />
     <ClInclude Include="n2dCommon.h" />
     <ClInclude Include="extern\nv_dds\nv_dds.h" />
     <ClInclude Include="n2dEngine.h" />
+    <ClInclude Include="n2dFileSystem.h" />
     <ClInclude Include="n2dFont.h" />
     <ClInclude Include="n2dGraphics.h" />
     <ClInclude Include="n2dInterface.h" />
+    <ClInclude Include="n2dLayer.h" />
     <ClInclude Include="n2dModel.h" />
     <ClInclude Include="n2dRenderDevice.h" />
+    <ClInclude Include="n2dRenderNode.h" />
     <ClInclude Include="n2dSoundSys.h" />
     <ClInclude Include="n2dWindow.h" />
     <ClInclude Include="Natsu2D.h" />
     <ClInclude Include="n2dUtil.h" />
     <ClInclude Include="RenderDevice\n2dBufferImpl.h" />
     <ClInclude Include="RenderDevice\n2dGraphicsImpl.h" />
+    <ClInclude Include="RenderDevice\n2dLayerImpl.h" />
     <ClInclude Include="RenderDevice\n2dLightControllerImpl.h" />
     <ClInclude Include="RenderDevice\n2dMeshDataImpl.h" />
     <ClInclude Include="RenderDevice\n2dModelImpl.h" />

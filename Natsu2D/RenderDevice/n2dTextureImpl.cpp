@@ -3,25 +3,25 @@
 #include "..\extern\nv_dds\nv_dds.h"
 #include <natStream.h>
 #include <natLog.h>
+#include <memory>
 
 namespace
 {
-	n2dImage* LoadPicture(natRefPointer<natStream> const& pStream, DWORD dTypeId)
+	std::unique_ptr<n2dImage> LoadPicture(natStream* pStream, DWORD dTypeId)
 	{
 		pStream->Lock();
 		//pStream->SetPosition(NatSeek::Beg, 0l);
 		nLen lSize = pStream->GetSize() - pStream->GetPosition();
-		nData pBuf = new nByte[static_cast<nuInt>(lSize)];
-		if (pStream->ReadBytes(pBuf, lSize) != lSize || pStream->GetLastErr() != NatErr_OK)
+		std::vector<nByte> Buf(static_cast<nuInt>(lSize));
+		if (pStream->ReadBytes(Buf.data(), lSize) != lSize || pStream->GetLastErr() != NatErr_OK)
 		{
-			SafeDelArr(pBuf);
 			return nullptr;
 		}
 		pStream->Unlock();
 
-		CxImage ci(pBuf, static_cast<DWORD>(lSize), dTypeId);
+		CxImage ci(Buf.data(), static_cast<DWORD>(lSize), dTypeId);
 
-		n2dImage* retimage = new n2dImage;
+		auto retimage = std::make_unique<n2dImage>();
 
 		retimage->width = ci.GetWidth();
 		retimage->height = ci.GetHeight();
@@ -37,7 +37,6 @@ namespace
 			retimage->InternalFormat = GL_RGBA;
 			break;
 		default:
-			delete retimage;
 			return nullptr;
 		}
 
@@ -45,23 +44,20 @@ namespace
 		long lRet;
 		ci.Encode2RGBA(tmpbuf, lRet, true);
 
-		retimage->data = new nByte[lRet];
-		memcpy_s(retimage->data, lRet, tmpbuf, lRet);
+		retimage->data.assign(tmpbuf, tmpbuf + lRet);
 		retimage->length = lRet;
 
 		ci.FreeMemory(tmpbuf);
-		SafeDelArr(pBuf);
 
 		return retimage;
 	}
 
-	nv_dds::CDDSImage* LoadDDSData(natRefPointer<natStream> const& pStream)
+	std::unique_ptr<nv_dds::CDDSImage> LoadDDSData(natStream* pStream)
 	{
-		nv_dds::CDDSImage* image = new nv_dds::CDDSImage;
+		auto image = std::make_unique<nv_dds::CDDSImage>();
 
 		if (!image->load(pStream))
 		{
-			delete image;
 			return nullptr;
 		}
 
@@ -84,7 +80,7 @@ nBool n2dTexture2DImpl::LoadTexture(nTString const& filename)
 
 	try
 	{
-		natFileStream* pStream = new natFileStream(filename.c_str(), true, false);
+		auto pStream = make_ref<natFileStream>(filename.c_str(), true, false);
 
 		if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
 		{
@@ -106,20 +102,15 @@ nBool n2dTexture2DImpl::LoadTexture(nTString const& filename)
 
 nBool n2dTexture2DImpl::LoadTexture(natStream* pStream, DWORD dwFileType)
 {
-	return LoadTexture(std::shared_ptr<n2dImage>(LoadPicture(pStream, dwFileType)));
+	return LoadTexture(*LoadPicture(pStream, dwFileType));
 }
 
-nBool n2dTexture2DImpl::LoadTexture(const std::shared_ptr<n2dImage>& image)
+nBool n2dTexture2DImpl::LoadTexture(n2dImage const& image)
 {
-	if (image == nullptr)
-	{
-		return false;
-	}
-
 	glGenTextures(1, &m_TextureID);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, image->InternalFormat, image->width, image->height, 0, image->PixelFormat, GL_UNSIGNED_BYTE, image->data);
+	glTexImage2D(GL_TEXTURE_2D, 0, image.InternalFormat, image.width, image.height, 0, image.PixelFormat, GL_UNSIGNED_BYTE, image.data.data());
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -137,8 +128,8 @@ nuInt n2dTexture2DImpl::GetTextureID() const
 
 nBool n2dTexture2DImpl::LoadDDS(natStream* pStream)
 {
-	nv_dds::CDDSImage* image = LoadDDSData(pStream);
-	if (image == nullptr)
+	auto image = LoadDDSData(pStream);
+	if (!image)
 	{
 		return false;
 	}

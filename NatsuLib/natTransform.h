@@ -332,7 +332,7 @@ namespace natTransform
 	{
 		if (abs(aspect - std::numeric_limits<T>::epsilon()) <= static_cast<T>(0))
 		{
-			throw natException(_T("natTransform::perspective"), _T("aspect too small"));
+			nat_Throw(natException, _T("aspect too small"));
 		}
 
 		T const tanHalfFovy = tan(fovy / static_cast<T>(2));
@@ -352,7 +352,7 @@ namespace natTransform
 	{
 		if (abs(aspect - std::numeric_limits<T>::epsilon()) <= static_cast<T>(0))
 		{
-			throw natException(_T("natTransform::perspective"), _T("aspect too small"));
+			nat_Throw(natException, _T("aspect too small"));
 		}
 
 		T const tanHalfFovy = tan(fovy / static_cast<T>(2));

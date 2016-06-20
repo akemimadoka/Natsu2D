@@ -37,6 +37,9 @@ struct natStream
 	///	@brief		流是否可重新分配大小
 	virtual nBool CanResize() const = 0;
 
+	///	@brief		流是否可寻址
+	virtual nBool CanSeek() const = 0;
+
 	///	@brief		获得流的大小
 	virtual nLen GetSize() const = 0;
 
@@ -64,6 +67,10 @@ struct natStream
 	///	@return		实际写入长度
 	virtual nLen WriteBytes(ncData pData, nLen Length) = 0;
 
+	///	@brief		刷新流
+	///	@note		仅对有缓存机制的流有效且有意义
+	virtual void Flush() = 0;
+
 	///	@brief		锁定流
 	///	@note		可能造成阻塞
 	///	@warning	流在多线程下使用时必须加锁
@@ -79,70 +86,81 @@ struct natStream
 	virtual void Unlock() = 0;
 };
 
+class natMemoryStream;
+
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	NatsuLib文件流实现
 ////////////////////////////////////////////////////////////////////////////////
-class natFileStream final
+class natFileStream
 	: public natRefObjImpl<natStream>
 {
 public:
 	natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable);
+	~natFileStream();
 
 	NatErr GetLastErr() const override;
 	nBool CanWrite() const override;
 	nBool CanRead() const override;
 	nBool CanResize() const override;
+	nBool CanSeek() const override;
 	nLen GetSize() const override;
 	nResult SetSize(nLen Size) override;
 	nLen GetPosition() const override;
 	nResult SetPosition(NatSeek Origin, nLong Offset) override;
 	nLen ReadBytes(nData pData, nLen Length) override;
 	nLen WriteBytes(ncData pData, nLen Length) override;
+	void Flush() override;
 	void Lock() override;
 	nResult TryLock() override;
 	void Unlock() override;
 
-	ncTStr GetFilename() const;
+	ncTStr GetFilename() const noexcept;
+	HANDLE GetUnsafeHandle() const noexcept;
+	natRefPointer<natMemoryStream> MapToMemoryStream();
 
-protected:
-	~natFileStream();
 private:
-	HANDLE m_hFile;
+	HANDLE m_hFile, m_hMappedFile = NULL;
+	natRefPointer<natMemoryStream> m_pMappedFile;
 	nTString m_Filename;
 	nBool m_bReadable, m_bWritable;
 	natCriticalSection m_Section;
 
+protected:
 	NatErr m_LastErr;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	NatsuLib内存流实现
 ////////////////////////////////////////////////////////////////////////////////
-class natMemoryStream final
+class natMemoryStream
 	: public natRefObjImpl<natStream>
 {
 public:
+	natMemoryStream();
 	natMemoryStream(ncData pData, nLen Length, nBool bReadable, nBool bWritable, nBool bResizable);
+	~natMemoryStream();
 
-	static natStream* CreateFromExternMemory(nData pData, nLen Length, nBool bReadable, nBool bWritable);
+	static natRefPointer<natMemoryStream> CreateFromExternMemory(nData pData, nLen Length, nBool bReadable, nBool bWritable);
 
 	NatErr GetLastErr() const override;
 	nBool CanWrite() const override;
 	nBool CanRead() const override;
 	nBool CanResize() const override;
+	nBool CanSeek() const override;
 	nLen GetSize() const override;
 	nResult SetSize(nLen Size) override;
 	nLen GetPosition() const override;
 	nResult SetPosition(NatSeek Origin, nLong Offset) override;
 	nLen ReadBytes(nData pData, nLen Length) override;
 	nLen WriteBytes(ncData pData, nLen Length) override;
+	void Flush() override;
 	void Lock() override;
 	nResult TryLock() override;
 	void Unlock() override;
 
-protected:
-	natMemoryStream();
-	~natMemoryStream();
+	nData GetInternalBuffer() noexcept;
+	ncData GetInternalBuffer() const noexcept;
+
 private:
 	nData m_pData;
 	nLen m_Length;

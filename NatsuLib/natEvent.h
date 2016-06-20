@@ -4,11 +4,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable : 4180)
+#include <functional>
+#pragma warning(pop)
+
 #include <map>
 #include <unordered_set>
-#include <vector>
-#include "natType.h"
 #include <unordered_map>
+#include "natType.h"
+#include "natException.h"
+#include <typeindex>
 
 namespace Priority
 {
@@ -25,329 +31,132 @@ namespace Priority
 	};
 }
 
-template <typename dataT>
-////////////////////////////////////////////////////////////////////////////////
-///	@brief	Event类实现
-///	@note	包含一个data，用户可根据其需要提供数据类型
-////////////////////////////////////////////////////////////////////////////////
-class natEvent
+namespace std
+{
+	template <typename Func>
+	struct hash<function<Func>>
+	{
+		size_t operator()(function<Func> const& _Keyval) const
+		{
+			return hash<add_pointer_t<Func>>()(_Keyval.template target<Func>());
+		}
+	};
+
+	template <typename Func>
+	bool operator==(function<Func> const& left, function<Func> const& right)
+	{
+		return left.template target<Func>() == right.template target<Func>();
+	}
+
+	template <typename Func1, typename Func2>
+	bool operator==(function<Func1> const&, function<Func2> const&)
+	{
+		return false;
+	}
+}
+
+class natEventBase
 {
 public:
-	typedef void(*EventHandle)(natEvent&);
-	typedef dataT dataType;
-
-	//__declspec(deprecated)
-	explicit natEvent(nBool isEventCancelable = false)
-		: m_Cancelable(isEventCancelable),
-		m_isCanceled(false),
-		m_data()
+	natEventBase()
+		: m_Canceled(false)
 	{
 	}
-	explicit natEvent(dataT const& data, nBool isEventCancelable)
-		: m_Cancelable(isEventCancelable),
-		m_isCanceled(false),
-		m_data(data)
+	virtual ~natEventBase() = default;
+
+	virtual bool CanCancel() const noexcept
 	{
-	}
-	natEvent(natEvent const& b)
-		: m_EventHandler(b.m_EventHandler),
-		m_Cancelable(b.m_Cancelable),
-		m_isCanceled(b.m_isCanceled),
-		m_data(b.m_data)
-	{
-	}
-
-	virtual ~natEvent()
-	{
-	}
-
-	virtual natEvent& operator=(natEvent const& b)
-	{
-		if (this == &b)
-		{
-			return *this;
-		}
-
-		m_EventHandler = b.m_EventHandler;
-		m_data = b.m_data;
-
-		if (m_Cancelable == b.m_Cancelable)
-		{
-			m_isCanceled = b.m_isCanceled;
-		}
-
-		return *this;
-	}
-
-	virtual void Register(EventHandle func, nInt priority = Priority::Normal)
-	{
-		m_EventHandler[priority].insert(func);
-	}
-
-	/*bool Unregister(nuInt HandlerIndex, int Priority)
-	{
-		auto eventhandlerlist = m_EventHandler.find(Priority);
-		if (eventhandlerlist != m_EventHandler.end())
-		{
-			if (HandlerIndex >= eventhandlerlist->second.size())
-			{
-				return false;
-			}
-
-			auto i = eventhandlerlist->second.begin();
-			for (uint id = HandlerIndex; id > 0u; --id)
-			{
-				++i;
-			}
-
-			eventhandlerlist->second.erase(i);
-			eventhandlerlist->second.erase(eventhandlerlist->second.begin() + HandlerIndex);
-			return true;
-		}
-
 		return false;
-	}*/
+	}
 
-	virtual void Unregister(EventHandle Handler)
+	virtual void SetCancel(bool value) noexcept
 	{
-		for (auto& eventhandlerlist : m_EventHandler)
+		if (CanCancel())
 		{
-			eventhandlerlist.second.erase(Handler);
+			m_Canceled = value;
 		}
 	}
 
-	virtual void operator+=(EventHandle func)
+	virtual bool IsCanceled() const noexcept
 	{
-		Register(func);
+		return m_Canceled;
 	}
 
-	/*bool operator-=(nuInt HandlerIndex)
-	{
-		return Unregister(HandlerIndex, Priority::Normal);
-	}*/
-	virtual void operator-=(EventHandle Handler)
-	{
-		Unregister(Handler);
-	}
-
-	nBool isCancelable() const
-	{
-		return m_Cancelable;
-	}
-
-	void SetCanceled(nBool cancel = true)
-	{
-		if (m_Cancelable)
-		{
-			m_isCanceled = cancel;
-		}
-	}
-
-	nBool isCanceled() const
-	{
-		return m_isCanceled;
-	}
-
-	virtual void Release()
-	{
-		m_EventHandler.clear();
-		//SetCanceled();
-	}
-
-	//__declspec(deprecated)
-	virtual nBool Activate(nInt PriorityLimitmin = Priority::Low, nInt PriorityLimitmax = Priority::High)
-	{
-		m_isCanceled = false;
-		if (!m_EventHandler.empty())
-		{
-			for (auto i = PriorityLimitmax; i <= PriorityLimitmin; ++i)
-			{
-				for (auto& eh : m_EventHandler[i])
-				{
-					eh(*this);
-				}
-			}
-		}
-
-		return m_isCanceled;
-	}
-
-	virtual nBool Activate(dataType const& data, nInt PriorityLimitmin, nInt PriorityLimitmax)
-	{
-		SetData(data);
-		return Activate(PriorityLimitmin, PriorityLimitmax);
-	}
-
-	nBool operator()()
-	{
-		return Activate(Priority::Low, Priority::High);
-	}
-
-	nBool operator()(dataType const& data)
-	{
-		return Activate(data, Priority::Low, Priority::High);
-	}
-
-	const dataT& GetData() const
-	{
-		return m_data;
-	}
-
-	void SetData(dataType const& val)
-	{
-		dataT tmp(val);
-		std::swap(m_data, tmp);
-	}
-
-	void SetData(dataType&& val)
-	{
-		std::swap(m_data, std::move(val));
-	}
-
-	__declspec(property(get = GetData, put = SetData))
-	dataT Data;
-protected:
-	std::map<nInt, std::unordered_set<EventHandle>> m_EventHandler;
-	const nBool m_Cancelable;
-	nBool m_isCanceled;
-
-	mutable dataT m_data;
+private:
+	bool m_Canceled;
 };
 
-
-template <>
-////////////////////////////////////////////////////////////////////////////////
-///	@brief	Event实现
-///	@note	此类不包含data
-////////////////////////////////////////////////////////////////////////////////
-class natEvent<void>
+class natEventBus final
 {
 public:
-	typedef void(*EventHandle)(natEvent&);
+	typedef std::function<void(natEventBase&)> EventListenerFunc;
 
-	explicit natEvent(nBool isEventCancelable = false) : m_Cancelable(isEventCancelable), m_isCanceled(false)
+	NATNOINLINE static natEventBus& GetInstance()
 	{
-	}
-	natEvent(natEvent const& b) : m_EventHandler(b.m_EventHandler), m_Cancelable(b.m_Cancelable), m_isCanceled(b.m_isCanceled)
-	{
-	}
-
-	virtual ~natEvent()
-	{
-		//Release();
+		static natEventBus s_Instance;
+		return s_Instance;
 	}
 
-	virtual natEvent& operator=(natEvent const& b)
+	template <typename EventClass>
+	std::enable_if_t<std::is_base_of<natEventBase, EventClass>::value, void> RegisterEvent()
 	{
-		for each (auto x in b.m_EventHandler)
+		m_EventHandlerMap.try_emplace(typeid(EventClass));
+	}
+
+	template <typename EventClass, typename EventListener>
+	nuInt RegisterEventListener(EventListener listener, int priority = Priority::Normal)
+	{
+		auto iter = m_EventHandlerMap.find(typeid(EventClass));
+		if (iter == m_EventHandlerMap.end())
 		{
-			m_EventHandler.insert(x);
+			nat_Throw(natException, _T("Unregistered event."));
 		}
 
-		if (m_Cancelable == b.m_Cancelable)
+		auto&& listeners = iter->second[priority];
+		auto ret = listeners.empty() ? 0u : listeners.rbegin()->first + 1u;
+		listeners[ret] = listener;
+		return ret;
+	}
+
+	template <typename EventClass>
+	void UnregisterEventListener(int priority, nuInt Handle)
+	{
+		auto iter = m_EventHandlerMap.find(typeid(EventClass));
+		if (iter == m_EventHandlerMap.end())
 		{
-			m_isCanceled = b.m_isCanceled;
+			nat_Throw(natException, _T("Unregistered event."));
 		}
 
-		return *this;
-	}
-
-	virtual void Register(EventHandle func, nInt priority = Priority::Normal)
-	{
-		m_EventHandler[priority].insert(func);
-	}
-
-	/*bool Unregister(nuInt HandlerIndex, int Priority)
-	{
-		auto eventhandlerlist = m_EventHandler.find(Priority);
-		if (eventhandlerlist != m_EventHandler.end())
+		auto listeneriter = iter->second.find(priority);
+		if (listeneriter != iter->second.end())
 		{
-			if (HandlerIndex >= eventhandlerlist->second.size())
+			listeneriter->second.erase(Handle);
+		}
+	}
+
+	template <typename EventClass>
+	bool Post(EventClass& event)
+	{
+		auto iter = m_EventHandlerMap.find(typeid(EventClass));
+		if (iter == m_EventHandlerMap.end())
+		{
+			nat_Throw(natException, _T("Unregistered event."));
+		}
+
+		for (auto& listeners : iter->second)
+		{
+			for (auto& listener : listeners.second)
 			{
-				return false;
-			}
-
-			auto i = eventhandlerlist->second.begin();
-			for (; HandlerIndex > 0u; --HandlerIndex)
-			{
-				++i;
-			}
-
-			eventhandlerlist->second.erase(eventhandlerlist->second.begin() + HandlerIndex);
-			return true;
-		}
-
-		return false;
-	}*/
-
-	virtual void Unregister(EventHandle Handler)
-	{
-		for (auto& eventhandlerlist : m_EventHandler)
-		{
-			eventhandlerlist.second.erase(Handler);
-		}
-	}
-
-	virtual void operator+=(EventHandle func)
-	{
-		Register(func);
-	}
-	/*bool operator-=(nuInt HandlerIndex)
-	{
-		return Unregister(HandlerIndex, Priority::Normal);
-	}*/
-	virtual void operator-=(EventHandle Handler)
-	{
-		Unregister(Handler);
-	}
-
-	nBool isCancelable() const
-	{
-		return m_Cancelable;
-	}
-
-	void SetCanceled(nBool cancel = true)
-	{
-		if (m_Cancelable)
-		{
-			m_isCanceled = cancel;
-		}
-	}
-
-	nBool isCanceled() const
-	{
-		return m_isCanceled;
-	}
-
-	void Release()
-	{
-		m_EventHandler.clear();
-		//m_isCanceled = true;
-	}
-
-	virtual nBool Activate(nInt PriorityLimitmin = Priority::Low, nInt PriorityLimitmax = Priority::High)
-	{
-		m_isCanceled = false;
-		if (m_EventHandler.size() > 0u)
-		{
-			for (auto i = PriorityLimitmax; i <= PriorityLimitmin; ++i)
-			{
-				for (auto& eh : m_EventHandler[i])
-				{
-					eh(*this);
-				}
+				listener.second(static_cast<natEventBase&>(event));
 			}
 		}
 
-		return m_isCanceled;
+		return event.IsCanceled();
 	}
 
-	nBool operator()()
-	{
-		return Activate(Priority::Low, Priority::High);
-	}
-protected:
-	std::map<nInt, std::unordered_set<EventHandle>> m_EventHandler;
-	const nBool m_Cancelable;
-	nBool m_isCanceled;
+private:
+	std::unordered_map<std::type_index, std::map<int, std::map<nuInt, std::function<void(natEventBase&)>>>> m_EventHandlerMap;
+
+	natEventBus() = default;
+	~natEventBus() = default;
 };

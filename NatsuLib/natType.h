@@ -48,7 +48,10 @@ typedef	nStr				nTStr;		///< @brief	通用字符串
 typedef	ncStr				ncTStr;		///< @brief	常量通用字符串
 #endif
 
-typedef std::basic_string<nTChar, std::char_traits<nTChar>, std::allocator<nTChar> > nTString;	///< @brief	通用string类
+typedef std::basic_string<nTChar> nTString;	///< @brief	通用string类
+
+template <typename T>
+using nUnsafePtr = T*;
 
 ///	@}
 
@@ -80,13 +83,17 @@ typedef std::basic_string<nTChar, std::char_traits<nTChar>, std::allocator<nTCha
 
 enum NatErr
 {
+	NatErr_Interrupted	=	nResult(1),		///< @brief	正常中断
+
 	NatErr_OK			=	nResult(0),		///< @brief	正常
+
 	NatErr_Unknown		=	NATMAKEERR(1),	///< @brief	未知错误
 	NatErr_IllegalState	=	NATMAKEERR(2),	///< @brief	非法状态
 	NatErr_InvalidArg	=	NATMAKEERR(3),	///< @brief	无效参数
 	NatErr_InternalErr	=	NATMAKEERR(4),	///< @brief	内部错误
 	NatErr_OutOfRange	=	NATMAKEERR(5),	///< @brief	超出范围
 	NatErr_NotImpl		=	NATMAKEERR(6),	///< @brief	未实现
+	NatErr_NotSupport	=	NATMAKEERR(7),	///< @brief	不支持的功能
 };
 
 ///	@}

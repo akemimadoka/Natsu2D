@@ -30,21 +30,22 @@
 		return *this;\
 	}
 
-#define TOPERATORSCALAR(op) natMat2 operator##op(T const& Scalar) const\
+#define TOPERATORSCALARNML(op) template <typename T, typename U>\
+	auto operator##op(natMat2<T> const& m, U const& Scalar)\
 	{\
-		return natMat2(value[0] op Scalar, value[1] op Scalar);\
+		return natMat2<decltype(m[0] op Scalar)>(m[0] op Scalar, m[1] op Scalar);\
 	}
 
-#define TOPERATORSELF(op) template <typename U>\
-	natMat2 operator##op(natMat2<U> const& m) const\
+#define TOPERATORSELFNM(op) template <typename T, typename U>\
+	auto operator##op(natMat2<T> const& m1, natMat2<U> const& m2)\
 	{\
-		return natMat2(value[0] op static_cast<col_type>(m.value[0]), value[1] op static_cast<col_type>(m.value[1]));\
+		return natMat2<decltype(m1[0] op m2[0])>(m1[0] op m2[0], m1[1] op m2[1]);\
 	}
 
 #define TOPERATORSCALARNM(op) template <typename T, typename U>\
-natMat2<T> operator##op(U const& Scalar, natMat2<T> const& m)\
+auto operator##op(U const& Scalar, natMat2<T> const& m)\
 {\
-	return natMat2<T>(static_cast<T>(Scalar) op m[0], static_cast<T>(Scalar) op m[1]);\
+	return natMat2<decltype(Scalar op m[0])>(Scalar op m[0], Scalar op m[1]);\
 }
 
 template <typename T>
@@ -66,7 +67,7 @@ private:
 	col_type value[2];
 
 public:
-	constexpr nuInt length() const
+	static constexpr nuInt length() noexcept
 	{
 		return 2u;
 	}
@@ -75,7 +76,7 @@ public:
 	{
 		if (i >= length())
 		{
-			throw natException(_T("natMat2::operator[]"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 		}
 
 		return value[i];
@@ -253,30 +254,30 @@ public:
 	{
 		return (*this = *this * m.inverse());
 	}
-
-	TOPERATORSCALAR(+);
-	TOPERATORSELF(+);
-
-	TOPERATORSCALAR(-);
-	TOPERATORSELF(-);
-
-	TOPERATORSCALAR(*);
-	TOPERATORSCALAR(/ );
-
-	template <typename U>
-	natMat2 operator*(natMat2<U> const& m) const
-	{
-		return natMat2(
-			value[0][0] * static_cast<T>(m.value[0][0]) + value[1][0] * static_cast<T>(m.value[0][1]), value[0][1] * static_cast<T>(m.value[0][0]) + value[1][1] * static_cast<T>(m.value[0][1]),
-			value[0][0] * static_cast<T>(m.value[1][0]) + value[1][0] * static_cast<T>(m.value[1][1]), value[0][1] * static_cast<T>(m.value[0][0]) + value[1][1] * static_cast<T>(m.value[1][1]));
-	}
-
-	template <typename U>
-	natMat2 operator/(natMat2<U> const& m) const
-	{
-		return natMat2(*this) /= m;
-	}
 };
+
+TOPERATORSCALARNML(+);
+TOPERATORSELFNM(+);
+
+TOPERATORSCALARNML(-);
+TOPERATORSELFNM(-);
+
+TOPERATORSCALARNML(*);
+TOPERATORSCALARNML(/ );
+
+template <typename T, typename U>
+auto operator*(natMat2<T> const& m1, natMat2<U> const& m2)
+{
+	return natMat2<decltype(m1[0][0] * m2.value[0][0] + m1[1][0] * m2.value[0][1])>(
+		m1[0][0] * m2.value[0][0] + m1[1][0] * m2.value[0][1], m1[0][1] * m2.value[0][0] + m1[1][1] * m2.value[0][1],
+		m1[0][0] * m2.value[1][0] + m1[1][0] * m2.value[1][1], m1[0][1] * m2.value[0][0] + m1[1][1] * m2.value[1][1]);
+}
+
+template <typename T, typename U>
+auto operator/(natMat2<T> const& m1, natMat2<U> const& m2)
+{
+	return natMat2<T>(m1) /= m2;
+}
 
 TOPERATORSCALARNM(+);
 
@@ -318,12 +319,12 @@ natVec2<T> operator/(natVec2<U> const& v, natMat2<T> const& m)
 #	undef OPERATORSELF
 #endif
 
-#ifdef TOPERATORSCALAR
-#	undef TOPERATORSCALAR
+#ifdef TOPERATORSCALARNML
+#	undef TOPERATORSCALARNML
 #endif
 
-#ifdef TOPERATORSELF
-#	undef TOPERATORSELF
+#ifdef TOPERATORSELFNM
+#	undef TOPERATORSELFNM
 #endif
 
 #ifdef TOPERATORSCALARNM
@@ -348,21 +349,22 @@ natVec2<T> operator/(natVec2<U> const& v, natMat2<T> const& m)
 		return *this;\
 	}
 
-#define TOPERATORSCALAR(op) natMat3 operator##op(T const& Scalar) const\
+#define TOPERATORSCALARNML(op) template <typename T, typename U>\
+	auto operator##op(natMat3<T> const& m, U const& Scalar)\
 	{\
-		return natMat3(value[0] op Scalar, value[1] op Scalar, value[2] op Scalar);\
+		return natMat3<decltype(m[0] op Scalar)>(m[0] op Scalar, m[1] op Scalar, m[2] op Scalar);\
 	}
 
-#define TOPERATORSELF(op) template <typename U>\
-	natMat3 operator##op(natMat3<U> const& m) const\
+#define TOPERATORSELFNM(op) template <typename T, typename U>\
+	auto operator##op(natMat3<T> const& m1, natMat3<U> const& m2)\
 	{\
-		return natMat3(value[0] op static_cast<col_type>(m.value[0]), value[1] op static_cast<col_type>(m.value[1]), value[2] op static_cast<col_type>(m.value[2]));\
+		return natMat3<decltype(m1[0] op m2[0])>(m1[0] op m2[0], m1[1] op m2[1], m1[2] op m2[2]);\
 	}
 
 #define TOPERATORSCALARNM(op) template <typename T, typename U>\
-natMat3<T> operator##op(U const& Scalar, natMat3<T> const& m)\
+auto operator##op(U const& Scalar, natMat3<T> const& m)\
 {\
-	return natMat3<T>(static_cast<T>(Scalar) op m[0], static_cast<T>(Scalar) op m[1], static_cast<T>(Scalar) op m[2]);\
+	return natMat3<decltype(Scalar op m[0])>(Scalar op m[0], Scalar op m[1], Scalar op m[2]);\
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -378,7 +380,7 @@ private:
 	col_type value[3];
 
 public:
-	constexpr nuInt length() const
+	static constexpr nuInt length() noexcept
 	{
 		return 3u;
 	}
@@ -387,7 +389,7 @@ public:
 	{
 		if (i >= length())
 		{
-			throw natException(_T("natMat3::operator[]"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 		}
 
 		return value[i];
@@ -580,38 +582,38 @@ public:
 	{
 		return (*this = *this * m.inverse());
 	}
-
-	TOPERATORSCALAR(+);
-	TOPERATORSELF(+);
-
-	TOPERATORSCALAR(-);
-	TOPERATORSELF(-);
-
-	TOPERATORSCALAR(*);
-	TOPERATORSCALAR(/ );
-
-	template <typename U>
-	natMat3 operator*(natMat3<U> const& m) const
-	{
-		return natMat3(
-			value[0][0] * static_cast<T>(m.value[0][0]) + value[1][0] * static_cast<T>(m.value[0][1]) + value[2][0] * static_cast<T>(m.value[0][2]),
-			value[0][1] * static_cast<T>(m.value[0][0]) + value[1][1] * static_cast<T>(m.value[0][1]) + value[2][1] * static_cast<T>(m.value[0][2]),
-			value[0][2] * static_cast<T>(m.value[0][0]) + value[1][2] * static_cast<T>(m.value[0][1]) + value[2][2] * static_cast<T>(m.value[0][2]),
-			value[0][0] * static_cast<T>(m.value[1][0]) + value[1][0] * static_cast<T>(m.value[1][1]) + value[2][0] * static_cast<T>(m.value[1][2]),
-			value[0][1] * static_cast<T>(m.value[1][0]) + value[1][1] * static_cast<T>(m.value[1][1]) + value[2][1] * static_cast<T>(m.value[1][2]),
-			value[0][2] * static_cast<T>(m.value[1][0]) + value[1][2] * static_cast<T>(m.value[1][1]) + value[2][2] * static_cast<T>(m.value[1][2]),
-			value[0][0] * static_cast<T>(m.value[2][0]) + value[1][0] * static_cast<T>(m.value[2][1]) + value[2][0] * static_cast<T>(m.value[2][2]),
-			value[0][1] * static_cast<T>(m.value[2][0]) + value[1][1] * static_cast<T>(m.value[2][1]) + value[2][1] * static_cast<T>(m.value[2][2]),
-			value[0][2] * static_cast<T>(m.value[2][0]) + value[1][2] * static_cast<T>(m.value[2][1]) + value[2][2] * static_cast<T>(m.value[2][2])
-			);
-	}
-
-	template <typename U>
-	natMat3 operator/(natMat3<U> const& m) const
-	{
-		return natMat3(*this) /= m;
-	}
 };
+
+TOPERATORSCALARNML(+);
+TOPERATORSELFNM(+);
+
+TOPERATORSCALARNML(-);
+TOPERATORSELFNM(-);
+
+TOPERATORSCALARNML(*);
+TOPERATORSCALARNML(/ );
+
+template <typename T, typename U>
+auto operator*(natMat3<T> const& m1, natMat3<U> const& m2)
+{
+	return natMat3<decltype(m1[0][0] * m2.value[0][0])>(
+		m1[0][0] * m2.value[0][0] + m1[1][0] * m2.value[0][1] + m1[2][0] * m2.value[0][2],
+		m1[0][1] * m2.value[0][0] + m1[1][1] * m2.value[0][1] + m1[2][1] * m2.value[0][2],
+		m1[0][2] * m2.value[0][0] + m1[1][2] * m2.value[0][1] + m1[2][2] * m2.value[0][2],
+		m1[0][0] * m2.value[1][0] + m1[1][0] * m2.value[1][1] + m1[2][0] * m2.value[1][2],
+		m1[0][1] * m2.value[1][0] + m1[1][1] * m2.value[1][1] + m1[2][1] * m2.value[1][2],
+		m1[0][2] * m2.value[1][0] + m1[1][2] * m2.value[1][1] + m1[2][2] * m2.value[1][2],
+		m1[0][0] * m2.value[2][0] + m1[1][0] * m2.value[2][1] + m1[2][0] * m2.value[2][2],
+		m1[0][1] * m2.value[2][0] + m1[1][1] * m2.value[2][1] + m1[2][1] * m2.value[2][2],
+		m1[0][2] * m2.value[2][0] + m1[1][2] * m2.value[2][1] + m1[2][2] * m2.value[2][2]
+		);
+}
+
+template <typename T, typename U>
+auto operator/(natMat3<T> const& m1, natMat3<U> const& m2)
+{
+	return natMat3<T>(m1) /= m2;
+}
 
 TOPERATORSCALARNM(+);
 
@@ -661,12 +663,12 @@ natVec3<T> operator/(natVec3<U> const& v, natMat3<T> const& m)
 #	undef OPERATORSELF
 #endif
 
-#ifdef TOPERATORSCALAR
-#	undef TOPERATORSCALAR
+#ifdef TOPERATORSCALARNML
+#	undef TOPERATORSCALARNML
 #endif
 
-#ifdef TOPERATORSELF
-#	undef TOPERATORSELF
+#ifdef TOPERATORSELFNM
+#	undef TOPERATORSELFNM
 #endif
 
 #ifdef TOPERATORSCALARNM
@@ -693,21 +695,22 @@ natVec3<T> operator/(natVec3<U> const& v, natMat3<T> const& m)
 		return *this;\
 	}
 
-#define TOPERATORSCALAR(op) natMat4 operator##op(T const& Scalar) const\
+#define TOPERATORSCALARNML(op) template <typename T, typename U>\
+	auto operator##op(natMat4<T> const& m, U const& Scalar)\
 	{\
-		return natMat4(value[0] op Scalar, value[1] op Scalar, value[2] op Scalar, value[3] op Scalar);\
+		return natMat4<decltype(m[0] op Scalar)>(m[0] op Scalar, m[1] op Scalar, m[2] op Scalar, m[3] op Scalar);\
 	}
 
-#define TOPERATORSELF(op) template <typename U>\
-	natMat4 operator##op(natMat4<U> const& m) const\
+#define TOPERATORSELFNM(op) template <typename T, typename U>\
+	auto operator##op(natMat4<T> const& m1, natMat4<U> const& m2)\
 	{\
-		return natMat4(value[0] op static_cast<col_type>(m.value[0]), value[1] op static_cast<col_type>(m.value[1]), value[2] op static_cast<col_type>(m.value[2]), value[3] op static_cast<col_type>(m.value[3]));\
+		return natMat4<decltype(m1[0] op m2[0])>(m1[0] op m2[0], m1[1] op m2[1], m1[2] op m2[2], m1[3] op m2[3]);\
 	}
 
 #define TOPERATORSCALARNM(op) template <typename T, typename U>\
-natMat4<T> operator##op(U const& Scalar, natMat4<T> const& m)\
+auto operator##op(U const& Scalar, natMat4<T> const& m)\
 {\
-	return natMat4<T>(static_cast<T>(Scalar) op m[0], static_cast<T>(Scalar) op m[1], static_cast<T>(Scalar) op m[2], static_cast<T>(Scalar) op m[3]);\
+	return natMat4<decltype(Scalar op m[0])>(Scalar op m[0], Scalar op m[1], Scalar op m[2], Scalar op m[3]);\
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -723,7 +726,7 @@ private:
 	col_type value[4];
 
 public:
-	constexpr nuInt length() const
+	static constexpr nuInt length() noexcept
 	{
 		return 4u;
 	}
@@ -732,7 +735,7 @@ public:
 	{
 		if (i >= length())
 		{
-			throw natException(_T("natMat4::operator[]"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 		}
 
 		return value[i];
@@ -986,42 +989,43 @@ public:
 	{
 		return (*this = *this * m.inverse());
 	}
-
-	TOPERATORSCALAR(+);
-	TOPERATORSELF(+);
-
-	TOPERATORSCALAR(-);
-	TOPERATORSELF(-);
-
-	TOPERATORSCALAR(*);
-	TOPERATORSCALAR(/);
-
-	template <typename U>
-	natMat4 operator*(natMat4<U> const& m) const
-	{
-		col_type const SrcA0 = value[0];
-		col_type const SrcA1 = value[1];
-		col_type const SrcA2 = value[2];
-		col_type const SrcA3 = value[3];
-
-		col_type const SrcB0 = m.value[0];
-		col_type const SrcB1 = m.value[1];
-		col_type const SrcB2 = m.value[2];
-		col_type const SrcB3 = m.value[3];
-
-		return natMat4(
-			SrcA0 * SrcB0[0] + SrcA1 * SrcB0[1] + SrcA2 * SrcB0[2] + SrcA3 * SrcB0[3],
-			SrcA0 * SrcB1[0] + SrcA1 * SrcB1[1] + SrcA2 * SrcB1[2] + SrcA3 * SrcB1[3],
-			SrcA0 * SrcB2[0] + SrcA1 * SrcB2[1] + SrcA2 * SrcB2[2] + SrcA3 * SrcB2[3],
-			SrcA0 * SrcB3[0] + SrcA1 * SrcB3[1] + SrcA2 * SrcB3[2] + SrcA3 * SrcB3[3]);
-	}
-
-	template <typename U>
-	natMat4 operator/(natMat4<U> const& m) const
-	{
-		return natMat4(*this) /= m;
-	}
 };
+
+
+TOPERATORSCALARNML(+);
+TOPERATORSELFNM(+);
+
+TOPERATORSCALARNML(-);
+TOPERATORSELFNM(-);
+
+TOPERATORSCALARNML(*);
+TOPERATORSCALARNML(/ );
+
+template <typename T, typename U>
+auto operator*(natMat4<T> const& m1, natMat4<U> const& m2)
+{
+	auto const SrcA0 = m1[0];
+	auto const SrcA1 = m1[1];
+	auto const SrcA2 = m1[2];
+	auto const SrcA3 = m1[3];
+
+	auto const SrcB0 = m2[0];
+	auto const SrcB1 = m2[1];
+	auto const SrcB2 = m2[2];
+	auto const SrcB3 = m2[3];
+
+	return natMat4<T>(
+		SrcA0 * SrcB0[0] + SrcA1 * SrcB0[1] + SrcA2 * SrcB0[2] + SrcA3 * SrcB0[3],
+		SrcA0 * SrcB1[0] + SrcA1 * SrcB1[1] + SrcA2 * SrcB1[2] + SrcA3 * SrcB1[3],
+		SrcA0 * SrcB2[0] + SrcA1 * SrcB2[1] + SrcA2 * SrcB2[2] + SrcA3 * SrcB2[3],
+		SrcA0 * SrcB3[0] + SrcA1 * SrcB3[1] + SrcA2 * SrcB3[2] + SrcA3 * SrcB3[3]);
+}
+
+template <typename T, typename U>
+auto operator/(natMat4<T> const& m1, natMat4<U> const& m2)
+{
+	return natMat4<T>(m1) /= m2;
+}
 
 TOPERATORSCALARNM(+);
 
@@ -1086,12 +1090,12 @@ natVec4<T> operator/(natVec4<U> const& v, natMat4<T> const& m)
 #	undef OPERATORSELF
 #endif
 
-#ifdef TOPERATORSCALAR
-#	undef TOPERATORSCALAR
+#ifdef TOPERATORSCALARNML
+#	undef TOPERATORSCALARNML
 #endif
 
-#ifdef TOPERATORSELF
-#	undef TOPERATORSELF
+#ifdef TOPERATORSELFNM
+#	undef TOPERATORSELFNM
 #endif
 
 #ifdef TOPERATORSCALARNM

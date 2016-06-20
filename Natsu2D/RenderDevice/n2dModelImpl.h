@@ -44,7 +44,7 @@ class n2dDynamicModelDataImpl
 	friend class n2dMotionManagerImpl;
 	friend class n2dGraphics3DImpl;
 	friend class n2dModelLoaderImpl;
-	friend class n2dSelekton;
+	friend class n2dSkeleton;
 	friend class n2dIK;
 public:
 	n2dDynamicModelDataImpl() = default;

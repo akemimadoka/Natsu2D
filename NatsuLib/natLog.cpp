@@ -17,6 +17,7 @@ natLog::natLog(ncTStr const& logfile)
 	: m_LogFile(logfile),
 	m_fstr(m_LogFile)
 {
+	natEventBus::GetInstance().RegisterEvent<EventLogUpdated>();
 	LogMsg(_T("Log start."));
 }
 
@@ -84,14 +85,16 @@ void natLog::Log(LogType type, ncTStr content, Arg &&... arg)
 {
 	m_LastLog = natUtil::FormatString(natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content).c_str(), std::forward<Arg>(arg)...);
 	m_fstr << GetLastLog() << std::endl;
-	EventLogUpdate(GetLastLog());
+	EventLogUpdated event(GetLastLog());
+	natEventBus::GetInstance().Post(event);
 }
 
 void natLog::Log(LogType type, ncTStr content)
 {
 	m_LastLog = natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content).c_str();
 	m_fstr << GetLastLog() << std::endl;
-	EventLogUpdate(GetLastLog());
+	EventLogUpdated event(GetLastLog());
+	natEventBus::GetInstance().Post(event);
 }
 
 ncTStr natLog::GetLogFile() const
@@ -104,7 +107,7 @@ ncTStr natLog::GetLastLog() const
 	return m_LastLog.c_str();
 }
 
-void natLog::RegisterLogUpdateEventFunc(natEvent<ncTStr>::EventHandle func)
+void natLog::RegisterLogUpdateEventFunc(natEventBus::EventListenerFunc func)
 {
-	EventLogUpdate += func;
+	natEventBus::GetInstance().RegisterEventListener<EventLogUpdated>(func);
 }

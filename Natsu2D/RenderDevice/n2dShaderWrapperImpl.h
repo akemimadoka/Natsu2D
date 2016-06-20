@@ -26,7 +26,7 @@ class n2dShaderImpl
 			return GL_GEOMETRY_SHADER;
 		}
 
-		throw natException(_T("n2dShaderImpl::GetShaderType"), _T("Not an available ShaderType"));
+		nat_Throw(natException, _T("Not an available ShaderType"));
 	}
 
 public:
@@ -90,7 +90,7 @@ class n2dShaderProgramImpl
 		case n2dShaderProgram::AttribType::Double:
 			return GL_DOUBLE;
 		default:
-			throw natException(_T("n2dShaderProgramImpl::GetAttribTypeEnum"), _T("Not a valid AttribType enum"));
+			nat_Throw(natException, _T("Not a valid AttribType enum"));
 		}
 	}
 
@@ -307,7 +307,7 @@ class n2dShaderProgramImpl
 		case n2dShaderProgram::VarType::atomic_uint:
 			return GL_UNSIGNED_INT_ATOMIC_COUNTER;
 		default:
-			throw natException(_T("n2dShaderProgramImpl::GetTypeEnum"), _T("Not a valid VarType"));
+			nat_Throw(natException, _T("Not a valid VarType"));
 		}
 	}
 
@@ -524,7 +524,7 @@ class n2dShaderProgramImpl
 		case GL_UNSIGNED_INT_ATOMIC_COUNTER:
 			return n2dShaderProgram::VarType::atomic_uint;
 		default:
-			throw natException(_T("n2dShaderProgramImpl::GetVarType"), _T("Not a valid type enum"));
+			nat_Throw(natException, _T("Not a valid type enum"));
 		}
 	}
 public:
@@ -643,9 +643,9 @@ public:
 private:
 	GLhandle m_Program;
 
-	std::unordered_map<GLuint, AttributeReferenceImpl*> m_AttribMap;
-	std::unordered_map<GLuint, UniformReferenceImpl*> m_UniformMap;
-	std::unordered_map<GLuint, UniformBlockReferenceImpl*> m_UniformBlockMap;
+	std::unordered_map<GLuint, natRefPointer<AttributeReferenceImpl>> m_AttribMap;
+	std::unordered_map<GLuint, natRefPointer<UniformReferenceImpl>> m_UniformMap;
+	std::unordered_map<GLuint, natRefPointer<UniformBlockReferenceImpl>> m_UniformBlockMap;
 
 	mutable nTString m_Log;
 };

@@ -6,18 +6,15 @@
 #include "n2dTextureImpl.h"
 #include "n2dModelImpl.h"
 #include "n2dMotionManagerImpl.h"
-#include "..\n2dCommon.h"
-#include "OpenGL.h"
 #include "..\include\assimp\Importer.hpp"
 #include "..\include\assimp\scene.h"
 #include "..\include\assimp\postprocess.h"
-#include <natMath.h>
 
 n2dModelLoaderImpl::n2dModelLoaderImpl(n2dRenderDeviceImpl* pRenderDevice)
 	: m_DefaultTexture(nullptr),
 	m_pRenderDevice(pRenderDevice)
 {
-	m_DefaultTexture = new n2dTexture2DImpl;
+	m_DefaultTexture = make_ref<n2dTexture2DImpl>();
 }
 
 nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut)
@@ -83,7 +80,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 		return NatErr_InvalidArg;
 	}
 
-	natRefPointer<n2dDynamicModelDataImpl> pModel;
+	n2dDynamicModelDataImpl* pModel;
 
 	try
 	{
@@ -190,17 +187,18 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 #endif
 
 			std::replace(tStr.begin(), tStr.end(), _T('/'), _T('\\'));
-			auto SplitResult = natUtil::split(tStr, _T("*"));
+			std::vector<nTString> SplitResult;
+			natUtil::split(tStr, nTString(_T("*")), SplitResult);
 
+#ifndef NDEBUG
 			if (SplitResult.size() > 2)
 			{
-#ifdef _DEBUG
 				natLog::GetInstance().LogWarn(_T("Texture and spa filename count dismatch, continue anyway"));
-#endif
 			}
+#endif
 
-			mat.BaseMaterial.Texture = new n2dTexture2DImpl;
-			if (SplitResult[0] != _T("") && !mat.BaseMaterial.Texture->LoadTexture(SplitResult[0]))
+			mat.BaseMaterial.Texture = make_ref<n2dTexture2DImpl>();
+			if (!SplitResult.empty() && SplitResult[0] != _T("") && !mat.BaseMaterial.Texture->LoadTexture(SplitResult[0]))
 			{
 				natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Unable to load texture file \"%s\""), SplitResult[0].c_str()).c_str());
 				mat.BaseMaterial.Texture = m_DefaultTexture;
@@ -208,7 +206,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 
 			if (SplitResult.size() >= 2 && SplitResult[1] != _T(""))
 			{
-				mat.Spa = new n2dTexture2DImpl;
+				mat.Spa = make_ref<n2dTexture2DImpl>();
 				if (!mat.Spa->LoadTexture(SplitResult[1]))
 				{
 					natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Unable to load spa file \"%s\""), SplitResult[1].c_str()).c_str());
@@ -290,7 +288,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 		}
 		// Morphes end
 
-		pModel->m_Mesh.m_Selekton = std::make_shared<n2dSelekton>();
+		pModel->m_Mesh.m_Selekton = std::make_shared<n2dSkeleton>();
 		pModel->m_Mesh.m_Selekton->CreateFromDynamicModel(pModel);
 		for (nuInt i = 0u; i < pModel->m_Mesh.m_IK.size(); ++i)
 		{
@@ -321,9 +319,8 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 
 nResult n2dModelLoaderImpl::CreateDynamicModelFromFile(ncTStr lpPath, n2dModelData ** pOut)
 {
-	natStream* pStream = new natFileStream(lpPath, true, false);
+	natRefPointer<natStream> pStream = make_ref<natFileStream>(lpPath, true, false);
 	nResult tRet = CreateDynamicModelFromStream(pStream, pOut);
-	SafeRelease(pStream);
 	return tRet;
 }
 
@@ -331,7 +328,7 @@ void n2dModelLoaderImpl::SetDefaultTexture(n2dTexture2D* Texture)
 {
 	if (Texture)
 	{
-		m_DefaultTexture = Texture;
+		m_DefaultTexture = natRefPointer<n2dTexture2D>(Texture);
 	}
 }
 
@@ -350,7 +347,7 @@ void n2dModelLoaderImpl::loadMeshData(n2dStaticModelDataImpl* pModel, const aiSc
 		memset(&tMaterial, 0, sizeof(tMaterial));
 
 		aiString tTexPath;
-		tMaterial.Texture = new n2dTexture2DImpl;
+		tMaterial.Texture = make_ref<n2dTexture2DImpl>();
 		if (AI_SUCCESS != pMaterial->GetTexture(aiTextureType_DIFFUSE, 0u, &tTexPath) || !tMaterial.Texture->LoadTexture(natUtil::C2Wstr(tTexPath.C_Str())))
 		{
 			if (tTexPath.length > 0)
@@ -393,32 +390,18 @@ void n2dModelLoaderImpl::loadMeshData(n2dStaticModelDataImpl* pModel, const aiSc
 
 		max = 1u;
 		nInt tmp = 0;
-		if (AI_SUCCESS == aiGetMaterialIntegerArray(pMaterial, AI_MATKEY_ENABLE_WIREFRAME, &tmp, &max) && tmp != 0)
-		{
-			tMaterial.WireFrame = true;
-		}
-		else
-		{
-			tMaterial.WireFrame = false;
-		}
+		tMaterial.WireFrame = AI_SUCCESS == aiGetMaterialIntegerArray(pMaterial, AI_MATKEY_ENABLE_WIREFRAME, &tmp, &max) && tmp != 0;
 
 		max = 1u;
-		if (AI_SUCCESS == aiGetMaterialIntegerArray(pMaterial, AI_MATKEY_TWOSIDED, &tmp, &max) && tmp != 0)
-		{
-			tMaterial.Both_sided = true;
-		}
-		else
-		{
-			tMaterial.Both_sided = false;
-		}
+		tMaterial.Both_sided = AI_SUCCESS == aiGetMaterialIntegerArray(pMaterial, AI_MATKEY_TWOSIDED, &tmp, &max) && tmp != 0;
 
 		const aiFace* pFace = tMesh->mFaces;
 		if (pFace->mNumIndices != 3u)
 		{
-			throw natException(_T("n2dModelLoaderImpl::loadMeshData"), _T("Not Supported model"));
+			nat_Throw(natException, _T("Not Supported model"));
 		}
 
-		n2dStaticMeshDataImpl* pMesh = new n2dStaticMeshDataImpl;
+		auto pMesh = make_ref<n2dStaticMeshDataImpl>();
 		pModel->m_Meshes.push_back(pMesh);
 
 		pMesh->m_VertCount = tMesh->mNumVertices;
@@ -437,8 +420,6 @@ void n2dModelLoaderImpl::loadMeshData(n2dStaticModelDataImpl* pModel, const aiSc
 		pMesh->m_Index.reserve(tMesh->mNumFaces * 3u);
 
 		std::vector<nuShort>& tmpIndex = pMesh->m_Index;
-
-		SafeRelease(pMesh);
 
 		std::for_each(pFace, pFace + tMesh->mNumFaces, [&tmpIndex] (const aiFace& tFace)
 		{

@@ -27,7 +27,7 @@ n2dBufferImpl* n2dStaticMeshDataImpl::GetVertexBuffer()
 			v.vert *= m_Zoom;
 		}
 
-		m_VB = new n2dBufferImpl(n2dBuffer::BufferTarget::ArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
+		m_VB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
 		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * m_Vert.size(), reinterpret_cast<ncData>(m_Vert.data()), n2dBuffer::BufferUsage::StaticDraw);
 		m_Vert.clear();
 	}
@@ -44,7 +44,7 @@ n2dBufferImpl* n2dStaticMeshDataImpl::GetIndexBuffer()
 			return nullptr;
 		}
 
-		m_IB = new n2dBufferImpl(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
+		m_IB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
 		m_IB->AllocData(sizeof(nuShort) * m_Index.size(), reinterpret_cast<ncData>(m_Index.data()), n2dBuffer::BufferUsage::StaticDraw);
 		m_Index.clear();
 	}
@@ -68,17 +68,12 @@ nBool n2dStaticMeshDataImpl::IsStatic() const
 }
 
 n2dStaticMeshDataImpl::n2dStaticMeshDataImpl()
-	: m_VB(0u),
-	m_IB(0u),
-	m_Zoom(1.0f)
+	: m_Material { 0 }, m_pRenderDevice(nullptr), m_VB(0u), m_IB(0u), m_VertCount(0), m_IndexCount(0), m_Zoom(1.0f)
 {
-	memset(&m_Material, 0, sizeof(m_Material));
 }
 
 n2dDynamicMeshDataImpl::~n2dDynamicMeshDataImpl()
 {
-	SafeRelease(m_VB);
-	SafeRelease(m_IB);
 }
 
 n2dBufferImpl* n2dDynamicMeshDataImpl::GetVertexBuffer()
@@ -191,6 +186,7 @@ void n2dDynamicMeshDataImpl::Update(nuInt nFrame)
 
 n2dDynamicMeshDataImpl::n2dDynamicMeshDataImpl()
 	: m_pMotion(nullptr),
+	m_pMotionManager(nullptr),
 	m_pRenderDevice(nullptr),
 	m_VB(nullptr),
 	m_IB(nullptr),

@@ -15,7 +15,7 @@ n2dFontImpl::n2dFontImpl(int Height, int Width, int Escapement, int Orientation,
 {
 	if (NATFAIL(InitFont(Height, Width, Escapement, Orientation, Weight, Italic, Underline, StrikeOut, CharSet, OutPrecision, ClipPrecision, Quality, PitchAndFamily, FaceName)))
 	{
-		throw natException(_T("n2dFontImpl::n2dFontImpl"), _T("Failed to Create Font"));
+		nat_Throw(natException, _T("Failed to Create Font"));
 	}
 }
 
@@ -51,7 +51,7 @@ nResult n2dFontImpl::InitFont(int Height, int Width, int Escapement, int Orienta
 
 nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, ncTStr lpFontFile, nuInt iWidth, nuInt iHeight)
 {
-	natRefPointer<natStream> pStream = new natFileStream(lpFontFile, true, false);
+	natRefPointer<natStream> pStream = make_ref<natFileStream>(lpFontFile, true, false);
 	return InitFont(pRenderer, pStream, iWidth, iHeight);
 }
 
@@ -137,7 +137,7 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 			}
 		}
 
-		tCharTexture.CharTexture->LoadTexture(std::make_shared<n2dImage>(4u, GL_RGBA, pBuf, tCharTexture.Width * tCharTexture.Height * 4, tCharTexture.Width, tCharTexture.Height));
+		tCharTexture.CharTexture->LoadTexture(n2dImage(4u, GL_RGBA, pBuf, tCharTexture.Width * tCharTexture.Height * 4, tCharTexture.Width, tCharTexture.Height));
 	}
 	/*
 	HBITMAP hBitmap, hOldBitmap;
@@ -182,7 +182,7 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 	nByte* pBmpBits = nullptr;
 	if (GetDIBits(hDC, hBitmap, 0u, bmp.bmHeight, pBmpBits, bin, DIB_RGB_COLORS) == 0)
 	{
-		throw natException(_T("n2dFontImpl::InitText"), n2dUtil::FormatString(_T("Errno=%d"), GetLastError()));
+		nat_Throw(natException, n2dUtil::FormatString(_T("Errno=%d"), GetLastError()));
 	}
 	bufsize = bin->bmiHeader.biSizeImage;
 	pBmpBits = new nByte[bufsize];
@@ -203,7 +203,7 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 {
 	/*if (!m_hFont)
 	{
-		throw natException(_T("n2dFontImpl::PrintFont"), _T("Font had not initialized"));
+		nat_Throw(natException, _T("Font had not initialized"));
 	}*/
 
 	nLen tLen = lstrlen(str);

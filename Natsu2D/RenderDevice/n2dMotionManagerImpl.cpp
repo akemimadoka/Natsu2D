@@ -15,10 +15,10 @@ namespace
 }
 
 n2dBone::n2dBone(natVec3<> const& position, natQuat<> const& orientation, n2dBone * parent, nBool isLimitAngleX)
-	: m_Position(position),
-	m_Orientation(orientation),
+	: m_isLimitAngleX(isLimitAngleX),
 	m_pParent(parent),
-	m_isLimitAngleX(isLimitAngleX)
+	m_Position(position),
+	m_Orientation(orientation)
 {
 }
 
@@ -421,7 +421,7 @@ void n2dMotionManagerImpl::doApplyMorph(n2dDynamicMeshDataImpl * pMesh, nuInt Mo
 	}
 }
 
-void n2dSelekton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
+void n2dSkeleton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
 {
 	std::set<n2dBone*> tBoneSet;
 	nuInt nBone = pModel->m_Mesh.m_Bones.size();
@@ -447,7 +447,7 @@ void n2dSelekton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
 			pBone = pBone->m_pParent;
 			/*if (Count++ == nBone)
 			{
-				throw natException(_T("n2dSelekton::CreateFromDynamicModel"), _T("Invalid bone data"));
+				nat_Throw(natException, _T("Invalid bone data"));
 			}*/
 		}
 		m_UpdateList[i] = pBone;
@@ -457,7 +457,7 @@ void n2dSelekton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
 	Update();
 }
 
-void n2dSelekton::Update()
+void n2dSkeleton::Update()
 {
 	for (auto& tBone : m_UpdateList)
 	{

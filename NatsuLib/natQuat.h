@@ -23,32 +23,33 @@
 		return *this;\
 	}
 
-#define TOPERATORSCALAR(op) template <typename U>\
-	natQuat operator##op(U const& Scalar) const\
+#define TOPERATORSCALARNML(op) template <typename T, typename U>\
+	auto operator##op(natQuat<T> const& q, U const& Scalar)\
 	{\
-		return natQuat(w op static_cast<T>(Scalar), x op static_cast<T>(Scalar), y op static_cast<T>(Scalar), z op static_cast<T>(Scalar));\
-	}
-
-#define TOPERATORSELF(op) template <typename U>\
-	natQuat operator##op(natQuat<U> const& v) const\
-	{\
-		return natQuat(w op static_cast<T>(v.w), x op static_cast<T>(v.x), y op static_cast<T>(v.y), z op static_cast<T>(v.z));\
+		return natQuat<decltype(q.w op Scalar)>(q.w op Scalar, q.x op Scalar, q.y op Scalar, q.z op Scalar);\
 	}
 
 #define TOPERATORSCALARNM(op) template <typename T, typename U>\
-natQuat<T> operator##op(U const& Scalar, natQuat<T> const& v)\
+auto operator##op(U const& Scalar, natQuat<T> const& q)\
 {\
-	return natQuat<T>(static_cast<T>(Scalar) op v.w, static_cast<T>(Scalar) op v.x, static_cast<T>(Scalar) op v.y, static_cast<T>(Scalar) op v.z);\
+	return natQuat<decltype(Scalar op q.w)>(Scalar op q.w, Scalar op q.x, Scalar op q.y, Scalar op q.z);\
 }
+
+#define TOPERATORSELFNM(op) template <typename T, typename U>\
+	auto operator##op(natQuat<T> const& q1, natQuat<U> const& q2)\
+	{\
+		return natQuat<decltype(q1.w op q2.w)>(q1.w op q2.w, q1.x op q2.x, q1.y op q2.y, q1.z op q2.z);\
+	}
 
 template <typename T = nFloat>
 struct natQuat
 {
+	static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	typedef T type;
 
 	T x, y, z, w;
 
-	constexpr nuInt length() const
+	static constexpr nuInt length() noexcept
 	{
 		return 4u;
 	}
@@ -57,7 +58,7 @@ struct natQuat
 	{
 		if (i >= length())
 		{
-			throw natException(_T("natQuat::operator[]"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 		}
 
 		return (&x)[i];
@@ -71,46 +72,39 @@ struct natQuat
 	natQuat()
 		: x(0), y(0), z(0), w(1)
 	{
-		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
 
 	explicit natQuat(T const& Scalar)
 		: x(Scalar), y(Scalar), z(Scalar), w(Scalar)
 	{
-		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
 
 	natQuat(T const& s, natVec3<T> const& v)
 		: x(v.x), y(v.y), z(v.z), w(s)
 	{
-		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
 
 	natQuat(T const& sw, T const& sx, T const& sy, T const& sz)
 		: x(sx), y(sy), z(sz), w(sw)
 	{
-		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
 
 	template <typename U>
 	explicit natQuat(const U* S)
 		: x(static_cast<T>(S[0])), y(static_cast<T>(S[1])), z(static_cast<T>(S[2])), w(static_cast<T>(S[3]))
 	{
-		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
 
 	template <typename U>
 	explicit natQuat(natQuat<U> && q)
 		: x(static_cast<T&&>(q.x)), y(static_cast<T&&>(q.y)), z(static_cast<T&&>(q.z)), w(static_cast<T&&>(q.w))
 	{
-		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
 
 	template <typename U>
 	explicit natQuat(natQuat<U> const& q)
 		: x(static_cast<T>(q.x)), y(static_cast<T>(q.y)), z(static_cast<T>(q.z)), w(static_cast<T>(q.w))
 	{
-		static_assert(std::is_arithmetic<T>::value || std::is_class<T>::value, "T should be an arithmetic type or a class.");
 	}
 
 	natQuat(natQuat const&) = default;
@@ -118,7 +112,7 @@ struct natQuat
 
 	natQuat(natVec3<T> const& u, natVec3<T> const& v);
 
-	natQuat(natVec3<T> const& eulerAngle)
+	explicit natQuat(natVec3<T> const& eulerAngle)
 	{
 		natVec3<T> c = eulerAngle * T(0.5);
 		natVec3<T> s = c;
@@ -289,7 +283,7 @@ struct natQuat
 			break;
 
 		default:
-			throw natException(_T("natQuat::natQuat"), _T("Internal error"));
+			nat_Throw(natException, _T("Internal error"));
 		}
 	}
 
@@ -337,41 +331,41 @@ struct natQuat
 
 	OPERATORSCALAR(>>= );
 	OPERATORSELF(>>= );
-
-	TOPERATORSCALAR(+);
-	TOPERATORSELF(+);
-
-	TOPERATORSCALAR(-);
-	TOPERATORSELF(-);
-
-	TOPERATORSCALAR(*);
-
-	template <typename U>
-	natQuat<T> operator*(natQuat<U> const& r) const
-	{
-		return natQuat<T>(*this) *= r;
-	}
-
-	TOPERATORSCALAR(/ );
-
-	TOPERATORSCALAR(%);
-	TOPERATORSELF(%);
-
-	TOPERATORSCALAR(&);
-	TOPERATORSELF(&);
-
-	TOPERATORSCALAR(| );
-	TOPERATORSELF(| );
-
-	TOPERATORSCALAR(^);
-	TOPERATORSELF(^);
-
-	TOPERATORSCALAR(<< );
-	TOPERATORSELF(<< );
-
-	TOPERATORSCALAR(>> );
-	TOPERATORSELF(>> );
 };
+
+TOPERATORSCALARNML(+);
+TOPERATORSELFNM(+);
+
+TOPERATORSCALARNML(-);
+TOPERATORSELFNM(-);
+
+TOPERATORSCALARNML(*);
+
+template <typename T, typename U>
+auto operator*(natQuat<T> const& q, natQuat<U> const& r)
+{
+	return natQuat<T>(q) *= r;
+}
+
+TOPERATORSCALARNML(/ );
+
+TOPERATORSCALARNML(%);
+TOPERATORSELFNM(%);
+
+TOPERATORSCALARNML(&);
+TOPERATORSELFNM(&);
+
+TOPERATORSCALARNML(| );
+TOPERATORSELFNM(| );
+
+TOPERATORSCALARNML(^);
+TOPERATORSELFNM(^);
+
+TOPERATORSCALARNML(<< );
+TOPERATORSELFNM(<< );
+
+TOPERATORSCALARNML(>> );
+TOPERATORSELFNM(>> );
 
 TOPERATORSCALARNM(+);
 
@@ -459,7 +453,7 @@ namespace natTransform
 	{
 #ifdef _DEBUG
 		if (a < T(0) || a > T(1))
-			throw natException(_T("natTransform::lerp"), _T("Out of range"));
+			nat_Throw(natException, _T("Out of range"));
 #endif
 		return x * (T(1) - a) + (y * a);
 	}
@@ -588,12 +582,12 @@ natQuat<T> natQuat<T>::inverse() const
 #	undef OPERATORSELF
 #endif
 
-#ifdef TOPERATORSCALAR
-#	undef TOPERATORSCALAR
+#ifdef TOPERATORSCALARNML
+#	undef TOPERATORSCALARNML
 #endif
 
-#ifdef TOPERATORSELF
-#	undef TOPERATORSELF
+#ifdef TOPERATORSELFNM
+#	undef TOPERATORSELFNM
 #endif
 
 #ifdef TOPERATORSCALARNM

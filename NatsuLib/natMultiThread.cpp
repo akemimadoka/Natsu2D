@@ -7,7 +7,7 @@ natThread::natThread(nBool Pause)
 	m_hThread = CreateThread(NULL, NULL, &execute, static_cast<void *>(this), Pause ? CREATE_SUSPENDED : 0, &m_hThreadID);
 	if (m_hThread == NULL)
 	{
-		throw natException(_T("natThread::natThread"), _T("Create thread failed"));
+		throw natWinException(_T(__FUNCTION__), _T("Create thread failed"));
 	}
 }
 
@@ -16,7 +16,7 @@ natThread::~natThread()
 	CloseHandle(m_hThread);
 }
 
-HANDLE natThread::GetHandle()
+HANDLE natThread::GetHandle() const
 {
 	return m_hThread;
 }
@@ -41,7 +41,7 @@ nBool natThread::Terminate(nuInt ExitCode)
 	return TerminateThread(m_hThread, ExitCode) != FALSE;
 }
 
-nuInt natThread::GetExitCode()
+nuInt natThread::GetExitCode() const
 {
 	DWORD ExitCode = DWORD(-1);
 	GetExitCodeThread(m_hThread, &ExitCode);
@@ -80,10 +80,10 @@ void natCriticalSection::UnLock()
 
 natEventWrapper::natEventWrapper(nBool AutoReset, nBool InitialState)
 {
-	m_hEvent = CreateEvent(NULL, AutoReset, InitialState, NULL);
+	m_hEvent = CreateEvent(NULL, !AutoReset, InitialState, NULL);
 	if (m_hEvent == NULL)
 	{
-		throw natException(TEXT("natEventWrapper::natEventWrapper"), TEXT("Create event failed"));
+		throw natWinException(TEXT("natEventWrapper::natEventWrapper"), TEXT("Create event failed"));
 	}
 }
 
@@ -92,7 +92,7 @@ natEventWrapper::~natEventWrapper()
 	CloseHandle(m_hEvent);
 }
 
-HANDLE natEventWrapper::GetHandle()
+HANDLE natEventWrapper::GetHandle() const
 {
 	return m_hEvent;
 }
@@ -107,12 +107,12 @@ nBool natEventWrapper::Reset()
 	return ResetEvent(m_hEvent) != FALSE;
 }
 
-nBool natEventWrapper::Pulse()
+nBool natEventWrapper::Pulse() const
 {
 	return PulseEvent(m_hEvent) != FALSE;
 }
 
-nBool natEventWrapper::Wait(nuInt WaitTime)
+nBool natEventWrapper::Wait(nuInt WaitTime) const
 {
 	return WaitForSingleObject(m_hEvent, WaitTime) != DWORD(-1);
 }

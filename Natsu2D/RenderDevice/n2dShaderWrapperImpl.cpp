@@ -11,8 +11,7 @@
 
 n2dShaderWrapperImpl::n2dShaderWrapperImpl(n2dRenderDevice* pRenderDevice)
 	: m_pRenderDevice(pRenderDevice),
-	m_DefaultProgram(nullptr),
-	m_MaxBindingPoint(0u)
+	m_DefaultProgram(nullptr)
 {
 	GLint tMax = 0;
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &tMax);
@@ -45,7 +44,7 @@ nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShad
 	}
 	catch (std::bad_alloc&)
 	{
-		throw natException(_T("n2dShaderWrapperImpl::CreateShaderFromStream"), _T("Failed to allocate memory"));
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 	catch (natException& ex)
 	{
@@ -84,7 +83,7 @@ nResult n2dShaderWrapperImpl::CreateProgram(n2dShaderProgram** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		throw natException(_T("n2dShaderWrapperImpl::CreateProgram"), _T("Failed to allocate memory"));
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 	catch (natException& ex)
 	{
@@ -123,7 +122,7 @@ nResult n2dShaderWrapperImpl::CreateProgramFromStream(natStream* pStream, n2dSha
 	}
 	catch (std::bad_alloc&)
 	{
-		throw natException(_T("n2dShaderWrapperImpl::CreateProgramFromStream"), _T("Failed to allocate memory"));
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 	catch (natException& ex)
 	{
@@ -162,7 +161,7 @@ nResult n2dShaderWrapperImpl::CreateProgramPipeline(n2dProgramPipeline** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		throw natException(_T("n2dShaderWrapperImpl::CreateProgramPipeline"), _T("Failed to allocate memory"));
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 	catch (natException& ex)
 	{
@@ -324,10 +323,9 @@ ncTStr n2dShaderImpl::GetInfoLog() const
 		return _T("");
 	}
 
-	nStr tLog = new nChar[tLogLength + 1];
-	glGetShaderInfoLog(m_Shader, tLogLength, nullptr, tLog);
-	m_Log.assign(tLog, tLog + tLogLength);
-	SafeDelArr(tLog);
+	std::vector<nChar> tLog(tLogLength + 1);
+	glGetShaderInfoLog(m_Shader, tLogLength, nullptr, tLog.data());
+	m_Log.assign(tLog.data(), tLog.data() + tLogLength);
 
 	return m_Log.c_str();
 }
@@ -361,7 +359,7 @@ n2dShaderProgramImpl::AttributeReferenceImpl::AttributeReferenceImpl(n2dShaderPr
 {
 	if (m_pProgram == nullptr)
 	{
-		throw natException(_T("n2dShaderProgramImpl::AttributeReferenceImpl::AttributeReferenceImpl"), _T("Cannot refer to a valid program"));
+		nat_Throw(natException, _T("Cannot refer to a valid program"));
 	}
 
 	glGetVertexAttribiv(m_Location, GL_VERTEX_ATTRIB_ARRAY_SIZE, &m_Size);
@@ -414,12 +412,12 @@ nResult n2dShaderProgramImpl::AttributeReferenceImpl::SetPointer(nuInt Size, Att
 {
 	switch (Type)
 	{
-	case n2dShaderProgram::AttribType::Byte:
-	case n2dShaderProgram::AttribType::UnsignedByte:
-	case n2dShaderProgram::AttribType::Short:
-	case n2dShaderProgram::AttribType::UnsignedShort:
-	case n2dShaderProgram::AttribType::Int:
-	case n2dShaderProgram::AttribType::UnsignedInt:
+	case AttribType::Byte:
+	case AttribType::UnsignedByte:
+	case AttribType::Short:
+	case AttribType::UnsignedShort:
+	case AttribType::Int:
+	case AttribType::UnsignedInt:
 		switch (m_Type)
 		{
 		case GL_BYTE:
@@ -439,18 +437,18 @@ nResult n2dShaderProgramImpl::AttributeReferenceImpl::SetPointer(nuInt Size, Att
 			break;
 		}
 		break;
-	case n2dShaderProgram::AttribType::HalfFloat:
-	case n2dShaderProgram::AttribType::Float:
-	case n2dShaderProgram::AttribType::Fixed:
-	case n2dShaderProgram::AttribType::Int_2_10_10_10_Rev:
-	case n2dShaderProgram::AttribType::UnsignedInt_2_10_10_10_Rev:
-	case n2dShaderProgram::AttribType::UnsignedInt_10F_11F_11F_Rev:
+	case AttribType::HalfFloat:
+	case AttribType::Float:
+	case AttribType::Fixed:
+	case AttribType::Int_2_10_10_10_Rev:
+	case AttribType::UnsignedInt_2_10_10_10_Rev:
+	case AttribType::UnsignedInt_10F_11F_11F_Rev:
 		if (Size < 0 || Size > 4)
 			return NatErr_InvalidArg;
 		glVertexAttribPointer(m_Location, Size == 0 ? GL_BGRA : Size, GetAttribTypeEnum(Type), Normalized ? GL_TRUE : GL_FALSE, Stride, pPointer);
 		break;
 
-	case n2dShaderProgram::AttribType::Double:
+	case AttribType::Double:
 		if (m_Type == GL_DOUBLE)
 		{
 			if (Size < 1 || Size > 4)
@@ -620,7 +618,7 @@ n2dShaderProgramImpl::UniformReferenceImpl::UniformReferenceImpl(n2dShaderProgra
 {
 	if (m_pProgram == nullptr)
 	{
-		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::UniformReferenceImpl"), _T("Cannot refer to a valid program"));
+		nat_Throw(natException, _T("Cannot refer to a valid program"));
 	}
 
 	glGetActiveUniform(m_pProgram->GetHandle(), m_Location, 0, nullptr, &m_Size, &m_Type, nullptr);
@@ -702,12 +700,12 @@ void n2dShaderProgramImpl::UniformReferenceImpl::GetValue(nuInt Size, void* valu
 		break;
 
 	default:
-		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::GetValue"), natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
+		nat_Throw(natException, natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
 	}
 
 	if (glGetError() == GL_INVALID_OPERATION)
 	{
-		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::GetValue"), _T("Cannot get value, maybe size is too small"));
+		nat_Throw(natException, _T("Cannot get value, maybe size is too small"));
 	}
 }
 
@@ -832,12 +830,12 @@ void n2dShaderProgramImpl::UniformReferenceImpl::SetValue(nuInt count, const voi
 		break;
 
 	default:
-		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::SetValue"), natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
+		nat_Throw(natException, natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
 	}
 
 	/*if (glGetError() != GL_NO_ERROR)
 	{
-		throw natException(_T("n2dShaderProgramImpl::UniformReferenceImpl::SetValue"), _T("Set uniform failed"));
+		nat_Throw(natException, _T("Set uniform failed"));
 	}*/
 }
 
@@ -852,7 +850,7 @@ n2dShaderProgramImpl::UniformBlockReferenceImpl::UniformBlockReferenceImpl(n2dSh
 {
 	if (m_pProgram == nullptr)
 	{
-		throw natException(_T("n2dShaderProgramImpl::UniformBlockReferenceImpl::UniformBlockReferenceImpl"), _T("Cannot refer to a valid program"));
+		nat_Throw(natException, _T("Cannot refer to a valid program"));
 	}
 
 	glGetActiveUniformBlockiv(m_pProgram->GetHandle(), m_Location, GL_UNIFORM_BLOCK_DATA_SIZE, &m_Size);
@@ -904,9 +902,9 @@ n2dShaderProgramImpl::n2dShaderProgramImpl(GLhandle ProgramID)
 n2dShaderProgramImpl::n2dShaderProgramImpl(n2dShaderImpl* pVertexShader, n2dShaderImpl* pFragmentShader, n2dShaderImpl* pGeometryShader)
 	: n2dShaderProgramImpl(0u)
 {
-	AttachShader(pVertexShader);
-	AttachShader(pFragmentShader);
-	AttachShader(pGeometryShader);
+	n2dShaderProgramImpl::AttachShader(pVertexShader);
+	n2dShaderProgramImpl::AttachShader(pFragmentShader);
+	n2dShaderProgramImpl::AttachShader(pGeometryShader);
 }
 
 n2dShaderProgramImpl::~n2dShaderProgramImpl()
@@ -914,19 +912,16 @@ n2dShaderProgramImpl::~n2dShaderProgramImpl()
 	for (auto& i : m_AttribMap)
 	{
 		i.second->onProgramDestroy();
-		SafeRelease(i.second);
 	}
 
 	for (auto& i : m_UniformMap)
 	{
 		i.second->onProgramDestroy();
-		SafeRelease(i.second);
 	}
 
 	for (auto& i : m_UniformBlockMap)
 	{
 		i.second->onProgramDestroy();
-		SafeRelease(i.second);
 	}
 
 	glDeleteProgram(m_Program);
@@ -990,10 +985,9 @@ ncTStr n2dShaderProgramImpl::GetInfoLog() const
 		return _T("");
 	}
 	
-	nStr tLog = new nChar[tLogLength + 1];
-	//tLog[tLogLength] = '\0';
-	glGetProgramInfoLog(m_Program, tLogLength, nullptr, tLog);
-	m_Log.assign(tLog, tLog + tLogLength);
+	std::vector<nChar> tLog(tLogLength + 1);
+	glGetProgramInfoLog(m_Program, tLogLength, nullptr, tLog.data());
+	m_Log.assign(tLog.data(), tLog.data() + tLogLength);
 	return m_Log.c_str();
 }
 
@@ -1076,7 +1070,7 @@ n2dShaderProgram::AttributeReference* n2dShaderProgramImpl::GetAttributeReferenc
 		return itea->second;
 	}
 
-	AttributeReferenceImpl* pRet = new AttributeReferenceImpl(this, location);
+	auto pRet = make_ref<AttributeReferenceImpl>(this, location);
 	m_AttribMap[location] = pRet;
 
 	return pRet;
@@ -1108,7 +1102,7 @@ n2dShaderProgram::UniformReference* n2dShaderProgramImpl::GetUniformReference(nu
 		return itea->second;
 	}
 	
-	UniformReferenceImpl* pRet = new UniformReferenceImpl(this, location);
+	auto pRet = make_ref<UniformReferenceImpl>(this, location);
 	m_UniformMap[location] = pRet;
 
 	return pRet;
@@ -1140,7 +1134,7 @@ n2dShaderProgram::UniformBlockReference* n2dShaderProgramImpl::GetUniformBlockRe
 		return itea->second;
 	}
 
-	UniformBlockReferenceImpl* pRet = new UniformBlockReferenceImpl(this, Location);
+	auto pRet = make_ref<UniformBlockReferenceImpl>(this, Location);
 	m_UniformBlockMap[Location] = pRet;
 
 	return pRet;

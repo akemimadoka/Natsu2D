@@ -70,34 +70,6 @@ public:
 		nBool m_bAlreadyMadeCurrent;
 	};
 
-	////////////////////////////////////////////////////////////////////////////////
-	///	@brief	窗口消息事件
-	///	@note	可以仅触发指定的事件的处理函数
-	////////////////////////////////////////////////////////////////////////////////
-	class WndMsgEventImpl final
-		: public WndMsgEvent
-	{
-	public:
-
-		explicit WndMsgEventImpl(n2dEngineImpl* App);
-		~WndMsgEventImpl();
-
-		nuInt Register(EventHandler func, DWORD WndMsg, nInt priority = Priority::Normal) override;
-		void Unregister(DWORD WndMsg, EventHandler Handler) override;
-
-		nBool Activate(DWORD WndMsg, nInt PriorityLimitmin = Priority::Low, nInt PriorityLimitmax = Priority::High) override;
-		nBool Activate(DWORD WndMsg, dataType const& data, nInt PriorityLimitmin, nInt PriorityLimitmax) override;
-
-		nBool operator()(DWORD WndMsg, dataType const& data) override;
-
-		void Release() override;
-
-		n2dEngineImpl* GetEngine() override;
-	private:
-		std::unordered_map<DWORD, std::map<nInt, std::unordered_set<EventHandler>>> m_EventHandler;
-		n2dEngineImpl* m_pEngine;
-	};
-
 	///	@brief	GL应用构造函数
 	///	@param[in]	classname	窗口类名
 	///	@param[in]	hInstance	实例句柄
@@ -141,7 +113,7 @@ public:
 	///	@note	函数接受一个参数WndMsgEvent&，请使用WndMsgEvent::getData方法获得窗口消息
 	///	@see	Msgdata
 	///	@see	n2dEngine::WndMsgEvent
-	void AddMessageHandler(WndMsgEvent::EventHandler func, DWORD WndMsg, Priority::Priority priority) override;
+	void AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority) override;
 
 	///	@brief	获得按键的状态
 	///	@param[in]	Key		按键键值
@@ -178,10 +150,6 @@ private:
 	///	@brief	当前按键状况
 	///	@note	仅当当前窗口激活时有效
 	n2dKeyState				m_Keys;
-
-	///	@brief	这个事件可以被取消，被取消后将不会使用默认的处理，返回值为Msgdata::result，data为包含MSG信息的结构体Msgdata
-	///	@see	Msgdata
-	WndMsgEventImpl			m_EventMSG;
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Natsu2D", "Natsu2D\Natsu2D.vcxproj", "{0470F050-73BB-45AD-8712-4F9941BC341A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -43,7 +43,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqstdlib", "test\extern\sqs
 		{683FDC3D-A660-447A-B6F0-FE30B5BB5A73} = {683FDC3D-A660-447A-B6F0-FE30B5BB5A73}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1234DABC-1F64-45B2-BE04-8790E06915B6}"
+	ProjectSection(SolutionItems) = preProject
+		Performance1.psess = Performance1.psess
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Multithreaded|Win32 = Debug Multithreaded|Win32
 		Debug Multithreaded|x64 = Debug Multithreaded|x64
@@ -93,7 +101,8 @@ Global
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Debug Singlethreaded|x64.Build.0 = Release|Win32
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Debug|Win32.Build.0 = Debug|Win32
-		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Debug|x64.ActiveCfg = Debug|Win32
+		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Debug|x64.ActiveCfg = Debug|x64
+		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Debug|x64.Build.0 = Debug|x64
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release Multithreaded|Win32.ActiveCfg = Release|Win32
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release Multithreaded|Win32.Build.0 = Release|Win32
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release Multithreaded|x64.ActiveCfg = Release|Win32
@@ -104,7 +113,8 @@ Global
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release Singlethreaded|x64.Build.0 = Release|Win32
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release|Win32.ActiveCfg = Release|Win32
 		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release|Win32.Build.0 = Release|Win32
-		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release|x64.ActiveCfg = Release|Win32
+		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release|x64.ActiveCfg = Release|x64
+		{9C02EEF3-D626-4A1D-85BB-8D61DA544A4C}.Release|x64.Build.0 = Release|x64
 		{E4F66019-9964-4B86-B538-E10F66124689}.Debug Multithreaded|Win32.ActiveCfg = Debug|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Debug Multithreaded|Win32.Build.0 = Debug|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Debug Multithreaded|x64.ActiveCfg = Release|Win32
@@ -115,7 +125,8 @@ Global
 		{E4F66019-9964-4B86-B538-E10F66124689}.Debug Singlethreaded|x64.Build.0 = Release|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Debug|Win32.Build.0 = Debug|Win32
-		{E4F66019-9964-4B86-B538-E10F66124689}.Debug|x64.ActiveCfg = Debug|Win32
+		{E4F66019-9964-4B86-B538-E10F66124689}.Debug|x64.ActiveCfg = Debug|x64
+		{E4F66019-9964-4B86-B538-E10F66124689}.Debug|x64.Build.0 = Debug|x64
 		{E4F66019-9964-4B86-B538-E10F66124689}.Release Multithreaded|Win32.ActiveCfg = Release|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Release Multithreaded|Win32.Build.0 = Release|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Release Multithreaded|x64.ActiveCfg = Release|Win32
@@ -126,7 +137,8 @@ Global
 		{E4F66019-9964-4B86-B538-E10F66124689}.Release Singlethreaded|x64.Build.0 = Release|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Release|Win32.ActiveCfg = Release|Win32
 		{E4F66019-9964-4B86-B538-E10F66124689}.Release|Win32.Build.0 = Release|Win32
-		{E4F66019-9964-4B86-B538-E10F66124689}.Release|x64.ActiveCfg = Release|Win32
+		{E4F66019-9964-4B86-B538-E10F66124689}.Release|x64.ActiveCfg = Release|x64
+		{E4F66019-9964-4B86-B538-E10F66124689}.Release|x64.Build.0 = Release|x64
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Debug Multithreaded|Win32.ActiveCfg = Debug Multithreaded|Win32
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Debug Multithreaded|Win32.Build.0 = Debug Multithreaded|Win32
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Debug Multithreaded|x64.ActiveCfg = Debug Multithreaded|x64

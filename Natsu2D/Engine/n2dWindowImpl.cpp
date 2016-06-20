@@ -23,7 +23,7 @@ n2dWindowImpl::n2dWindowImpl(n2dEngineImpl* pEngine, nuInt X, nuInt Y, nuInt Win
 
 n2dWindowImpl::~n2dWindowImpl()
 {
-	Destroy();
+	n2dWindowImpl::Destroy();
 }
 
 nBool n2dWindowImpl::Create(ncTStr title, ncTStr classname, HINSTANCE hInstance, LPVOID lpParam)
@@ -176,8 +176,7 @@ void n2dWindowImpl::Destroy()
 
 nBool n2dWindowImpl::ChangeScreenSetting()
 {
-	DEVMODE dm;
-	memset(&dm, 0, sizeof(DEVMODE));
+	DEVMODE dm = { 0 };
 	dm.dmSize = sizeof(DEVMODE);
 	dm.dmPelsWidth = GetWidth();
 	dm.dmPelsHeight = GetHeight();

@@ -16,7 +16,7 @@ class n2dSoundSourceImpl
 		case n2dSoundSource::SourceType::Streaming:
 			return AL_STREAMING;
 		default:
-			throw natException(_T("n2dSoundSourceImpl::GetSourceTypeEnum"), _T("Invaild SourceType"));
+			nat_Throw(natException, _T("Invaild SourceType"));
 		}
 	}
 
@@ -31,7 +31,7 @@ class n2dSoundSourceImpl
 		case AL_STREAMING:
 			return n2dSoundSource::SourceType::Streaming;
 		default:
-			throw natException(_T("n2dSoundSourceImpl::GetSourceType"), _T("Invaild SourceType"));
+			nat_Throw(natException, _T("Invaild SourceType"));
 		}
 	}
 
@@ -48,7 +48,7 @@ class n2dSoundSourceImpl
 		case n2dSoundSource::SourceState::Stopped:
 			return AL_STOPPED;
 		default:
-			throw natException(_T("n2dSoundSourceImpl::GetSourceStateEnum"), _T("Invaild SourceState"));
+			nat_Throw(natException, _T("Invaild SourceState"));
 		}
 	}
 
@@ -65,7 +65,7 @@ class n2dSoundSourceImpl
 		case AL_STOPPED:
 			return n2dSoundSource::SourceState::Stopped;
 		default:
-			throw natException(_T("n2dSoundSourceImpl::GetSourceState"), _T("Invaild SourceState"));
+			nat_Throw(natException, _T("Invaild SourceState"));
 		}
 	}
 public:

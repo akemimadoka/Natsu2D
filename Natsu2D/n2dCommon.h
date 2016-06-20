@@ -12,6 +12,11 @@
 
 #include <natType.h>
 
+#pragma warning(push)
+#pragma warning(disable : 4180)
+#include <functional>
+#pragma warning(pop)
+
 typedef unsigned int GLenum;
 typedef unsigned int GLbitfield;
 typedef unsigned int GLuint;

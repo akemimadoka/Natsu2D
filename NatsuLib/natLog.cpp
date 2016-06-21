@@ -1,8 +1,5 @@
 #include "stdafx.h"
 #include "natLog.h"
-#include "natUtil.h"
-
-//#include <boost\format.hpp>
 
 #pragma warning (disable:4996) 
 
@@ -26,6 +23,14 @@ natLog::~natLog()
 	m_fstr.close();
 }
 
+void natLog::UpdateLastLog(nTString&& log)
+{
+	m_LastLog = move(log);
+	m_fstr << m_LastLog << std::endl;
+	EventLogUpdated event(m_LastLog.c_str());
+	natEventBus::GetInstance().Post(event);
+}
+
 ncTStr natLog::ParseLogType(LogType logtype)
 {
 	switch (logtype)
@@ -45,56 +50,6 @@ NATNOINLINE natLog& natLog::GetInstance()
 {
 	static natLog instance(n2dGlobal::Logfile);
 	return instance;
-}
-
-template <typename ...Arg>
-void natLog::LogMsg(ncTStr Msg, Arg &&... arg)
-{
-	Log(LogType::Msg, Msg, std::forward<Arg>(arg)...);
-}
-
-void natLog::LogMsg(ncTStr Msg)
-{
-	Log(LogType::Msg, Msg);
-}
-
-template <typename ... Arg>
-void natLog::LogErr(ncTStr Err, Arg &&... arg)
-{
-	Log(LogType::Err, Err, std::forward<Arg>(arg)...);
-}
-
-void natLog::LogErr(ncTStr Err)
-{
-	Log(LogType::Err, Err);
-}
-
-template <typename ... Arg>
-void natLog::LogWarn(ncTStr Warn, Arg &&... arg)
-{
-	Log(LogType::Warn, Warn, std::forward<Arg>(arg)...);
-}
-
-void natLog::LogWarn(ncTStr Warn)
-{
-	Log(LogType::Warn, Warn);
-}
-
-template <typename ... Arg>
-void natLog::Log(LogType type, ncTStr content, Arg &&... arg)
-{
-	m_LastLog = natUtil::FormatString(natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content).c_str(), std::forward<Arg>(arg)...);
-	m_fstr << GetLastLog() << std::endl;
-	EventLogUpdated event(GetLastLog());
-	natEventBus::GetInstance().Post(event);
-}
-
-void natLog::Log(LogType type, ncTStr content)
-{
-	m_LastLog = natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content).c_str();
-	m_fstr << GetLastLog() << std::endl;
-	EventLogUpdated event(GetLastLog());
-	natEventBus::GetInstance().Post(event);
 }
 
 ncTStr natLog::GetLogFile() const

@@ -8,6 +8,7 @@
 
 #include "natEvent.h"
 #include "natType.h"
+#include "natUtil.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	日志类实现
@@ -52,29 +53,33 @@ public:
 	///	@brief	获得实例
 	static natLog& GetInstance();
 	
-	template <typename ...Arg>
-	void LogMsg(ncTStr Msg, Arg &&... arg);
-
 	///	@brief	记录信息
-	void LogMsg(ncTStr Msg);
-
 	template <typename ...Arg>
-	void LogErr(ncTStr Err, Arg &&... arg);
+	void LogMsg(ncTStr Msg, Arg &&... arg)
+	{
+		Log(LogType::Msg, Msg, std::forward<Arg>(arg)...);
+	}
 
 	///	@brief	记录错误
-	void LogErr(ncTStr Err);
-
-	template <typename ...Arg>
-	void LogWarn(ncTStr Warn, Arg &&... arg);
+	template <typename ... Arg>
+	void LogErr(ncTStr Err, Arg &&... arg)
+	{
+		Log(LogType::Err, Err, std::forward<Arg>(arg)...);
+	}
 
 	///	@brief	记录警告
-	void LogWarn(ncTStr Warn);
-
-	template <typename ...Arg>
-	void Log(LogType type, ncTStr content, Arg &&... arg);
+	template <typename ... Arg>
+	void LogWarn(ncTStr Warn, Arg &&... arg)
+	{
+		Log(LogType::Warn, Warn, std::forward<Arg>(arg)...);
+	}
 
 	///	@brief	记录
-	void Log(LogType type, ncTStr content);
+	template <typename ... Arg>
+	void Log(LogType type, ncTStr content, Arg &&... arg)
+	{
+		UpdateLastLog(std::move(natUtil::FormatString(natUtil::FormatString(_T("[%s] [%s] %s"), natUtil::GetSysTime().c_str(), ParseLogType(type), content), std::forward<Arg>(arg)...)));
+	}
 
 	///	@brief	获得日志文件名
 	ncTStr GetLogFile() const;
@@ -87,6 +92,8 @@ public:
 private:
 	explicit natLog(ncTStr const& logfile);
 	~natLog();
+
+	void UpdateLastLog(nTString&& log);
 
 	nTString m_LogFile;
 	std::basic_ofstream<nTChar> m_fstr;

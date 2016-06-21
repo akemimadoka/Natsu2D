@@ -7,7 +7,7 @@ natThread::natThread(nBool Pause)
 	m_hThread = CreateThread(NULL, NULL, &execute, static_cast<void *>(this), Pause ? CREATE_SUSPENDED : 0, &m_hThreadID);
 	if (m_hThread == NULL)
 	{
-		throw natWinException(_T(__FUNCTION__), _T("Create thread failed"));
+		nat_Throw(natWinException, _T("Create thread failed"));
 	}
 }
 

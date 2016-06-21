@@ -38,7 +38,6 @@
 
 #include <n2dFont.h>
 
-#include <n2dCommon.h>
 #include <n2dRenderDevice.h>
 #include <n2dGraphics.h>
 #include <n2dUtil.h>
@@ -103,7 +102,10 @@ void printfunc(HSQUIRRELVM, const SQChar *s, ...)
 {
 	va_list vl;
 	va_start(vl, s);
-	n2dGlobal::LogMsg(natUtil::FormatStringv(s, vl).c_str());
+	auto length = _vsctprintf(s, vl);
+	std::vector<SQChar> buf(length + 1);
+	_vsntprintf_s(buf.data(), buf.size(), buf.size(), s, vl);
+	n2dGlobal::LogMsg(buf.data());
 	va_end(vl);
 }
 
@@ -112,7 +114,10 @@ void errorfunc(HSQUIRRELVM, const SQChar *s, ...)
 {
 	va_list vl;
 	va_start(vl, s);
-	n2dGlobal::LogErr(natUtil::FormatStringv(s, vl).c_str());
+	auto length = _vsctprintf(s, vl);
+	std::vector<SQChar> buf(length + 1);
+	_vsntprintf_s(buf.data(), buf.size(), buf.size(), s, vl);
+	n2dGlobal::LogErr(buf.data());
 	va_end(vl);
 }
 
@@ -322,7 +327,7 @@ public:
 			renderdevice->CreateMotionManager(&m_MotionManager);
 		}
 		
-		n2dGlobal::LogMsg(n2dUtil::FormatString(_T("GLAPP initialized as %s thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
+		n2dGlobal::LogMsg(natUtil::FormatString(_T("GLAPP initialized as {0} thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
 		n2dGlobal::LogMsg(_T("GLAPP start initializing"));
 		m_Mutex = CreateMutex(NULL, FALSE, _T("GLAPP"));
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
@@ -605,12 +610,12 @@ private:
 	nFloat							m_RotateH;
 
 	natRefPointer<n2dFont>			f;
-	n2dShaderWrapper*				sw;
+	nUnsafePtr<n2dShaderWrapper>	sw;
 	natRefPointer<n2dShaderProgram>	sp;
 
-	n2dShaderProgram::UniformReference* ViewMatrix;
-	n2dShaderProgram::UniformReference* ModelMatrix;
-	n2dShaderProgram::UniformReference* Light;
+	nUnsafePtr<n2dShaderProgram::UniformReference> ViewMatrix;
+	nUnsafePtr<n2dShaderProgram::UniformReference> ModelMatrix;
+	nUnsafePtr<n2dShaderProgram::UniformReference> Light;
 
 	HANDLE							m_Mutex;
 	//natRefPointer<n2dTexture2D>		m_texture;
@@ -652,7 +657,8 @@ int main()
 		n2dGlobal::LogErr(TEXT("Unknown exception"));
 		MessageBox(NULL, TEXT("Unknown exception"), TEXT("Uncaught exception"), MB_OK | MB_ICONERROR);
 	}
-
+	
+	_CrtDumpMemoryLeaks();
 	return 0;
 }
 

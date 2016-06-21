@@ -66,6 +66,7 @@ namespace n2dGlobal
 		///	@brief	注册异常事件处理函数
 		N2DFUNC void RegisterExceptionEventFunc(natEventBus::EventListenerFunc func);
 
+		N2DFUNC natLog& GetLogger();
 		N2DFUNC natEventBus& GetEventBus();
 	}
 }

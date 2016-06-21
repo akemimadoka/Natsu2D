@@ -6,6 +6,11 @@
 #include "natType.h"
 #include <Windows.h>
 
+#ifdef _DEBUG
+#include "natUtil.h"
+#include <typeinfo>
+#endif // _DEBUG
+
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	引用计数接口
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,8 +33,11 @@ class natRefObjImpl
 public:
 	natRefObjImpl()
 		: m_cRef(1u)
-	{}
-	virtual ~natRefObjImpl() = default;
+	{
+#ifdef _DEBUG
+		OutputDebugString(natUtil::FormatString(_T("Type %s Create at (%p)\n"), natUtil::C2Wstr(typeid(*this).name()).c_str(), this).c_str());
+#endif // _DEBUG
+	}
 
 	virtual void AddRef()
 	{
@@ -41,9 +49,16 @@ public:
 		auto tRet = InterlockedDecrement(&m_cRef);
 		if (tRet == 0u)
 		{
+#ifdef _DEBUG
+			OutputDebugString(natUtil::FormatString(_T("Type %s Destroy at (%p)\n"), natUtil::C2Wstr(typeid(*this).name()).c_str(), this).c_str());
+#endif // _DEBUG
 			delete this;
 		}
 	}
+
+protected:
+	virtual ~natRefObjImpl() = default;
+
 private:
 	nuInt m_cRef;
 };

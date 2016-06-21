@@ -15,7 +15,7 @@ namespace natUtil
 #	endif
 	};
 
-	nTString FormatString(ncTStr lpStr, ...)
+	/*nTString FormatString(ncTStr lpStr, ...)
 	{
 		va_list vl;
 		va_start(vl, lpStr);
@@ -42,7 +42,7 @@ namespace natUtil
 		}
 
 		return tBuf.data();
-	}
+	}*/
 
 	std::wstring MultibyteToUnicode(ncStr Str, nuInt CodePage)
 	{

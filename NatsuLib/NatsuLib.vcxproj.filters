@@ -116,9 +116,6 @@
     <ClCompile Include="natLog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="natException.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="natStopWatch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

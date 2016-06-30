@@ -25,7 +25,10 @@
 #endif // Natsu2DStatic
 
 struct n2dRenderDevice;
-class natStopWatch;
+namespace NatsuLib
+{
+	class natStopWatch;
+}
 
 ///	@brief	全局变量
 namespace n2dGlobal
@@ -49,26 +52,6 @@ namespace n2dGlobal
 	private:
 		natException const& m_Exception;
 	};
-
-	extern "C"
-	{
-		///	@brief	设置日志文件存储目录
-		///	@note	仅在第一次使用日志之前有效
-		N2DFUNC void SetLogFile(ncTStr Path);
-		///	@brief	记录信息
-		N2DFUNC void LogMsg(ncTStr Str);
-		///	@brief	记录警告
-		N2DFUNC void LogWarn(ncTStr Str);
-		///	@brief	记录错误
-		N2DFUNC void LogErr(ncTStr Str);
-		///	@brief	注册日志更新事件处理函数
-		N2DFUNC void RegisterLogUpdateEventFunc(natEventBus::EventListenerFunc func);
-		///	@brief	注册异常事件处理函数
-		N2DFUNC void RegisterExceptionEventFunc(natEventBus::EventListenerFunc func);
-
-		N2DFUNC natLog& GetLogger();
-		N2DFUNC natEventBus& GetEventBus();
-	}
 }
 
 struct n2dFPSController
@@ -245,6 +228,9 @@ struct n2dEngine
 	virtual ThreadMode GetThreadMode() const = 0;
 	///	@brief	获得实例句柄
 	virtual HINSTANCE GetHInstance() const = 0;
+
+	virtual natLog& GetLogger() = 0;
+	virtual natEventBus& GetEventBus() = 0;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数

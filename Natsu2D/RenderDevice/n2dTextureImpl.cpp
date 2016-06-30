@@ -78,26 +78,14 @@ nBool n2dTexture2DImpl::LoadTexture(nTString const& filename)
 {
 	auto tName = filename.substr(filename.find_last_of(_T('.')) + 1u);
 
-	try
-	{
-		auto pStream = make_ref<natFileStream>(filename.c_str(), true, false);
+	auto pStream = make_ref<natFileStream>(filename.c_str(), true, false);
 
-		if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
-		{
-			return LoadDDS(pStream);
-		}
+	if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
+	{
+		return LoadDDS(pStream);
+	}
 
-		return LoadTexture(pStream, CxImage::GetTypeIdFromName(tName.c_str()));
-	}
-	catch (natException& e)
-	{
-		natLog::GetInstance().LogErr(natUtil::FormatString(_T("Exception caught during loading texture \"%s\", in %s, desc : %s"), filename.c_str(), e.GetSource(), e.GetDesc()).c_str());
-		return false;
-	}
-	catch (...)
-	{
-		return false;
-	}
+	return LoadTexture(pStream, CxImage::GetTypeIdFromName(tName.c_str()));
 }
 
 nBool n2dTexture2DImpl::LoadTexture(natStream* pStream, DWORD dwFileType)

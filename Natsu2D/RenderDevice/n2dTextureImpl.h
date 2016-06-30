@@ -8,7 +8,10 @@
 #include "OpenGL.h"
 #include "..\n2dRenderDevice.h"
 
-struct natStream;
+namespace NatsuLib
+{
+	struct natStream;
+}
 
 struct n2dImage final
 {

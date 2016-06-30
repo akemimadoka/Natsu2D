@@ -36,7 +36,10 @@
 
 //using namespace std;
 
-struct natStream;
+namespace NatsuLib
+{
+	struct natStream;
+}
 
 namespace nv_dds
 {
@@ -162,7 +165,7 @@ namespace nv_dds
             ~CDDSImage();
 
 			bool load(std::string filename, bool flipImage = true, long pos = 0);
-			bool load(natStream* pStream, bool flipImage = true, long pos = 0);
+			bool load(NatsuLib::natStream* pStream, bool flipImage = true, long pos = 0);
             void clear();
             
             operator char*();

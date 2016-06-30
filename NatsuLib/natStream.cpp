@@ -4,6 +4,8 @@
 #include "natUtil.h"
 #include <algorithm>
 
+using namespace NatsuLib;
+
 natFileStream::natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable)
 	: m_Filename(lpFilename), m_bReadable(bReadable), m_bWritable(bWritable), m_LastErr(NatErr_OK)
 {
@@ -19,7 +21,7 @@ natFileStream::natFileStream(ncTStr lpFilename, nBool bReadable, nBool bWritable
 
 	if (!m_hFile || m_hFile == INVALID_HANDLE_VALUE)
 	{
-		throw natWinException(_T("natFileStream::natFileStream"), natUtil::FormatString(_T("Open file \"%s\" failed"), lpFilename).c_str());
+		nat_Throw(natWinException, _T("Open file \"%s\" failed"), lpFilename);
 	}
 }
 
@@ -230,8 +232,16 @@ natRefPointer<natMemoryStream> natFileStream::MapToMemoryStream()
 		auto pFile = MapViewOfFile(m_hMappedFile, (m_bReadable ? FILE_MAP_READ : 0) | (m_bWritable ? FILE_MAP_WRITE : 0), NULL, NULL, NULL);
 		if (pFile)
 		{
-			m_pMappedFile = natMemoryStream::CreateFromExternMemory(reinterpret_cast<nData>(pFile), GetSize(), m_bReadable, m_bWritable);
+			m_pMappedFile = std::move(natMemoryStream::CreateFromExternMemory(reinterpret_cast<nData>(pFile), GetSize(), m_bReadable, m_bWritable));
 		}
+		else
+		{
+			nat_Throw(natWinException, _T("MapViewOfFile failed."));
+		}
+	}
+	else
+	{
+		nat_Throw(natWinException, _T("CreateFileMapping failed."));
 	}
 
 	return m_pMappedFile;

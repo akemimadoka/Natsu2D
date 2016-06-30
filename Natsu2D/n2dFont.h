@@ -2,7 +2,10 @@
 #include "n2dInterface.h"
 
 struct n2dRenderDevice;
-struct natStream;
+namespace NatsuLib
+{
+	struct natStream;
+}
 struct n2dGraphics2D;
 struct n2dTexture2D;
 

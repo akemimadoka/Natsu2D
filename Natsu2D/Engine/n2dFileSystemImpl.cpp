@@ -201,7 +201,10 @@ n2dFileNode* n2dFileSystemImpl::GetRootNode() const
 n2dFileNode* n2dFileSystemImpl::GetNode(nTString const& Path)
 {
 	std::vector<nTString> SplitResult;
-	natUtil::split(Path, nTString(_T("/")), SplitResult);
+	natUtil::split(Path, nTString(_T("/")), [&SplitResult](ncTStr str, nuInt len)
+	{
+		SplitResult.emplace_back(str, len);
+	});
 
 	auto Itea = SplitResult.begin();
 	if (!Itea->empty())
@@ -246,7 +249,10 @@ nResult n2dFileSystemImpl::RemoveNode(nTString const& Path)
 nResult n2dFileSystemImpl::AddNode(nTString const& Path, n2dFileNode** pNodeOutput)
 {
 	std::vector<nTString> SplitResult;
-	natUtil::split(Path, nTString(_T("/")), SplitResult);
+	natUtil::split(Path, nTString(_T("/")), [&SplitResult](ncTStr str, nuInt len)
+	{
+		SplitResult.emplace_back(str, len);
+	});
 
 	auto Itea = SplitResult.begin();
 	if (!Itea->empty())
@@ -272,7 +278,10 @@ nResult n2dFileSystemImpl::AddNode(nTString const& Path, n2dFileNode** pNodeOutp
 nResult n2dFileSystemImpl::AddNode(nTString const& Path, natStream* pStream, n2dFileNode** pNodeOutput)
 {
 	std::vector<nTString> SplitResult;
-	natUtil::split(Path, nTString(_T("/")), SplitResult);
+	natUtil::split(Path, nTString(_T("/")), [&SplitResult](ncTStr str, nuInt len)
+	{
+		SplitResult.emplace_back(str, len);
+	});
 
 	auto Itea = SplitResult.begin();
 	if (!Itea->empty())

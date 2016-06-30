@@ -1,4 +1,5 @@
 #include "n2dModelLoaderImpl.h"
+#include "..\n2dEngine.h"
 #include <natStream.h>
 #include <natUtil.h>
 #include "natLog.h"
@@ -50,7 +51,7 @@ nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dM
 
 	if (!tpScene)
 	{
-		natLog::GetInstance().LogErr(natUtil::C2Wstr(tImporter.GetErrorString()).c_str());
+		m_pRenderDevice->GetEngine()->GetLogger().LogErr(natUtil::C2Wstr(tImporter.GetErrorString()).c_str());
 		return NatErr_InternalErr;
 	}
 
@@ -188,19 +189,22 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 
 			std::replace(tStr.begin(), tStr.end(), _T('/'), _T('\\'));
 			std::vector<nTString> SplitResult;
-			natUtil::split(tStr, nTString(_T("*")), SplitResult);
+			natUtil::split(tStr, nTString(_T("*")), [&SplitResult](ncTStr str, nuInt len)
+			{
+				SplitResult.emplace_back(str, len);
+			});
 
 #ifndef NDEBUG
 			if (SplitResult.size() > 2)
 			{
-				natLog::GetInstance().LogWarn(_T("Texture and spa filename count dismatch, continue anyway"));
+				m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("Texture and spa filename count dismatch, continue anyway"));
 			}
 #endif
 
 			mat.BaseMaterial.Texture = make_ref<n2dTexture2DImpl>();
 			if (!SplitResult.empty() && SplitResult[0] != _T("") && !mat.BaseMaterial.Texture->LoadTexture(SplitResult[0]))
 			{
-				natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Unable to load texture file \"%s\""), SplitResult[0].c_str()).c_str());
+				m_pRenderDevice->GetEngine()->GetLogger().LogWarn(natUtil::FormatString(_T("Unable to load texture file \"%s\""), SplitResult[0].c_str()).c_str());
 				mat.BaseMaterial.Texture = m_DefaultTexture;
 			}
 
@@ -209,7 +213,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 				mat.Spa = make_ref<n2dTexture2DImpl>();
 				if (!mat.Spa->LoadTexture(SplitResult[1]))
 				{
-					natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Unable to load spa file \"%s\""), SplitResult[1].c_str()).c_str());
+					m_pRenderDevice->GetEngine()->GetLogger().LogWarn(natUtil::FormatString(_T("Unable to load spa file \"%s\""), SplitResult[1].c_str()).c_str());
 					mat.Spa = m_DefaultTexture;
 				}
 			}
@@ -352,7 +356,7 @@ void n2dModelLoaderImpl::loadMeshData(n2dStaticModelDataImpl* pModel, const aiSc
 		{
 			if (tTexPath.length > 0)
 			{
-				natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Cannot load texture \"%s\", use default texture instead"), natUtil::C2Wstr(tTexPath.data).c_str()).c_str());
+				m_pRenderDevice->GetEngine()->GetLogger().LogWarn(natUtil::FormatString(_T("Cannot load texture \"%s\", use default texture instead"), natUtil::C2Wstr(tTexPath.data).c_str()).c_str());
 			}
 
 			tMaterial.Texture = m_DefaultTexture;

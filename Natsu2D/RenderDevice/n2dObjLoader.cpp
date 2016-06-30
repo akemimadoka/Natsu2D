@@ -98,7 +98,10 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 			{
 				ss >> tstr[j];
 				std::vector<std::string> vi;
-				natUtil::split(tstr[j], std::string("/"), vi);
+				natUtil::split(tstr[j], std::string("/"), [&vi](ncStr str, nuInt len)
+				{
+					vi.emplace_back(str, len);
+				});
 				std::stringstream tss;
 
 				for (nuInt i = 0u; i < 3u; ++i)

@@ -185,7 +185,7 @@ nBool n2dWindowImpl::ChangeScreenSetting()
 
 	if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 	{
-		natLog::GetInstance().LogWarn(_T("转换分辨率失败"));
+		m_pEngine->GetLogger().LogWarn(_T("转换分辨率失败"));
 		return false;
 	}
 
@@ -304,7 +304,7 @@ n2dWindowImpl::colorType n2dWindowImpl::GetColorType()
 	case 32u:
 		return colorType::TrueColor;
 	default:
-		throw natException(TEXT("n2dWindowImpl::GetColorType"), TEXT("Not a standard ColorType"));
+		nat_Throw(natException, _T("Not a enum of ColorType"));
 	}
 }
 

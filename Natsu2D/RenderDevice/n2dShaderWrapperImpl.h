@@ -9,7 +9,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
-struct natStream;
+namespace NatsuLib
+{
+	struct natStream;
+}
 
 class n2dShaderImpl
 	: public natRefObjImpl<n2dShader>

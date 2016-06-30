@@ -27,9 +27,9 @@ n2dGraphics2DImpl::~n2dGraphics2DImpl()
 	{
 		// 析构函数不应当抛出异常
 		// 待解决
-		natException ex(_T("n2dGraphics2DImpl::~n2dGraphics2DImpl"), _T("End should be invoked before destroy"));
+		natException ex(_T(__FUNCTION__), _T(__FILE__), __LINE__, _T("End should be invoked before destroy"));
 		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pRenderDevice->GetEngine()->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 		End();
 	}
 }
@@ -182,7 +182,7 @@ void n2dGraphics2DImpl::flush()
 n2dGraphics3DImpl::n2dGraphics3DImpl(n2dRenderDeviceImpl* pRenderDevice)
 	: m_MaterialID(0u),
 	m_pRenderDevice(pRenderDevice),
-	m_MaterialBuffer(nullptr)
+	m_MaterialBuffer(nullptr), m_bIsRendering(false)
 {
 	m_MaterialBuffer = new n2dBufferImpl(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
 	m_MaterialBuffer->BindBase(2u);
@@ -194,9 +194,9 @@ n2dGraphics3DImpl::~n2dGraphics3DImpl()
 	{
 		// 析构函数不应当抛出异常
 		// 待解决
-		natException ex(_T("n2dGraphics3DImpl::~n2dGraphics3DImpl"), _T("End should be invoked before destroy"));
+		natException ex(_T(__FUNCTION__), _T(__FILE__), __LINE__, _T("End should be invoked before destroy"));
 		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pRenderDevice->GetEngine()->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 		n2dGraphics3DImpl::End();
 	}
 }

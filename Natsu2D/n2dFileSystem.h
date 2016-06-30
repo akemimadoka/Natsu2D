@@ -2,7 +2,10 @@
 #include "n2dInterface.h"
 #include "n2dCommon.h"
 
-struct natStream;
+namespace NatsuLib
+{
+	struct natStream;
+}
 
 struct n2dFileNode
 	: n2dInterface

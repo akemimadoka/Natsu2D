@@ -48,14 +48,14 @@ nResult n2dSoundSysImpl::CreateSoundBuffer(n2dSoundBuffer ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dSoundSysImpl::CreateSoundBuffer"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -84,14 +84,14 @@ nResult n2dSoundSysImpl::CreateWaveSoundBufferFromStream(natStream * pStream, n2
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dSoundSysImpl::CreateWaveSoundBufferFromStream"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -114,14 +114,14 @@ nResult n2dSoundSysImpl::CreateSoundSource(n2dSoundSource ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dSoundSysImpl::CreateSoundSource"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{

@@ -7,7 +7,10 @@
 #include <natQuat.h>
 
 struct n2dModelData;
-struct natStream;
+namespace NatsuLib
+{
+	struct natStream;
+}
 struct n2dTexture2D;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,8 +6,6 @@
 #include "..\n2dEngine.h"
 
 #include <Windows.h>
-#include <unordered_map>
-#include <unordered_set>
 #include "n2dWindowImpl.h"
 #include <natEvent.h>
 #include <natMultiThread.h>
@@ -44,7 +42,7 @@ public:
 		nuInt ThreadJob() override;
 
 	private:
-		n2dEngineImpl* m_Thisapp;
+		n2dEngineImpl* m_pEngine;
 		nuInt m_FPSLimit;
 		DWORD m_MainThreadID;
 	};
@@ -63,7 +61,7 @@ public:
 		nuInt ThreadJob() override;
 
 	private:
-		n2dEngineImpl* m_Thisapp;
+		n2dEngineImpl* m_pEngine;
 		nuInt m_FPSLimit;
 		DWORD m_MainThreadID;
 
@@ -105,6 +103,9 @@ public:
 
 	ThreadMode GetThreadMode() const override;
 	HINSTANCE GetHInstance() const override;
+
+	natLog& GetLogger() override;
+	natEventBus& GetEventBus() override;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数
@@ -150,6 +151,9 @@ private:
 	///	@brief	当前按键状况
 	///	@note	仅当当前窗口激活时有效
 	n2dKeyState				m_Keys;
+
+	natEventBus				m_EventBus;
+	natLog					m_Logger;
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

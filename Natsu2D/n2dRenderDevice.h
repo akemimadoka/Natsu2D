@@ -5,7 +5,6 @@
 #include <memory>
 
 struct n2dLayer;
-struct natNode;
 struct n2dShaderWrapper;
 struct n2dEngine;
 struct n2dGraphics2D;
@@ -13,10 +12,13 @@ struct n2dGraphics3D;
 struct n2dTexture2D;
 struct n2dModelLoader;
 struct n2dMotionManager;
-
-struct natStream;
-
 struct n2dImage;
+
+namespace NatsuLib
+{
+	struct natNode;
+	struct natStream;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	Œ∆¿Ìª˘¿‡

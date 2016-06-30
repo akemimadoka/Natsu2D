@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 // 脚本相关头文件
 #include <sqrat.h>
@@ -49,44 +50,13 @@
 
 #pragma endregion
 
+namespace Global
+{
+	n2dEngine* g_pEngine;
+	std::ofstream g_LogFile;
+}
+
 void custom_invalid_parameter(ncTStr expression, ncTStr function, ncTStr file, nuInt line, uintptr_t pReserved);
-
-void ExceptionHandler(natEventBase& e)
-{
-	std::basic_stringstream<nTChar, std::char_traits<nTChar>, std::allocator<nTChar>> ss;
-	n2dGlobal::natExceptionEvent* pEvent = dynamic_cast<n2dGlobal::natExceptionEvent*>(&e);
-	if (!pEvent)
-	{
-		return;
-	}
-
-	auto ex = &pEvent->GetData();
-	if (ex != nullptr)
-	{
-		ss << _T("Uncaught exception: In ") << ex->GetSource() << _T(" : ") << ex->GetDesc() << std::endl;
-
-		n2dGlobal::LogErr(ss.str().c_str());
-
-		MessageBox(nullptr, ss.str().c_str(), _T("Uncaught exception"), MB_OK | MB_ICONERROR);
-	}
-
-	//if (n2dGlobal::pCurrentApp != nullptr)
-	//	n2dGlobal::pCurrentApp->TerminateApplication();
-
-	exit(EXIT_FAILURE);
-}
-
-void LogEvent(natEventBase& e)
-{
-	//OutputDebugString((e.GetData() + TEXT("\n")).c_str());
-
-#ifdef UNICODE
-	std::wcout
-#else
-	std::cout
-#endif
-		<< dynamic_cast<natLog::EventLogUpdated&>(e).GetData() << std::endl;
-}
 
 ///	@brief	调试用缓存
 struct DebugBuffer
@@ -105,7 +75,14 @@ void printfunc(HSQUIRRELVM, const SQChar *s, ...)
 	auto length = _vsctprintf(s, vl);
 	std::vector<SQChar> buf(length + 1);
 	_vsntprintf_s(buf.data(), buf.size(), buf.size(), s, vl);
-	n2dGlobal::LogMsg(buf.data());
+	if (Global::g_pEngine)
+	{
+		Global::g_pEngine->GetLogger().LogMsg(buf.data());
+	}
+	else
+	{
+		std::wcerr << buf.data() << std::endl;
+	}
 	va_end(vl);
 }
 
@@ -117,7 +94,14 @@ void errorfunc(HSQUIRRELVM, const SQChar *s, ...)
 	auto length = _vsctprintf(s, vl);
 	std::vector<SQChar> buf(length + 1);
 	_vsntprintf_s(buf.data(), buf.size(), buf.size(), s, vl);
-	n2dGlobal::LogErr(buf.data());
+	if (Global::g_pEngine)
+	{
+		Global::g_pEngine->GetLogger().LogErr(buf.data());
+	}
+	else
+	{
+		std::wcerr << buf.data() << std::endl;
+	}
 	va_end(vl);
 }
 
@@ -237,13 +221,51 @@ public:
 			nat_Throw(natException, _T("Failed to create Natsu2D engine"));
 		}
 
-		//n2dGlobal::pCurrentApp = m_pEngine;
-		n2dGlobal::GetEventBus().RegisterEventListener<n2dGlobal::natExceptionEvent>(ExceptionHandler);
+		Global::g_pEngine = m_pEngine;
+		m_pEngine->GetEventBus().RegisterEventListener<n2dGlobal::natExceptionEvent>([this](natEventBase& event)
+		{
+			std::basic_stringstream<nTChar, std::char_traits<nTChar>, std::allocator<nTChar>> ss;
+			auto pEvent = dynamic_cast<n2dGlobal::natExceptionEvent*>(&event);
+			if (!pEvent)
+			{
+				return;
+			}
 
-		//n2dGlobal::SetLogFile(_T("NatsuLog.log"));
-		n2dGlobal::RegisterLogUpdateEventFunc(LogEvent);
-		n2dGlobal::LogMsg(_T("中文测试"));
+			auto ex = &pEvent->GetData();
+			if (ex != nullptr)
+			{
+				ss << _T("Unhandled exception: In ") << ex->GetSource() << _T(" : ") << ex->GetDesc() << std::endl;
 
+				m_pEngine->GetLogger().LogErr(ss.str().c_str());
+				MessageBox(nullptr, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
+			}
+
+			m_pEngine->TerminateApplication();
+		});
+
+		m_pEngine->GetLogger().RegisterLogUpdateEventFunc([this](natEventBase& event)
+		{
+			decltype(auto) eventLogUpdated = static_cast<natLog::EventLogUpdated&>(event);
+			time_t time = std::chrono::system_clock::to_time_t(eventLogUpdated.GetTime());
+			tm timeStruct;
+			localtime_s(&timeStruct, &time);
+			natLog::LogType logType = static_cast<natLog::LogType>(eventLogUpdated.GetLogType());
+			nTString logStr = std::move(natUtil::FormatString(_T("[{0}] [{1}] {2}"), std::put_time(&timeStruct, _T("%F %T")), natLog::GetDefaultLogTypeName(logType), eventLogUpdated.GetData()));
+			switch (logType)
+			{
+			case natLog::Msg:
+			case natLog::Warn:
+				std::wclog << logStr << std::endl;
+				break;
+			case natLog::Err:
+				std::wcerr << logStr << std::endl;
+				break;
+			default:
+				break;
+			}
+		});
+
+		m_pEngine->GetLogger().LogMsg(_T("中文测试"));
 		m_pEngine->MainLoop(_T("夏之幻想"), 6000u);
 	}
 	~test()
@@ -297,7 +319,7 @@ public:
 		m_Uninit.Release();
 
 		sq_close(Sqrat::DefaultVM::Get());
-		n2dGlobal::LogMsg(_T("GLAPP quit"));
+		m_pEngine->GetLogger().LogMsg(_T("GLAPP quit"));
 	}
 
 	nBool WindowInit() override
@@ -327,8 +349,8 @@ public:
 			renderdevice->CreateMotionManager(&m_MotionManager);
 		}
 		
-		n2dGlobal::LogMsg(natUtil::FormatString(_T("GLAPP initialized as {0} thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
-		n2dGlobal::LogMsg(_T("GLAPP start initializing"));
+		m_pEngine->GetLogger().LogMsg(natUtil::FormatString(_T("GLAPP initialized as {0} thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
+		m_pEngine->GetLogger().LogMsg(_T("GLAPP start initializing"));
 		m_Mutex = CreateMutex(NULL, FALSE, _T("GLAPP"));
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
@@ -376,7 +398,7 @@ public:
 			ncTStr pLog = pShader[0]->GetInfoLog();
 			if (_tcslen(pLog) > 1)
 			{
-				n2dGlobal::LogWarn(natUtil::FormatString(_T("Compile0Log: %s"), pLog).c_str());
+				m_pEngine->GetLogger().LogWarn(natUtil::FormatString(_T("Compile0Log: %s"), pLog).c_str());
 			}
 
 			SafeRelease(pStream);
@@ -390,7 +412,7 @@ public:
 			pLog = pShader[1]->GetInfoLog();
 			if (_tcslen(pLog) > 1)
 			{
-				n2dGlobal::LogWarn(natUtil::FormatString(_T("Compile1Log: %s"), pLog).c_str());
+				m_pEngine->GetLogger().LogWarn(natUtil::FormatString(_T("Compile1Log: %s"), pLog).c_str());
 			}
 
 			SafeRelease(pStream);
@@ -406,7 +428,7 @@ public:
 			pLog = sp->GetInfoLog();
 			if (_tcslen(pLog) > 1)
 			{
-				n2dGlobal::LogWarn(natUtil::FormatString(_T("LinkLog: %s"), pLog).c_str());
+				m_pEngine->GetLogger().LogWarn(natUtil::FormatString(_T("LinkLog: %s"), pLog).c_str());
 			}
 
 			sp->Use();
@@ -485,7 +507,7 @@ public:
 			m_soundsrc->SetLooping(false);
 
 			//MessageBox(window->GetWnd(), _T("即将开始加载模型，请等待\n按上下左右进行旋转，点击鼠标左键开始移动，滚动鼠标滚轮进行缩放"), _T("提示"), MB_OK | MB_ICONINFORMATION);
-			n2dGlobal::LogMsg(_T("Loading model"));
+			m_pEngine->GetLogger().LogMsg(_T("Loading model"));
 			//m_modelloader->SetDefaultTexture(m_texture);
 			//if (NATFAIL(m_modelloader->CreateStaticModelFromFile(_T("comb.obj"), &m_model2)))
 			if (NATFAIL(m_modelloader->CreateDynamicModelFromFile(_T("cirno.pmd"), &m_model2)))
@@ -511,9 +533,8 @@ public:
 
 			//m_model2->SetZoom(0.1f);
 
-			n2dGlobal::LogMsg(_T("Loaded model successfully"));
-
-			n2dGlobal::LogMsg(_T("GLAPP initialized successfully"));
+			m_pEngine->GetLogger().LogMsg(_T("Loaded model successfully"));
+			m_pEngine->GetLogger().LogMsg(_T("GLAPP initialized successfully"));
 			m_soundsrc->Play();
 		}
 		
@@ -523,7 +544,7 @@ public:
 	void WindowUninit() override
 	{
 		CloseHandle(m_Mutex);
-		n2dGlobal::LogMsg(_T("GLAPP exit"));
+		m_pEngine->GetLogger().LogMsg(_T("GLAPP exit"));
 	}
 
 	void Update(nDouble, n2dFPSController* /*pFPSController*/) override
@@ -640,22 +661,40 @@ int main()
 	try
 	{
 		//std::locale::global(std::locale(std::locale(), "", LC_CTYPE));
-		auto loc = std::locale("chs", LC_CTYPE);
+		auto loc = std::locale("", LC_CTYPE);
+		Global::g_LogFile.open(_T("Log.log"));
+		if (!Global::g_LogFile.is_open())
+		{
+			exit(EXIT_FAILURE);
+		}
+
 		std::locale::global(loc);
 		std::wcout.imbue(loc);
+		std::wclog.imbue(loc);
+		std::wcerr.imbue(loc);
 		_set_invalid_parameter_handler(custom_invalid_parameter);
 
 		test (GetModuleHandle(NULL));
 	}
 	catch (natException& ex)
 	{
-		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		if (Global::g_pEngine)
+		{
+			n2dGlobal::natExceptionEvent event(ex);
+			Global::g_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
+		}
+		else
+		{
+			throw;
+		}
 	}
 	catch (...)
 	{
-		n2dGlobal::LogErr(TEXT("Unknown exception"));
-		MessageBox(NULL, TEXT("Unknown exception"), TEXT("Uncaught exception"), MB_OK | MB_ICONERROR);
+		if (Global::g_pEngine)
+		{
+			Global::g_pEngine->GetLogger().LogErr(_T("Unknown exception"));
+		}
+		MessageBox(NULL, _T("Unknown exception"), _T("Uncaught exception"), MB_OK | MB_ICONERROR);
 	}
 	
 	_CrtDumpMemoryLeaks();
@@ -668,7 +707,10 @@ void custom_invalid_parameter(ncTStr expression, ncTStr function, ncTStr file, n
 
 	ss << "In " << file << ", line " << line << ": " << expression;
 
-	natException ex(function, ss.str().c_str());
+	natException ex(function, file, line, ss.str().c_str());
 	n2dGlobal::natExceptionEvent event(ex);
-	natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+	if (Global::g_pEngine)
+	{
+		Global::g_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
+	}
 }

@@ -2,7 +2,10 @@
 #include "n2dInterface.h"
 #include <natVec.h>
 
-struct natStream;
+namespace NatsuLib
+{
+	struct natStream;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	…˘“Ùª∫¥Ê

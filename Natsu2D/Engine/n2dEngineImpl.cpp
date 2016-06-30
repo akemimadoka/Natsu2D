@@ -49,51 +49,6 @@ extern "C" nResult N2DFUNC CreateN2DEngine(
 ///	@brief	全局变量
 namespace n2dGlobal
 {
-	extern ncTStr Logfile;
-
-	extern "C"
-	{
-		N2DFUNC void SetLogFile(ncTStr Path)
-		{
-			Logfile = Path;
-		}
-
-		N2DFUNC void LogMsg(ncTStr Str)
-		{
-			natLog::GetInstance().LogMsg(Str);
-		}
-
-		N2DFUNC void LogWarn(ncTStr Str)
-		{
-			natLog::GetInstance().LogWarn(Str);
-		}
-
-		N2DFUNC void LogErr(ncTStr Str)
-		{
-			natLog::GetInstance().LogErr(Str);
-		}
-
-		N2DFUNC void RegisterLogUpdateEventFunc(natEventBus::EventListenerFunc func)
-		{
-			natLog::GetInstance().RegisterLogUpdateEventFunc(func);
-		}
-
-		N2DFUNC void RegisterExceptionEventFunc(natEventBus::EventListenerFunc func)
-		{
-			natEventBus::GetInstance().RegisterEventListener<natExceptionEvent>(func);
-		}
-
-		N2DFUNC natLog& GetLogger()
-		{
-			return natLog::GetInstance();
-		}
-
-		N2DFUNC natEventBus& GetEventBus()
-		{
-			return natEventBus::GetInstance();
-		}
-	}
-
 #ifndef Natsu2DStatic
 	HMODULE hDll;
 #endif
@@ -176,9 +131,19 @@ HINSTANCE n2dEngineImpl::GetHInstance() const
 	return m_hInstance;
 }
 
+natLog& n2dEngineImpl::GetLogger()
+{
+	return m_Logger;
+}
+
+natEventBus& n2dEngineImpl::GetEventBus()
+{
+	return m_EventBus;
+}
+
 void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority)
 {
-	natEventBus::GetInstance().RegisterEventListener<WndMsgEvent>(func, priority);
+	m_EventBus.RegisterEventListener<WndMsgEvent>(func, priority);
 }
 
 n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen, HINSTANCE hInstance, ThreadMode threadMode, n2dEngineEventListener* pListener)
@@ -190,18 +155,19 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	m_ResizeDraw(false),
 	m_hInstance(hInstance),
 	m_ThreadMode(threadMode),
-	m_pRenderer(nullptr), m_pSoundSys(nullptr)
+	m_pRenderer(nullptr), m_pSoundSys(nullptr),
+	m_EventBus(), m_Logger(m_EventBus)
 {
-	natEventBus::GetInstance().RegisterEvent<WndMsgEvent>();
-	natEventBus::GetInstance().RegisterEvent<n2dGlobal::natExceptionEvent>();
+	m_EventBus.RegisterEvent<WndMsgEvent>();
+	m_EventBus.RegisterEvent<n2dGlobal::natExceptionEvent>();
 
 	if (!m_pListener)
 	{
-		throw natException(TEXT("n2dEngineImpl::n2dEngineImpl"), TEXT("Null EventListener"));
+		nat_Throw(natException, _T("m_pListener should be a valid pointer."));
 	}
 	if (!m_ClassName)
 	{
-		throw natException(TEXT("n2dEngineImpl::n2dEngineImpl"), TEXT("Null ClassName"));
+		nat_Throw(natException, _T("classname should be a valid string."));
 	}
 
 	WNDCLASSEX windowClass;
@@ -257,7 +223,7 @@ void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
 	catch (natException& ex)
 	{
 		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post(event);
+		m_EventBus.Post(event);
 	}
 }
 
@@ -268,7 +234,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	switch (uMsg)
 	{
 	case WM_SYSCOMMAND:
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
@@ -284,7 +250,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		break;
 
 	case WM_CLOSE:
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
@@ -294,14 +260,14 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 	case WM_EXITMENULOOP:
 	case WM_EXITSIZEMOVE:
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
 		return FALSE;
 
 	case WM_MOVE:
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
@@ -314,7 +280,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 	case WM_SIZING:
 	{
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
@@ -325,7 +291,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	}
 
 	case WM_SIZE:
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
@@ -347,7 +313,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 	case WM_KEYDOWN:
 		m_Keys.SetPressed(wParam);
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
@@ -355,7 +321,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 	case WM_KEYUP:
 		m_Keys.SetReleased(wParam);
-		if (natEventBus::GetInstance().Post(event))
+		if (m_EventBus.Post(event))
 		{
 			return msg.result;
 		}
@@ -379,7 +345,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		break;
 	}
 
-	if (natEventBus::GetInstance().Post(event))
+	if (m_EventBus.Post(event))
 	{
 		return msg.result;
 	}
@@ -393,7 +359,7 @@ void n2dEngineImpl::CommonInit()
 	glewExperimental = true;
 	if ((tRet = glewInit()) != GLEW_OK)
 	{
-		nat_Throw(natException, _T("GLEW initializing failed, id=%d, description:%s"), tRet, glewGetErrorString(tRet));
+		nat_Throw(natException, _T("GLEW initializing failed, id=%d, description:%s"), tRet, natUtil::C2Wstr(reinterpret_cast<ncStr>(glewGetErrorString(tRet))));
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -524,7 +490,7 @@ void n2dEngineImpl::SingleThreadMainLoop(ncTStr title, nuInt FPS)
 			m_Section.Lock();
 			m_IsProgramLooping = false;
 			m_Section.UnLock();
-			throw natException(TEXT("n2dEngineImpl::SingleThreadMainLoop"), TEXT("Failed to create GL window"));
+			nat_Throw(natException, _T("Failed to create GL window."));
 		}
 	}
 
@@ -601,7 +567,7 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 			m_Section.Lock();
 			m_IsProgramLooping = false;
 			m_Section.UnLock();
-			throw natException(TEXT("n2dEngineImpl::MultiThreadMainLoop"), TEXT("Failed to create GL window"));
+			nat_Throw(natException, _T("Failed to create GL window."));
 		}
 	}
 
@@ -634,16 +600,27 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	}
 	catch (natException& ex)
 	{
-		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post(event);
-		reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
+		if (userdata)
+		{
+			n2dGlobal::natExceptionEvent event(ex);
+			reinterpret_cast<n2dEngineImpl *>(userdata)->m_EventBus.Post(event);
+			reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
+		}
+		else
+		{
+			throw;
+		}
 	}
 	catch (...)
 	{
-		natException ex(TEXT("Unknown source"), TEXT("Unknown exception"));
-		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post(event);
-		reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
+		if (userdata)
+		{
+			natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
+			n2dGlobal::natExceptionEvent event(ex);
+			reinterpret_cast<n2dEngineImpl *>(userdata)->m_EventBus.Post(event);
+			reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
+		}
+
 		throw;
 	}
 
@@ -651,7 +628,7 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 }
 
 n2dEngineImpl::UpdateThread::UpdateThread(n2dEngineImpl* pGLApp, nuInt FPSLimit)
-	: m_Thisapp(pGLApp), m_FPSLimit(FPSLimit), m_MainThreadID(GetCurrentThreadId())
+	: m_pEngine(pGLApp), m_FPSLimit(FPSLimit), m_MainThreadID(GetCurrentThreadId())
 {
 }
 
@@ -664,13 +641,13 @@ nuInt n2dEngineImpl::UpdateThread::ThreadJob()
 
 		tTimer.Reset();
 
-		natCriticalSection& rCS = m_Thisapp->m_Section;
+		natCriticalSection& rCS = m_pEngine->m_Section;
 		bool bLoop;
 
 		while (true)
 		{
 			rCS.Lock();
-			bLoop = m_Thisapp->m_IsProgramLooping;
+			bLoop = m_pEngine->m_IsProgramLooping;
 			rCS.UnLock();
 
 			if (!bLoop)
@@ -678,7 +655,7 @@ nuInt n2dEngineImpl::UpdateThread::ThreadJob()
 				break;
 			}
 
-			m_Thisapp->m_pListener->Update(tFPSC.Update(tTimer), &tFPSC);
+			m_pEngine->m_pListener->Update(tFPSC.Update(tTimer), &tFPSC);
 		}
 
 		// 投递线程终止消息
@@ -687,13 +664,13 @@ nuInt n2dEngineImpl::UpdateThread::ThreadJob()
 	catch (natException& ex)
 	{
 		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post(event);
+		m_pEngine->m_EventBus.Post(event);
 	}
 	catch (...)
 	{
-		natException ex(_T("n2dEngineImpl::UpdateThread::ThreadJob"), _T("Unknown exception"));
+		natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
 		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post(event);
+		m_pEngine->m_EventBus.Post(event);
 		throw;
 	}
 
@@ -701,7 +678,7 @@ nuInt n2dEngineImpl::UpdateThread::ThreadJob()
 }
 
 n2dEngineImpl::RenderThread::RenderThread(n2dEngineImpl* pGLApp, nuInt FPSLimit)
-	: m_Thisapp(pGLApp), m_FPSLimit(FPSLimit), m_MainThreadID(GetCurrentThreadId()), m_bAlreadyMadeCurrent(false)
+	: m_pEngine(pGLApp), m_FPSLimit(FPSLimit), m_MainThreadID(GetCurrentThreadId()), m_bAlreadyMadeCurrent(false)
 {
 }
 
@@ -714,13 +691,13 @@ nuInt n2dEngineImpl::RenderThread::ThreadJob()
 
 		tTimer.Reset();
 
-		natCriticalSection& rCS = m_Thisapp->m_Section;
+		natCriticalSection& rCS = m_pEngine->m_Section;
 		bool bLoop;
 
 		while (true)
 		{
 			rCS.Lock();
-			bLoop = m_Thisapp->m_IsProgramLooping;
+			bLoop = m_pEngine->m_IsProgramLooping;
 			rCS.UnLock();
 
 			if (!bLoop)
@@ -730,12 +707,12 @@ nuInt n2dEngineImpl::RenderThread::ThreadJob()
 
 			if (!m_bAlreadyMadeCurrent)
 			{
-				m_Thisapp->m_pRenderer->MakeCurrent();
+				m_pEngine->m_pRenderer->MakeCurrent();
 				m_bAlreadyMadeCurrent = true;
 			}
 
-			m_Thisapp->m_pListener->Render(tFPSC.Update(tTimer), &tFPSC, m_Thisapp->m_pRenderer);
-			//m_Thisapp->m_Window.SwapBuffers();
+			m_pEngine->m_pListener->Render(tFPSC.Update(tTimer), &tFPSC, m_pEngine->m_pRenderer);
+			//m_pEngine->m_Window.SwapBuffers();
 		}
 
 		// 投递线程终止消息
@@ -744,13 +721,13 @@ nuInt n2dEngineImpl::RenderThread::ThreadJob()
 	catch (natException& ex)
 	{
 		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post(event);
+		m_pEngine->m_EventBus.Post(event);
 	}
 	catch (...)
 	{
-		natException ex(_T("n2dEngineImpl::RenderThread::ThreadJob"), _T("Unknown exception"));
+		natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
 		n2dGlobal::natExceptionEvent event(ex);
-		natEventBus::GetInstance().Post(event);
+		m_pEngine->m_EventBus.Post(event);
 		throw;
 	}
 

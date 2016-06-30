@@ -279,14 +279,14 @@ nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget,
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateBuffer"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -309,14 +309,14 @@ nResult n2dRenderDeviceImpl::CreateLayer(std::function<nBool(nDouble, n2dRenderD
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T(__FUNCTION__), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -339,14 +339,14 @@ nResult n2dRenderDeviceImpl::CreateGraphics2D(n2dGraphics2D** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateGraphics2D"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -369,14 +369,14 @@ nResult n2dRenderDeviceImpl::CreateGraphics3D(n2dGraphics3D** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateGraphics3D"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -399,14 +399,14 @@ nResult n2dRenderDeviceImpl::CreateTexture(n2dTexture2D** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateTexture"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -435,14 +435,14 @@ nResult n2dRenderDeviceImpl::CreateTextureFromStream(natStream* pStream, DWORD d
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateTextureFromStream"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -465,14 +465,14 @@ nResult n2dRenderDeviceImpl::CreateModelLoader(n2dModelLoader** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateModelLoader"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -495,14 +495,14 @@ nResult n2dRenderDeviceImpl::CreateObjLoader(n2dModelLoader** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateObjLoader"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{
@@ -525,14 +525,14 @@ nResult n2dRenderDeviceImpl::CreateMotionManager(n2dMotionManager ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T("n2dRenderDeviceImpl::CreateObjLoader"), _T("Failed to allocate memory"));
+		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (natException& e)
 	{
 		n2dGlobal::natExceptionEvent event(e);
-		natEventBus::GetInstance().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 	catch (...)
 	{

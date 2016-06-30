@@ -1,4 +1,5 @@
 #include "n2dShaderWrapperImpl.h"
+#include "..\n2dEngine.h"
 #include <natUtil.h>
 #include <natException.h>
 #include <natStream.h>
@@ -46,11 +47,6 @@ nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShad
 	{
 		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
-	catch (natException& ex)
-	{
-		natException e(_T("n2dShaderWrapperImpl::CreateShaderFromStream"), _T("CreateProgram failed"), &ex);
-		throw e;
-	}
 	catch (...)
 	{
 		return NatErr_Unknown;
@@ -84,11 +80,6 @@ nResult n2dShaderWrapperImpl::CreateProgram(n2dShaderProgram** pOut)
 	catch (std::bad_alloc&)
 	{
 		nat_Throw(natException, _T("Failed to allocate memory"));
-	}
-	catch (natException& ex)
-	{
-		natException e(_T("n2dShaderWrapperImpl::CreateProgram"), _T("CreateProgram failed"), &ex);
-		throw e;
 	}
 	catch (...)
 	{
@@ -124,11 +115,6 @@ nResult n2dShaderWrapperImpl::CreateProgramFromStream(natStream* pStream, n2dSha
 	{
 		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
-	catch (natException& ex)
-	{
-		natException e(_T("n2dShaderWrapperImpl::CreateProgramFromStream"), _T("CreateProgramFromStream failed"), &ex);
-		throw e;
-	}
 	catch (...)
 	{
 		return NatErr_Unknown;
@@ -163,11 +149,6 @@ nResult n2dShaderWrapperImpl::CreateProgramPipeline(n2dProgramPipeline** pOut)
 	{
 		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
-	catch (natException& ex)
-	{
-		natException e(_T("n2dShaderWrapperImpl::CreateProgramPipeline"), _T("CreateProgram failed"), &ex);
-		throw e;
-	}
 	catch (...)
 	{
 		return NatErr_Unknown;
@@ -189,7 +170,7 @@ void n2dShaderWrapperImpl::UseBindingPoint(GLuint BindingPoint)
 	if (BindingPoint >= m_MaxBindingPoint)
 	{
 #ifdef _DEBUG
-		natLog::GetInstance().LogErr(natUtil::FormatString(_T("Try to use a binding point %u which is illeagl, continue anyway"), BindingPoint).c_str());
+		m_pRenderDevice->GetEngine()->GetLogger().LogErr(_T("Try to use a binding point %u which is illeagl, continue anyway"), BindingPoint);
 #endif
 		return;
 	}
@@ -198,7 +179,7 @@ void n2dShaderWrapperImpl::UseBindingPoint(GLuint BindingPoint)
 	{
 #ifdef _DEBUG
 		if (BindingPoint > 2u)
-			natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Try to use a binding point %u which is already used, continue anyway"), BindingPoint).c_str());
+			m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("Try to use a binding point %u which is already used, continue anyway"), BindingPoint);
 #endif
 		return;
 	}
@@ -211,7 +192,7 @@ void n2dShaderWrapperImpl::ReleaseBindingPoint(GLuint BindingPoint)
 	if (BindingPoint >= m_MaxBindingPoint)
 	{
 #ifdef _DEBUG
-		natLog::GetInstance().LogErr(natUtil::FormatString(_T("Try to release a binding point %u which is illeagl, continue anyway"), BindingPoint).c_str());
+		m_pRenderDevice->GetEngine()->GetLogger().LogErr(_T("Try to release a binding point %u which is illeagl, continue anyway"), BindingPoint);
 #endif
 		return;
 	}
@@ -219,7 +200,7 @@ void n2dShaderWrapperImpl::ReleaseBindingPoint(GLuint BindingPoint)
 	if (m_AvailableBindingPoint.find(BindingPoint) != m_AvailableBindingPoint.end())
 	{
 #ifdef _DEBUG
-		natLog::GetInstance().LogWarn(natUtil::FormatString(_T("Try to release a binding point %u which is unused, continue anyway"), BindingPoint).c_str());
+		m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("Try to release a binding point %u which is unused, continue anyway"), BindingPoint);
 #endif
 		return;
 	}

@@ -2,6 +2,8 @@
 #include "natMultiThread.h"
 #include "natException.h"
 
+using namespace NatsuLib;
+
 natThread::natThread(nBool Pause)
 {
 	m_hThread = CreateThread(NULL, NULL, &execute, static_cast<void *>(this), Pause ? CREATE_SUSPENDED : 0, &m_hThreadID);
@@ -83,7 +85,7 @@ natEventWrapper::natEventWrapper(nBool AutoReset, nBool InitialState)
 	m_hEvent = CreateEvent(NULL, !AutoReset, InitialState, NULL);
 	if (m_hEvent == NULL)
 	{
-		throw natWinException(TEXT("natEventWrapper::natEventWrapper"), TEXT("Create event failed"));
+		nat_Throw(natWinException, _T("Create event failed"));
 	}
 }
 

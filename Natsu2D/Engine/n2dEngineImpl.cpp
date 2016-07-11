@@ -49,12 +49,8 @@ extern "C" nResult N2DFUNC CreateN2DEngine(
 ///	@brief	全局变量
 namespace n2dGlobal
 {
-#ifndef Natsu2DStatic
 	HMODULE hDll;
-#endif
 }
-
-#ifndef Natsu2DStatic
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -73,8 +69,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	}
 	return TRUE;
 }
-
-#endif
 
 void n2dEngineImpl::ToggleFullscreen()
 {
@@ -141,6 +135,11 @@ natEventBus& n2dEngineImpl::GetEventBus()
 	return m_EventBus;
 }
 
+natThreadPool& n2dEngineImpl::GetThreadPool()
+{
+	return m_ThreadPool;
+}
+
 void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority)
 {
 	m_EventBus.RegisterEventListener<WndMsgEvent>(func, priority);
@@ -155,7 +154,7 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	m_ResizeDraw(false),
 	m_hInstance(hInstance),
 	m_ThreadMode(threadMode),
-	m_EventBus(), m_Logger(m_EventBus)
+	m_EventBus(), m_Logger(m_EventBus), m_ThreadPool(2, 16)
 {
 	m_EventBus.RegisterEvent<WndMsgEvent>();
 	m_EventBus.RegisterEvent<n2dGlobal::natExceptionEvent>();
@@ -187,6 +186,7 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 
 n2dEngineImpl::~n2dEngineImpl()
 {
+	m_ThreadPool.WaitAllJobsFinish();
 }
 
 nBool n2dEngineImpl::IsKeyPressed(nuInt Key) const
@@ -368,9 +368,6 @@ void n2dEngineImpl::CommonInit()
 	glClearDepth(1.0f);
 	glShadeModel(GL_SMOOTH);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	//glLoadIdentity();
-
-#ifndef Natsu2DStatic
 
 	std::vector<nByte> tVert = natUtil::GetResourceData(IDR_DefaultVertShader, _T("SHADER"), n2dGlobal::hDll);
 	std::vector<nByte> tFrag = natUtil::GetResourceData(IDR_DefaultFragShader, _T("SHADER"), n2dGlobal::hDll);
@@ -413,8 +410,6 @@ void n2dEngineImpl::CommonInit()
 
 		pShaderWrapper->m_DefaultProgram = pProgram;
 	}
-
-#endif
 }
 
 void n2dEngineImpl::SingleThreadMainLoop(ncTStr title, nuInt FPS)
@@ -629,7 +624,7 @@ n2dEngineImpl::UpdateThread::UpdateThread(n2dEngineImpl* pGLApp, nuInt FPSLimit)
 {
 }
 
-nuInt n2dEngineImpl::UpdateThread::ThreadJob()
+natThread::ResultType n2dEngineImpl::UpdateThread::ThreadJob()
 {
 	try
 	{
@@ -679,7 +674,7 @@ n2dEngineImpl::RenderThread::RenderThread(n2dEngineImpl* pGLApp, nuInt FPSLimit)
 {
 }
 
-nuInt n2dEngineImpl::RenderThread::ThreadJob()
+natThread::ResultType n2dEngineImpl::RenderThread::ThreadJob()
 {
 	try
 	{

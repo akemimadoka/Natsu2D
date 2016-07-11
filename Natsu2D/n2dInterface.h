@@ -1,5 +1,5 @@
 #pragma once
-#include "..\NatsuLib\natRefObj.h"
+#include <natRefObj.h>
 
 using namespace NatsuLib;
 

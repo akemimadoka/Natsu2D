@@ -1,5 +1,6 @@
 #pragma once
 #include "n2dInterface.h"
+#include <Windows.h>
 
 class n2dEngineImpl;
 
@@ -84,28 +85,6 @@ struct n2dWindow
 	virtual void SetColorType(colorType ct) = 0;
 	///	@brief	获得当前的色彩类型
 	virtual colorType GetColorType() = 0;
-
-	__declspec(property(put = SetColorType, get = GetColorType))
-		///	@brief	色彩模式
-		colorType ColorType;
-
-	__declspec(property(put = SetPosX, get = GetPosX))
-		///	@brief	X坐标
-		nuInt PosX;
-	__declspec(property(put = SetPosY, get = GetPosY))
-		///	@brief	Y坐标
-		nuInt PosY;
-
-	__declspec(property(put = SetWidth, get = GetWidth))
-		///	@brief	宽度
-		nuInt Width;
-	__declspec(property(put = SetHeight, get = GetHeight))
-		///	@brief	高度
-		nuInt Height;
-
-	__declspec(property(put = SetFullScreen, get = GetFullScreen))
-		///	@brief	是否全屏
-		nBool FullScreen;
 
 	///	@brief	获得窗口句柄
 	virtual HWND GetWnd() = 0;

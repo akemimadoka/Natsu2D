@@ -2,32 +2,23 @@
 #include <Windows.h>
 #include <natEvent.h>
 #include <natException.h>
-#include <natLog.h>
 #include "n2dInterface.h"
 #include "n2dWindow.h"
 #include "n2dSoundSys.h"
 
-//	由于Natsu2D已经不支持生成静态库，这个宏定义即将不再支持
-#ifdef Natsu2DStatic
-#	ifdef N2DEXPORT
-#		define N2DFUNC
-#	else
-#		define N2DFUNC extern
-#	endif // N2DEXPORT
-#	define N2DOBJECT extern
+#ifdef N2DEXPORT
+#	define N2DFUNC __declspec(dllexport)
 #else
-#	ifdef N2DEXPORT
-#		define N2DFUNC __declspec(dllexport)
-#	else
-#		define N2DFUNC __declspec(dllimport)
-#	endif // N2DEXPORT
-#	define N2DOBJECT extern N2DFUNC
-#endif // Natsu2DStatic
+#	define N2DFUNC __declspec(dllimport)
+#endif // N2DEXPORT
+#define N2DOBJECT extern N2DFUNC
 
 struct n2dRenderDevice;
 namespace NatsuLib
 {
 	class natStopWatch;
+	class natLog;
+	class natThreadPool;
 }
 
 ///	@brief	全局变量
@@ -44,13 +35,18 @@ namespace n2dGlobal
 		{
 		}
 
+		explicit natExceptionEvent(natException && ex)
+			: m_Exception(move(ex))
+		{
+		}
+
 		natException const& GetData() const noexcept
 		{
 			return m_Exception;
 		}
 
 	private:
-		natException const& m_Exception;
+		natException m_Exception;
 	};
 }
 
@@ -77,14 +73,6 @@ struct n2dFPSController
 	virtual nDouble GetAvgFPS() const = 0;
 	///	@brief	获得最大FPS
 	virtual nDouble GetMaxFPS() const = 0;
-
-	///	@brief	当前FPS（属性）
-	__declspec(property(get = GetFPS))
-		nDouble FPS;
-
-	///	@brief	FPS限制（属性）
-	__declspec(property(get = GetFPSLimit, put = SetFPSLimit))
-		nuInt FPSLimit;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -160,12 +148,6 @@ struct n2dEngineEventListener
 struct n2dEngine
 	: n2dInterface
 {
-	///	@brief	自定义窗口消息
-	enum WindowMessage
-	{
-		WM_TOGGLEFULLSCREEN = WM_USER + 1	///< @brief 切换全屏
-	};
-
 	///	@brief	线程模式
 	enum class ThreadMode
 	{
@@ -231,6 +213,7 @@ struct n2dEngine
 
 	virtual natLog& GetLogger() = 0;
 	virtual natEventBus& GetEventBus() = 0;
+	virtual natThreadPool& GetThreadPool() = 0;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数

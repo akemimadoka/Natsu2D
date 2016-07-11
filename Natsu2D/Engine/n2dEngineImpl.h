@@ -10,6 +10,7 @@
 #include <natEvent.h>
 #include <natMultiThread.h>
 #include <natType.h>
+#include <natLog.h>
 
 struct n2dFPSController;
 struct n2dRenderDevice;
@@ -27,6 +28,11 @@ class n2dEngineImpl
 	: public natRefObjImpl<n2dEngine>
 {
 public:
+	///	@brief	自定义窗口消息
+	enum WindowMessage
+	{
+		WM_TOGGLEFULLSCREEN = WM_USER + 1	///< @brief 切换全屏
+	};
 
 	////////////////////////////////////////////////////////////////////////////////
 	///	@brief	更新线程
@@ -39,7 +45,7 @@ public:
 		~UpdateThread() = default;
 
 	protected:
-		nuInt ThreadJob() override;
+		ResultType ThreadJob() override;
 
 	private:
 		n2dEngineImpl* m_pEngine;
@@ -58,7 +64,7 @@ public:
 		~RenderThread() = default;
 
 	protected:
-		nuInt ThreadJob() override;
+		ResultType ThreadJob() override;
 
 	private:
 		n2dEngineImpl* m_pEngine;
@@ -106,6 +112,7 @@ public:
 
 	natLog& GetLogger() override;
 	natEventBus& GetEventBus() override;
+	natThreadPool& GetThreadPool() override;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数
@@ -154,6 +161,7 @@ private:
 
 	natEventBus				m_EventBus;
 	natLog					m_Logger;
+	natThreadPool			m_ThreadPool;
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

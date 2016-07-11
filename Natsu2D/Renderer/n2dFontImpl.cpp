@@ -36,7 +36,7 @@ n2dFontImpl::~n2dFontImpl()
 	SafeDelArr(m_pFileBuf);
 }
 
-nResult n2dFontImpl::InitFont(int Height, int Width, int Escapement, int Orientation, int Weight, bool Italic, bool Underline, bool StrikeOut, int CharSet, int OutPrecision, int ClipPrecision, int Quality, int PitchAndFamily, LPCTSTR FaceName)
+nResult n2dFontImpl::InitFont(int Height, int Width, int Escapement, int Orientation, int Weight, bool Italic, bool Underline, bool StrikeOut, int CharSet, int OutPrecision, int ClipPrecision, int Quality, int PitchAndFamily, ncTStr FaceName)
 {
 	HFONT oldFont = m_hFont;
 	m_hFont = CreateFont(Height, Width, Escapement, Orientation, Weight, Italic, Underline, StrikeOut, CharSet, OutPrecision, ClipPrecision, Quality, PitchAndFamily, FaceName);

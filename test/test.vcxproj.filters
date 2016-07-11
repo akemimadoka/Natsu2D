@@ -98,8 +98,4 @@
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="FragmentShader.glsl" />
-    <None Include="VertexShader.glsl" />
-  </ItemGroup>
 </Project>

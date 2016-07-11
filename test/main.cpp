@@ -13,29 +13,9 @@
 #include <sqstdblob.h>
 #include <sqstdmath.h>
 
-// 资源头文件
 #include "resource.h"
 
-// Natsu2D相关头文件
-// Natsu2D已经不再支持生成静态库，因此请勿定义宏Natsu2DStatic
-//#define Natsu2DStatic 1
 #include <Natsu2D.h>
-
-#ifdef _DEBUG
-#	ifdef Natsu2DStatic
-#		pragma comment (lib, "../Natsu2D/bin/Natsu2D_ds.lib")
-#	else
-#		pragma comment (lib, "../Natsu2D/bin/Natsu2D_d.lib")
-#	endif
-#	pragma comment (lib, "../NatsuLib/bin/NatsuLib_d.lib")
-#else
-#	ifdef Natsu2DStatic
-#		pragma comment (lib, "../Natsu2D/bin/Natsu2D_s.lib")
-#	else
-#		pragma comment (lib, "../Natsu2D/bin/Natsu2D.lib")
-#	endif
-#	pragma comment (lib, "../NatsuLib/bin/NatsuLib.lib")
-#endif
 
 #include <n2dFont.h>
 
@@ -47,6 +27,7 @@
 // NatsuLib头文件
 #include <natException.h>
 #include <natStream.h>
+#include <natLog.h>
 
 #pragma endregion
 
@@ -151,8 +132,8 @@ public:
 		{
 			POINTS mp = MAKEPOINTS(e.GetMsg().lParam);
 
-			m_Speed.x = -5.0f + 10.0f * mp.x / m_pEngine->GetWindow()->Width;
-			m_Speed.y = 5.0f - 10.0f * mp.y / m_pEngine->GetWindow()->Height;
+			m_Speed.x = -5.0f + 10.0f * mp.x / m_pEngine->GetWindow()->GetWidth();
+			m_Speed.y = 5.0f - 10.0f * mp.y / m_pEngine->GetWindow()->GetHeight();
 		}
 	}
 
@@ -364,7 +345,7 @@ public:
 
 		n2dWindow* window = m_pEngine->GetWindow();
 
-		if (!window->FullScreen)
+		if (!window->GetFullScreen())
 		{
 			SetWindowLong(window->GetWnd(), GWL_STYLE, GetWindowLong(window->GetWnd(), GWL_STYLE) & ~WS_SIZEBOX & ~WS_MAXIMIZEBOX);
 			HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
@@ -567,7 +548,7 @@ public:
 	{
 		if (!m_pEngine->GetWindow()->GetFullScreen())
 		{
-			SetWindowText(m_pEngine->GetWindow()->GetWnd(), n2dUtil::FormatString(_T("夏之幻想 | FPS=%lf"), pFPSController->FPS).c_str());
+			SetWindowText(m_pEngine->GetWindow()->GetWnd(), n2dUtil::FormatString(_T("夏之幻想 | FPS={0}"), pFPSController->GetFPS()).c_str());
 		}
 
 		pRenderDevice->Clear(n2dRenderDevice::ClearBit_Color | n2dRenderDevice::ClearBit_Depth);

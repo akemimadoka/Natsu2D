@@ -189,7 +189,7 @@ extern "C" void (*glXGetProcAddressARB(const GLubyte *procName))( void );
 //#include <GL/gl.h>
 //#include <GL/glext.h>
 #include "../../RenderDevice/OpenGL.h"
-#include "../../../NatsuLib/natStream.h"
+#include <natStream.h>
 using namespace NatsuLib;
 #endif
 

@@ -105,7 +105,7 @@ n2dRenderDevice* n2dEngineImpl::GetRenderDevice()
 {
 	if (!m_pRenderer)
 	{
-		m_pRenderer = new n2dRenderDeviceImpl(this);
+		m_pRenderer = std::move(make_ref<n2dRenderDeviceImpl>(this));
 	}
 
 	return m_pRenderer;
@@ -115,7 +115,7 @@ n2dSoundSys * n2dEngineImpl::GetSoundSys()
 {
 	if (!m_pSoundSys)
 	{
-		m_pSoundSys = new n2dSoundSysImpl(this);
+		m_pSoundSys = std::move(make_ref<n2dSoundSysImpl>(this));
 	}
 
 	return m_pSoundSys;
@@ -155,7 +155,6 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	m_ResizeDraw(false),
 	m_hInstance(hInstance),
 	m_ThreadMode(threadMode),
-	m_pRenderer(nullptr), m_pSoundSys(nullptr),
 	m_EventBus(), m_Logger(m_EventBus)
 {
 	m_EventBus.RegisterEvent<WndMsgEvent>();
@@ -188,8 +187,6 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 
 n2dEngineImpl::~n2dEngineImpl()
 {
-	SafeRelease(m_pRenderer);
-	SafeRelease(m_pSoundSys);
 }
 
 nBool n2dEngineImpl::IsKeyPressed(nuInt Key) const

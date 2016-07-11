@@ -7,7 +7,7 @@
 #include <algorithm>
 
 n2dObjLoader::n2dObjLoader()
-	: m_VertexBuffer(0u),
+	: m_Texture(nullptr), m_VertexBuffer(0u),
 	m_UVBuffer(0u),
 	m_NormalBuffer(0u),
 	m_ElementBuffer(0u)
@@ -63,7 +63,7 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 
 	while (!tfs.eof())
 	{
-		std::getline(tfs, tmpline);
+		getline(tfs, tmpline);
 		ss.clear();
 		ss.str(tmpline);
 

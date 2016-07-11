@@ -145,8 +145,8 @@ private:
 	HINSTANCE				m_hInstance;
 	ThreadMode				m_ThreadMode;
 
-	n2dRenderDevice*		m_pRenderer;
-	n2dSoundSys*			m_pSoundSys;
+	natRefPointer<n2dRenderDevice>		m_pRenderer;
+	natRefPointer<n2dSoundSys>			m_pSoundSys;
 
 	///	@brief	当前按键状况
 	///	@note	仅当当前窗口激活时有效

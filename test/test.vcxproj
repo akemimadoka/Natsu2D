@@ -87,14 +87,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_MBCS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);../NatsuLib/bin/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NatsuLib_d.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Natsu2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -108,14 +108,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_MBCS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Natsu2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -131,7 +131,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -139,8 +139,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Natsu2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -156,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;..\Natsu2D;..\include;extern\squirrel\include;extern\sqstdlib\include;include\sqrat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -164,8 +164,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Natsu2D;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

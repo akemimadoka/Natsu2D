@@ -33,9 +33,9 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -46,9 +46,9 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -70,18 +70,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>bin\</OutDir>
-    <TargetName>$(ProjectName)_d</TargetName>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>bin\</OutDir>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -92,13 +97,13 @@
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>NatsuLib_d.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/assimpd.lib;lib/CxImage/Debug/cximage.lib;lib/CxImage/Debug/jasper.lib;lib/CxImage/Debug/jbig.lib;lib/CxImage/Debug/Jpeg.lib;lib/CxImage/Debug/libdcr.lib;lib/CxImage/Debug/mng.lib;lib/CxImage/Debug/png.lib;lib/CxImage/Debug/Tiff.lib;lib/CxImage/Debug/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../NatsuLib/bin/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Configuration)/assimp.lib;lib/CxImage/$(Configuration)/cximage.lib;lib/CxImage/$(Configuration)/jasper.lib;lib/CxImage/$(Configuration)/jbig.lib;lib/CxImage/$(Configuration)/Jpeg.lib;lib/CxImage/$(Configuration)/libdcr.lib;lib/CxImage/$(Configuration)/mng.lib;lib/CxImage/$(Configuration)/png.lib;lib/CxImage/$(Configuration)/Tiff.lib;lib/CxImage/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,10 +115,13 @@
       <PreprocessorDefinitions>WIN32;Natsu2DStatic;N2DEXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Configuration)/assimp.lib;lib/CxImage/$(Configuration)/cximage.lib;lib/CxImage/$(Configuration)/jasper.lib;lib/CxImage/$(Configuration)/jbig.lib;lib/CxImage/$(Configuration)/Jpeg.lib;lib/CxImage/$(Configuration)/libdcr.lib;lib/CxImage/$(Configuration)/mng.lib;lib/CxImage/$(Configuration)/png.lib;lib/CxImage/$(Configuration)/Tiff.lib;lib/CxImage/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -127,15 +135,15 @@
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib;include\OpenAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;lib/assimp/assimp.lib;glew.lib;alfw.lib;OpenAL32.lib;lib/CxImage/Release/cximage.lib;lib/CxImage/Release/jasper.lib;lib/CxImage/Release/jbig.lib;lib/CxImage/Release/Jpeg.lib;lib/CxImage/Release/libdcr.lib;lib/CxImage/Release/mng.lib;lib/CxImage/Release/png.lib;lib/CxImage/Release/Tiff.lib;lib/CxImage/Release/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../NatsuLib/bin/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Configuration)/assimp.lib;lib/CxImage/$(Configuration)/cximage.lib;lib/CxImage/$(Configuration)/jasper.lib;lib/CxImage/$(Configuration)/jbig.lib;lib/CxImage/$(Configuration)/Jpeg.lib;lib/CxImage/$(Configuration)/libdcr.lib;lib/CxImage/$(Configuration)/mng.lib;lib/CxImage/$(Configuration)/png.lib;lib/CxImage/$(Configuration)/Tiff.lib;lib/CxImage/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,12 +157,15 @@
       <PreprocessorDefinitions>WIN32;Natsu2DStatic;N2DEXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>../NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Configuration)/;extern/glew/bin/$(Configuration)/;extern/alfw/bin/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Configuration)/assimp.lib;lib/CxImage/$(Configuration)/cximage.lib;lib/CxImage/$(Configuration)/jasper.lib;lib/CxImage/$(Configuration)/jbig.lib;lib/CxImage/$(Configuration)/Jpeg.lib;lib/CxImage/$(Configuration)/libdcr.lib;lib/CxImage/$(Configuration)/mng.lib;lib/CxImage/$(Configuration)/png.lib;lib/CxImage/$(Configuration)/Tiff.lib;lib/CxImage/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

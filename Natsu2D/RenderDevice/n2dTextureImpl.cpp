@@ -2,7 +2,6 @@
 #include "..\include\CxImage\ximage.h"
 #include "..\extern\nv_dds\nv_dds.h"
 #include <natStream.h>
-#include <natLog.h>
 #include <memory>
 
 namespace
@@ -78,14 +77,14 @@ nBool n2dTexture2DImpl::LoadTexture(nTString const& filename)
 {
 	auto tName = filename.substr(filename.find_last_of(_T('.')) + 1u);
 
-	auto pStream = make_ref<natFileStream>(filename.c_str(), true, false);
+	natFileStream Stream(filename.c_str(), true, false);
 
 	if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
 	{
-		return LoadDDS(pStream);
+		return LoadDDS(&Stream);
 	}
 
-	return LoadTexture(pStream, CxImage::GetTypeIdFromName(tName.c_str()));
+	return LoadTexture(&Stream, CxImage::GetTypeIdFromName(tName.c_str()));
 }
 
 nBool n2dTexture2DImpl::LoadTexture(natStream* pStream, DWORD dwFileType)

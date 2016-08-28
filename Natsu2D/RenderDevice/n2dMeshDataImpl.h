@@ -68,6 +68,8 @@ public:
 	n2dDynamicMeshDataImpl();
 	~n2dDynamicMeshDataImpl();
 
+	void UpdateVertexBuffer();
+
 	n2dBufferImpl* GetVertexBuffer();
 	n2dBufferImpl* GetIndexBuffer();
 
@@ -145,7 +147,7 @@ private:
 	std::vector<nuShort> m_Index;
 
 	n2dRenderDeviceImpl* m_pRenderDevice;
-	n2dBufferImpl *m_VB, *m_IB;
+	natRefPointer<n2dBufferImpl> m_VB, m_IB;
 
 	nBool m_Updated;
 

@@ -127,65 +127,65 @@ class n2dBufferImpl
 	{
 		switch (internalFormat)
 		{
-		case n2dBuffer::InternalFormat::R8:
+		case InternalFormat::R8:
 			return GL_R8;
-		case n2dBuffer::InternalFormat::R16:
+		case InternalFormat::R16:
 			return GL_R16;
-		case n2dBuffer::InternalFormat::R16F:
+		case InternalFormat::R16F:
 			return GL_R16F;
-		case n2dBuffer::InternalFormat::R32F:
+		case InternalFormat::R32F:
 			return GL_R32F;
-		case n2dBuffer::InternalFormat::R8I:
+		case InternalFormat::R8I:
 			return GL_R8I;
-		case n2dBuffer::InternalFormat::R16I:
+		case InternalFormat::R16I:
 			return GL_R16I;
-		case n2dBuffer::InternalFormat::R32I:
+		case InternalFormat::R32I:
 			return GL_R32I;
-		case n2dBuffer::InternalFormat::R8UI:
+		case InternalFormat::R8UI:
 			return GL_R8UI;
-		case n2dBuffer::InternalFormat::R16UI:
+		case InternalFormat::R16UI:
 			return GL_R16UI;
-		case n2dBuffer::InternalFormat::R32UI:
+		case InternalFormat::R32UI:
 			return GL_R32UI;
-		case n2dBuffer::InternalFormat::RG8:
+		case InternalFormat::RG8:
 			return GL_RG8;
-		case n2dBuffer::InternalFormat::RG16:
+		case InternalFormat::RG16:
 			return GL_RG16;
-		case n2dBuffer::InternalFormat::RG16F:
+		case InternalFormat::RG16F:
 			return GL_RG16F;
-		case n2dBuffer::InternalFormat::RG32F:
+		case InternalFormat::RG32F:
 			return GL_RG32F;
-		case n2dBuffer::InternalFormat::RG8I:
+		case InternalFormat::RG8I:
 			return GL_RG8I;
-		case n2dBuffer::InternalFormat::RG16I:
+		case InternalFormat::RG16I:
 			return GL_RG16I;
-		case n2dBuffer::InternalFormat::RG32I:
+		case InternalFormat::RG32I:
 			return GL_RG32I;
-		case n2dBuffer::InternalFormat::RG8UI:
+		case InternalFormat::RG8UI:
 			return GL_RG8UI;
-		case n2dBuffer::InternalFormat::RG16UI:
+		case InternalFormat::RG16UI:
 			return GL_RG16UI;
-		case n2dBuffer::InternalFormat::RG32UI:
+		case InternalFormat::RG32UI:
 			return GL_RG32UI;
-		case n2dBuffer::InternalFormat::RGB32F:
+		case InternalFormat::RGB32F:
 			return GL_RGB32F;
-		case n2dBuffer::InternalFormat::RGB32I:
+		case InternalFormat::RGB32I:
 			return GL_RGB32I;
-		case n2dBuffer::InternalFormat::RGB32UI:
+		case InternalFormat::RGB32UI:
 			return GL_RGB32UI;
-		case n2dBuffer::InternalFormat::RGBA8:
+		case InternalFormat::RGBA8:
 			return GL_RGBA8;
-		case n2dBuffer::InternalFormat::RGBA16:
+		case InternalFormat::RGBA16:
 			return GL_RGBA16;
-		case n2dBuffer::InternalFormat::RGBA16F:
+		case InternalFormat::RGBA16F:
 			return GL_RGBA16F;
-		case n2dBuffer::InternalFormat::RGBA32F:
+		case InternalFormat::RGBA32F:
 			return GL_RGBA32F;
-		case n2dBuffer::InternalFormat::RGBA8I:
+		case InternalFormat::RGBA8I:
 			return GL_RGBA8I;
-		case n2dBuffer::InternalFormat::RGBA16UI:
+		case InternalFormat::RGBA16UI:
 			return GL_RGBA16UI;
-		case n2dBuffer::InternalFormat::RGBA32UI:
+		case InternalFormat::RGBA32UI:
 			return GL_RGBA32UI;
 		default:
 			nat_Throw(natException, _T("Not an available InternalFormat"));

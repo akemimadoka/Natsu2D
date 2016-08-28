@@ -4,6 +4,10 @@
 #include "OpenGL.h"
 #include <natStream.h>
 
+#ifdef max
+#	undef max
+#endif
+
 n2dStaticMeshDataImpl::~n2dStaticMeshDataImpl()
 {
 }
@@ -22,7 +26,7 @@ n2dBufferImpl* n2dStaticMeshDataImpl::GetVertexBuffer()
 			return nullptr;
 		}
 
-		for (auto& v : m_Vert)
+		for (auto&& v : m_Vert)
 		{
 			v.vert *= m_Zoom;
 		}
@@ -68,12 +72,48 @@ nBool n2dStaticMeshDataImpl::IsStatic() const
 }
 
 n2dStaticMeshDataImpl::n2dStaticMeshDataImpl()
-	: m_Material { 0 }, m_pRenderDevice(nullptr), m_VB(0u), m_IB(0u), m_VertCount(0), m_IndexCount(0), m_Zoom(1.0f)
+	: m_Material { false }, m_pRenderDevice(nullptr), m_VB(0u), m_IB(0u), m_VertCount(0), m_IndexCount(0), m_Zoom(1.0f)
 {
 }
 
 n2dDynamicMeshDataImpl::~n2dDynamicMeshDataImpl()
 {
+}
+
+void n2dDynamicMeshDataImpl::UpdateVertexBuffer()
+{
+	if (!m_VB)
+	{
+		m_VB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
+		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * m_Vert.size(), reinterpret_cast<ncData>(m_Vert.data()), n2dBuffer::BufferUsage::DynamicDraw);
+	}
+
+	if (m_Updated)
+	{
+		static std::vector<n2dGraphics3DVertex> tVerts;
+		tVerts = m_Vert;
+		const n2dBone* pBone = m_Selekton->m_Bones.data();
+		static natVec4<> vt;
+		for (auto i = 0u; i < m_Vert.size(); ++i)
+		{
+			auto&& tVert = tVerts[i];
+			auto&& tVertAdd = m_VertAdd[i];
+			vt.x = tVert.vert.x;
+			vt.y = tVert.vert.y;
+			vt.z = tVert.vert.z;
+			vt.w = 1.0f;
+
+			auto&& m1 = pBone[tVertAdd.TargetBone[0]].GetMatrix();
+			auto&& m2 = pBone[tVertAdd.TargetBone[1]].GetMatrix();
+
+			auto w = static_cast<nFloat>(tVertAdd.Weight) / 100.0f;
+			tVert.normal = natTransform::normalize(w * (static_cast<natMat3<>>(m1) * tVert.normal) + (1.0f - w) * (static_cast<natMat3<>>(m2) * tVert.normal));
+			tVert.vert = natVec3<>(w * (m1 * vt) + (1.0f - w) * (m2 * vt)) * m_Zoom;
+		}
+		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * tVerts.size(), reinterpret_cast<ncData>(tVerts.data()), n2dBuffer::BufferUsage::DynamicDraw);
+
+		m_Updated = false;
+	}
 }
 
 n2dBufferImpl* n2dDynamicMeshDataImpl::GetVertexBuffer()
@@ -83,40 +123,7 @@ n2dBufferImpl* n2dDynamicMeshDataImpl::GetVertexBuffer()
 		return 0u;
 	}
 
-	if (!m_VB)
-	{
-		m_VB = new n2dBufferImpl(n2dBuffer::BufferTarget::ArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
-
-		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * m_Vert.size(), reinterpret_cast<ncData>(m_Vert.data()), n2dBuffer::BufferUsage::DynamicDraw);
-	}
-
-	if (m_Updated)
-	{
-		static nuInt size = m_Vert.size();
-		static std::vector<n2dGraphics3DVertex> tVerts(size);
-		tVerts = m_Vert;
-		const n2dBone* pBone;
-		static natVec4<> vt;
-		for (nuInt i = 0u; i < size; ++i)
-		{
-			n2dGraphics3DVertex& tVert = tVerts[i];
-			auto const& tVertAdd = m_VertAdd[i];
-			memcpy_s(&vt, sizeof(nFloat) * 3, &tVert.vert, sizeof(tVert.vert));
-			vt.w = 1.0f;
-			
-			pBone = m_Selekton->m_Bones.data();
-
-			natMat4<> const& m1 = pBone[tVertAdd.TargetBone[0]].GetMatrix();
-			natMat4<> const& m2 = pBone[tVertAdd.TargetBone[1]].GetMatrix();
-
-			nFloat w = static_cast<nFloat>(tVertAdd.Weight) / 100.0f;
-			tVert.normal = natTransform::normalize(w * (natMat3<>(m1) * tVert.normal) + (1.0f - w) * (natMat3<>(m2) * tVert.normal));
-			tVert.vert = natVec3<>(w * (m1 * vt) + (1.0f - w) * (m2 * vt)) * m_Zoom;
-		}
-		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * tVerts.size(), reinterpret_cast<ncData>(tVerts.data()), n2dBuffer::BufferUsage::DynamicDraw);
-
-		m_Updated = false;
-	}
+	UpdateVertexBuffer();
 
 	return m_VB;
 }
@@ -130,7 +137,7 @@ n2dBufferImpl* n2dDynamicMeshDataImpl::GetIndexBuffer()
 
 	if (!m_IB)
 	{
-		m_IB = new n2dBufferImpl(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
+		m_IB = std::move(make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper())));
 		m_IB->AllocData(m_Index.size() * sizeof(nuShort), reinterpret_cast<ncData>(m_Index.data()), n2dBuffer::BufferUsage::StaticDraw);
 		m_Index.clear();
 	}
@@ -178,7 +185,7 @@ void n2dDynamicMeshDataImpl::Update(nuInt nFrame)
 	m_pMotionManager->applyMotion(this, m_pMotion, nFrame);
 	m_pMotionManager->doRestoreMorph(this);
 	m_pMotionManager->applyMorph(this, m_pMotion, nFrame);
-	for (auto& ik : m_IK)
+	for (auto&& ik : m_IK)
 		ik.Solve();
 
 	m_Updated = true;
@@ -192,6 +199,6 @@ n2dDynamicMeshDataImpl::n2dDynamicMeshDataImpl()
 	m_IB(nullptr),
 	m_Updated(false),
 	m_Zoom(1.0f),
-	m_LastFrame(nuInt(-1))
+	m_LastFrame(std::numeric_limits<nuInt>::max())
 {
 }

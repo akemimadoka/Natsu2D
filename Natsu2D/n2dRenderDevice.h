@@ -1,3 +1,7 @@
+////////////////////////////////////////////////////////////////////////////////
+///	@file	n2dRenderDevice.h
+///	@brief	Natsu2D渲染设备
+////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "n2dInterface.h"
 #include "n2dCommon.h"
@@ -533,7 +537,7 @@ struct n2dShaderProgram
 	virtual nBool IsUsing() const = 0;
 
 	///	@brief	输出二进制文件
-	///	@param[inout]	pStream	输出到的流
+	///	@param[in]	pStream	输出到的流
 	///	@return	处理结果
 	virtual nResult OutputBinary(natStream* pStream) const = 0;
 

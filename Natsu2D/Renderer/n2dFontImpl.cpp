@@ -206,7 +206,7 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 		nat_Throw(natException, _T("Font had not initialized"));
 	}*/
 
-	nLen tLen = lstrlen(str);
+	nLen tLen = std::char_traits<nTChar>::length(str);
 	nInt sx, sy;
 	n2dUtil::TransformCoord(m_pRenderer, x, y, sx, sy);
 

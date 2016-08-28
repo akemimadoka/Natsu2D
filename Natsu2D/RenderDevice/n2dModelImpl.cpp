@@ -8,4 +8,5 @@ nuInt n2dStaticModelDataImpl::GetMeshCount() const
 void n2dDynamicModelDataImpl::Update(nuInt nFrame)
 {
 	m_Mesh.Update(nFrame);
+	m_Mesh.UpdateVertexBuffer();
 }

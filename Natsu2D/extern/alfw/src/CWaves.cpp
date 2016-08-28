@@ -83,8 +83,8 @@ int strncpy_s( char *strDest, size_t numberOfElements, const char *strSource, si
 //////////////////////////////////////////////////////////////////////
 
 CWaves::CWaves()
+	: m_WaveIDs {0}
 {
-	memset(&m_WaveIDs, 0, sizeof(m_WaveIDs));
 }
 
 CWaves::~CWaves()

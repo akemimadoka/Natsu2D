@@ -7,11 +7,12 @@
 #endif
 
 n2dBufferImpl::n2dBufferImpl(BufferTarget DefaultTarget, n2dShaderWrapperImpl* pShaderWrapper)
-	: m_Buffer(0u),
-	m_Target(GetBufferTargetEnum(DefaultTarget)),
-	m_BindPoint(std::numeric_limits<nuInt>::max()),
-	m_pMappedBuffer(nullptr),
-	m_pShaderWrapper(pShaderWrapper)
+	:	m_Buffer(0u),
+		m_Target(GetBufferTargetEnum(DefaultTarget)),
+	  	m_Size(0),
+		m_BindPoint(std::numeric_limits<nuInt>::max()),
+		m_pMappedBuffer(nullptr),
+		m_pShaderWrapper(pShaderWrapper)
 {
 	glGenBuffers(1, &m_Buffer);
 }
@@ -135,14 +136,13 @@ natStream* n2dBufferImpl::MapBuffer(BufferAccess Access)
 	SafeRelease(m_pMappedBuffer);
 
 	Bind();
-	nData pData = static_cast<nData>(glMapBuffer(m_Target, GetBufferAccess(Access)));
+	auto pData = static_cast<nData>(glMapBuffer(m_Target, GetBufferAccess(Access)));
 	if (!pData)
 	{
 		return nullptr;
 	}
 
-	natStream* pStream = natMemoryStream::CreateFromExternMemory(pData, GetBufferSize(), Access != BufferAccess::WriteOnly, Access != BufferAccess::ReadOnly);
-	return pStream;
+	return natMemoryStream::CreateFromExternMemory(pData, GetBufferSize(), Access != BufferAccess::WriteOnly, Access != BufferAccess::ReadOnly);
 }
 
 void n2dBufferImpl::UnmapBuffer()
@@ -158,14 +158,13 @@ natStream* n2dBufferImpl::MapBufferRange(nuInt Offset, nuInt Length, nuInt Acces
 	SafeRelease(m_pMappedBuffer);
 
 	Bind();
-	nData pData = static_cast<nData>(glMapBufferRange(m_Target, Offset, Length, Access));
+	auto pData = static_cast<nData>(glMapBufferRange(m_Target, Offset, Length, Access));
 	if (!pData)
 	{
 		return nullptr;
 	}
 
-	natStream* pStream = natMemoryStream::CreateFromExternMemory(pData, GetBufferSize(), (Access & Read) != NULL, (Access & Write) != NULL);
-	return pStream;
+	return natMemoryStream::CreateFromExternMemory(pData, GetBufferSize(), (Access & Read) != NULL, (Access & Write) != NULL);
 }
 
 void n2dBufferImpl::FlushMappedBufferRange(nuInt Offset, nuInt Length)

@@ -6,9 +6,9 @@
 #include <natTransform.h>
 
 n2dWindowImpl::n2dWindowImpl(n2dEngineImpl* pEngine, nuInt X, nuInt Y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen)
-	: m_hWnd(nullptr),
-	m_hDC(nullptr),
-	m_hRC(nullptr),
+	: m_hWnd(NULL),
+	m_hDC(NULL),
+	m_hRC(NULL),
 	m_pEngine(pEngine),
 	m_WindowPosX(X),
 	m_WindowPosY(Y),
@@ -99,7 +99,7 @@ nBool n2dWindowImpl::Create(ncTStr title, ncTStr classname, HINSTANCE hInstance,
 		windowRECT.right - windowRECT.left,
 		windowRECT.bottom - windowRECT.top,
 		HWND_DESKTOP,
-		nullptr,
+		NULL,
 		hInstance,
 		lpParam);
 

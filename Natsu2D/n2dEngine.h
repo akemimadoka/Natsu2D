@@ -1,3 +1,7 @@
+////////////////////////////////////////////////////////////////////////////////
+///	@file	n2dEngine.h
+///	@brief	Natsu2D引擎相关
+////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <Windows.h>
 #include <natEvent.h>
@@ -50,6 +54,9 @@ namespace n2dGlobal
 	};
 }
 
+////////////////////////////////////////////////////////////////////////////////
+///	@brief	FPS控制器
+////////////////////////////////////////////////////////////////////////////////
 struct n2dFPSController
 	: n2dInterface
 {
@@ -81,8 +88,7 @@ struct n2dFPSController
 class n2dKeyState final
 {
 public:
-	n2dKeyState() {};
-	~n2dKeyState() = default;
+	n2dKeyState() : m_KeyDown{ false } {};
 
 	///	@brief	清除当前状态
 	void Clear() { memset(m_KeyDown, 0, MAX_KEYS); };
@@ -135,13 +141,13 @@ struct n2dEngineEventListener
 	///	@brief	更新函数
 	///	@note	在此实现非绘画的更新内容
 	///	@param[in]		dElapsedTime	距离上次更新的时间
-	///	@param[inout]	pFPSController	FPS控制器
+	///	@param[in]		pFPSController	FPS控制器
 	virtual void Update(nDouble dElapsedTime, n2dFPSController* pFPSController) = 0;
 	///	@brief	绘画函数
 	///	@note	在此实现绘画的更新内容
-	///	@param[in]		ElapsedTime		距离上次更新的时间
-	///	@param[inout]	pFPSController	FPS控制器
-	///	@param[inout]	pRenderDevice	渲染设备
+	///	@param[in]		dElapsedTime	距离上次更新的时间
+	///	@param[in]		pFPSController	FPS控制器
+	///	@param[in]		pRenderDevice	渲染设备
 	virtual void Render(nDouble dElapsedTime, n2dFPSController* pFPSController, n2dRenderDevice* pRenderDevice) = 0;
 };
 
@@ -151,8 +157,8 @@ struct n2dEngine
 	///	@brief	线程模式
 	enum class ThreadMode
 	{
-		SingleThread,	///< @brief	单线程模式
-		MultiThread		///< @brief	多线程模式
+		SingleThread,	///< @brief	 单线程模式
+		MultiThread		///< @brief	 多线程模式
 	};
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -210,15 +216,17 @@ struct n2dEngine
 	virtual ThreadMode GetThreadMode() const = 0;
 	///	@brief	获得实例句柄
 	virtual HINSTANCE GetHInstance() const = 0;
-
+	///	@brief	获得日志记录器
 	virtual natLog& GetLogger() = 0;
+	///	@brief	获得事件总线
 	virtual natEventBus& GetEventBus() = 0;
+	///	@brief	获得线程池
 	virtual natThreadPool& GetThreadPool() = 0;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数
 	///	@param[in]	priority	该消息处理函数的优先级
-	///	@note	函数接受一个参数WndMsgEvent&，请使用WndMsgEvent::getData方法获得窗口消息
+	///	@note	函数接受一个参数natEventBase&，请转换为WndMsgEvent&并使用GetMsg方法获得窗口消息
 	///	@see	Msgdata
 	///	@see	n2dEngine::WndMsgEvent
 	virtual void AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority = Priority::Normal) = 0;

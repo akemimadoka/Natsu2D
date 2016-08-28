@@ -137,7 +137,7 @@ public:
 		}
 	}
 
-	void MouseWheel(n2dEngine::WndMsgEvent& e)
+	void MouseWheel(n2dEngine::WndMsgEvent& e) const
 	{
 		auto Delta = static_cast<nShort>(HIWORD(e.GetMsg().wParam)) / WHEEL_DELTA;
 		
@@ -152,7 +152,7 @@ public:
 		m_pEngine->GetRenderDevice()->SubmitViewMat(m_pEngine->GetRenderDevice()->GetCurViewMat() * tmat);
 	}
 
-	void KeyDown(n2dEngine::WndMsgEvent& e)
+	void KeyDown(n2dEngine::WndMsgEvent& e) const
 	{
 		static natCriticalSection sec;
 		switch (e.GetMsg().wParam)
@@ -203,28 +203,8 @@ public:
 		}
 
 		Global::g_pEngine = m_pEngine;
-		m_pEngine->GetEventBus().RegisterEventListener<n2dGlobal::natExceptionEvent>([this](natEventBase& event)
-		{
-			std::basic_stringstream<nTChar, std::char_traits<nTChar>, std::allocator<nTChar>> ss;
-			auto pEvent = dynamic_cast<n2dGlobal::natExceptionEvent*>(&event);
-			if (!pEvent)
-			{
-				return;
-			}
 
-			auto ex = &pEvent->GetData();
-			if (ex != nullptr)
-			{
-				ss << _T("Unhandled exception: In ") << ex->GetSource() << _T(" : ") << ex->GetDesc() << std::endl;
-
-				m_pEngine->GetLogger().LogErr(ss.str().c_str());
-				MessageBox(nullptr, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
-			}
-
-			m_pEngine->TerminateApplication();
-		});
-
-		m_pEngine->GetLogger().RegisterLogUpdateEventFunc([this](natEventBase& event)
+		m_pEngine->GetLogger().RegisterLogUpdateEventFunc([this](natEventBase& event) noexcept
 		{
 			decltype(auto) eventLogUpdated = static_cast<natLog::EventLogUpdated&>(event);
 			time_t time = std::chrono::system_clock::to_time_t(eventLogUpdated.GetTime());
@@ -244,6 +224,28 @@ public:
 			default:
 				break;
 			}
+			Global::g_LogFile << natUtil::W2Cstr(logStr) << std::endl;
+		});
+
+		m_pEngine->GetEventBus().RegisterEventListener<n2dGlobal::natExceptionEvent>([this](natEventBase& event) noexcept
+		{
+			std::basic_stringstream<nTChar> ss;
+			auto pEvent = dynamic_cast<n2dGlobal::natExceptionEvent*>(&event);
+			if (!pEvent)
+			{
+				return;
+			}
+
+			auto ex = &pEvent->GetData();
+			if (ex != nullptr)
+			{
+				ss << _T("Unhandled exception: In ") << ex->GetSource() << _T(" : ") << ex->GetDesc() << std::endl;
+
+				m_pEngine->GetLogger().LogErr(ss.str().c_str());
+				MessageBox(nullptr, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
+			}
+
+			m_pEngine->TerminateApplication();
 		});
 
 		m_pEngine->GetLogger().LogMsg(_T("中文测试"));
@@ -313,9 +315,9 @@ public:
 			// 此处忽略所有可能发生的错误，需要时请使用NATFAIL宏判断函数是否失败
 
 			// 创建二维图元渲染器
-			renderdevice->CreateGraphics2D(&m_pGraphics);
+			nat_ThrowIfFailed(renderdevice->CreateGraphics2D(&m_pGraphics), _T("CreateGraphics2D failed."));
 			// 创建三维图元渲染器
-			renderdevice->CreateGraphics3D(&m_pGraphics3D);
+			nat_ThrowIfFailed(renderdevice->CreateGraphics3D(&m_pGraphics3D), _T("CreateGraphics3D failed."));
 			// 纹理加载
 			// TODO: 完成纹理管理器
 			//renderdevice->CreateTexture(&m_texture);
@@ -323,11 +325,11 @@ public:
 			//renderdevice->CreateTexture(&m_texture3);
 
 			// 创建模型加载器
-			renderdevice->CreateModelLoader(&m_modelloader);
+			nat_ThrowIfFailed(renderdevice->CreateModelLoader(&m_modelloader), _T("CreateModelLoader failed."));
 			// 用于调试的缓存
-			renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, &m_DebugBuffer);
+			nat_ThrowIfFailed(renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, &m_DebugBuffer), _T("CreateBuffer failed."));
 			// 创建动作管理器
-			renderdevice->CreateMotionManager(&m_MotionManager);
+			nat_ThrowIfFailed(renderdevice->CreateMotionManager(&m_MotionManager), _T("CreateMotionManager failed."));
 		}
 		
 		m_pEngine->GetLogger().LogMsg(natUtil::FormatString(_T("GLAPP initialized as {0} thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
@@ -490,11 +492,8 @@ public:
 			//MessageBox(window->GetWnd(), _T("即将开始加载模型，请等待\n按上下左右进行旋转，点击鼠标左键开始移动，滚动鼠标滚轮进行缩放"), _T("提示"), MB_OK | MB_ICONINFORMATION);
 			m_pEngine->GetLogger().LogMsg(_T("Loading model"));
 			//m_modelloader->SetDefaultTexture(m_texture);
-			//if (NATFAIL(m_modelloader->CreateStaticModelFromFile(_T("comb.obj"), &m_model2)))
-			if (NATFAIL(m_modelloader->CreateDynamicModelFromFile(_T("cirno.pmd"), &m_model2)))
-			{
-				nat_Throw(natException, _T("Unable to load model"));
-			}
+			//m_modelloader->CreateStaticModelFromFile(_T("comb.obj"), &m_model2))
+			nat_ThrowIfFailed(m_modelloader->CreateDynamicModelFromFile(_T("cirno.pmd"), &m_model2), _T("Unable to load model"));
 
 			/*m_modelloader->SetDefaultTexture(m_texture2);
 			if (NATFAIL(m_modelloader->CreateStaticModelFromFile(_T("table.obj"), &m_model)))
@@ -502,15 +501,8 @@ public:
 			nat_Throw(natException, _T("Unable to load model"));
 			}*/
 
-			if (NATFAIL(m_MotionManager->LoadMotionFromFile(_T("lamb"), _T("Lamb.vmd"))))
-			{
-				nat_Throw(natException, _T("Unable to load motion"));
-			}
-
-			if (NATFAIL(m_MotionManager->ApplyToModel(_T("lamb"), m_model2)))
-			{
-				nat_Throw(natException, _T("Unable to apply motion to model"));
-			}
+			nat_ThrowIfFailed(m_MotionManager->LoadMotionFromFile(_T("lamb"), _T("Lamb.vmd")), _T("Unable to load motion"));
+			nat_ThrowIfFailed(m_MotionManager->ApplyToModel(_T("lamb"), m_model2), _T("Unable to apply motion to model"));
 
 			//m_model2->SetZoom(0.1f);
 
@@ -576,6 +568,7 @@ public:
 		ViewMatrix->SetValue(1, &pRenderDevice->GetCurViewMat()[0][0]);
 
 		//m_pGraphics3D->RenderModel(m_model);
+		
 		m_model2->Update(static_cast<nuInt>(m_soundsrc->GetSecOffset() * 30u));
 		m_pGraphics3D->RenderModel(m_model2);
 
@@ -684,14 +677,14 @@ int main()
 
 void custom_invalid_parameter(ncTStr expression, ncTStr function, ncTStr file, nuInt line, uintptr_t /*pReserved*/)
 {
-	std::basic_stringstream<nTChar> ss;
-
-	ss << "In " << file << ", line " << line << ": " << expression;
-
-	natException ex(function, file, line, ss.str().c_str());
-	n2dGlobal::natExceptionEvent event(ex);
 	if (Global::g_pEngine)
 	{
+		std::basic_stringstream<nTChar> ss;
+
+		ss << "In " << file << ", line " << line << ": " << expression;
+
+		natException ex(function, file, line, ss.str().c_str());
+		n2dGlobal::natExceptionEvent event(ex);
 		Global::g_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
 	}
 }

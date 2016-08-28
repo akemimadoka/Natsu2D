@@ -325,15 +325,8 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		return FALSE;
 
 	case WM_TOGGLEFULLSCREEN:
-		m_Window.FullScreen = !m_Window.FullScreen;
-		if (m_Window.FullScreen)
-		{
-			ShowCursor(FALSE);
-		}
-		else
-		{
-			ShowCursor(TRUE);
-		}
+		m_Window.SetFullScreen(!m_Window.GetFullScreen());
+		ShowCursor(!m_Window.GetFullScreen());
 
 		PostMessage(hWnd, WM_QUIT, 0, 0);
 		break;
@@ -541,8 +534,8 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 					}
 				}
 
-				if (WAIT_TIMEOUT != updateThread.Wait(10u))
-					if (WAIT_TIMEOUT != renderThread.Wait(10u))
+				if (updateThread.Wait(10u))
+					if (renderThread.Wait(10u))
 						break;
 
 				if (PeekMessage(&msg, m_Window.GetWnd(), 0, 0, PM_REMOVE))

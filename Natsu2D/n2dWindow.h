@@ -33,7 +33,7 @@ struct n2dWindow
 	///	@param[in]	X	要设置的坐标
 	virtual void SetPosX(nuInt X) = 0;
 	///	@brief	获得X坐标
-	///	@note	仅窗口模式有效，全屏模式下始终返回0u
+	///	@note	仅窗口模式有效，全屏模式下始终返回0
 	virtual nuInt GetPosX() = 0;
 
 	///	@brief	设置Y坐标
@@ -41,7 +41,7 @@ struct n2dWindow
 	///	@param[in]	Y	要设置的坐标
 	virtual void SetPosY(nuInt Y) = 0;
 	///	@brief	获得Y坐标
-	///	@note	仅窗口模式有效，全屏模式下始终返回0u
+	///	@note	仅窗口模式有效，全屏模式下始终返回0
 	virtual nuInt GetPosY() = 0;
 
 	///	@brief	设置窗口/全屏模式下宽度

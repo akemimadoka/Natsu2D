@@ -11,25 +11,15 @@ n2dGraphics2DImpl::n2dGraphics2DImpl(n2dRenderDeviceImpl* pRenderDevice)
 	m_IB(nullptr),
 	m_bIsRendering(false)
 {
-	if (NATFAIL(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, &m_VB)))
-	{
-		nat_Throw(natException, _T("Create vertex buffer failed"));
-	}
-	if (NATFAIL(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, &m_IB)))
-	{
-		nat_Throw(natException, _T("Create index buffer failed"));
-	}
+	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, &m_VB), _T("Create vertex buffer failed."));
+	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, &m_IB), _T("Create index buffer failed."));
 }
 
 n2dGraphics2DImpl::~n2dGraphics2DImpl()
 {
 	if (m_bIsRendering)
 	{
-		// 析构函数不应当抛出异常
-		// 待解决
-		natException ex(_T(__FUNCTION__), _T(__FILE__), __LINE__, _T("End should be invoked before destroy"));
-		n2dGlobal::natExceptionEvent event(ex);
-		m_pRenderDevice->GetEngine()->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("n2dGraphics2DImpl::End should be invoked before destroy"));
 		End();
 	}
 }
@@ -192,11 +182,7 @@ n2dGraphics3DImpl::~n2dGraphics3DImpl()
 {
 	if (m_bIsRendering)
 	{
-		// 析构函数不应当抛出异常
-		// 待解决
-		natException ex(_T(__FUNCTION__), _T(__FILE__), __LINE__, _T("End should be invoked before destroy"));
-		n2dGlobal::natExceptionEvent event(ex);
-		m_pRenderDevice->GetEngine()->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
+		m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("n2dGraphics3DImpl::End should be invoked before destroy"));
 		n2dGraphics3DImpl::End();
 	}
 }
@@ -242,7 +228,7 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 
 	if (pModelData->IsStatic())
 	{
-		n2dStaticModelDataImpl* pModel = dynamic_cast<n2dStaticModelDataImpl*>(pModelData);
+		auto pModel = dynamic_cast<n2dStaticModelDataImpl*>(pModelData);
 
 		if (!pModel)
 		{
@@ -250,9 +236,11 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 		}
 
 		m_StaticMaterials.reserve(m_StaticMaterials.size() + pModel->m_Meshes.size());
-		for (auto& i : pModel->m_Meshes)
+		for (auto&& i : pModel->m_Meshes)
 		{
-			n2dStaticMeshDataImpl* ptMesh = dynamic_cast<n2dStaticMeshDataImpl*>(static_cast<n2dMeshData*>(i));
+			auto ptMesh = dynamic_cast<n2dStaticMeshDataImpl*>(static_cast<n2dMeshData*>(i));
+			assert(ptMesh && "Not a static mesh.");
+
 			m_StaticMaterials.emplace_back(&ptMesh->m_Material);
 			std::vector<nuInt> tMatID = { m_StaticMaterials.size() - 1 };
 			m_Commands.emplace_back(RenderCommand{ true, tMatID, ptMesh->GetVertexBuffer(), ptMesh->GetIndexBuffer(), i->GetVertexCount(), i->GetIndexCount() });
@@ -260,7 +248,7 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 	}
 	else
 	{
-		n2dDynamicModelDataImpl* pModel = dynamic_cast<n2dDynamicModelDataImpl*>(pModelData);
+		auto pModel = dynamic_cast<n2dDynamicModelDataImpl*>(pModelData);
 
 		if (!pModel)
 		{
@@ -339,7 +327,6 @@ void n2dGraphics3DImpl::flush()
 			glBindTexture(GL_TEXTURE_2D, material->Texture->GetTextureID());
 			glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, tOffset);
 
-			// 防错，实际上不会发生
 			if (c.bStatic)
 				break;
 		}

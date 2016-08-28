@@ -108,28 +108,6 @@ public:
 	///	@brief	获得当前的色彩类型
 	colorType GetColorType() override;
 
-	__declspec(property(put = SetColorType, get = GetColorType))
-	///	@brief	色彩模式
-	colorType ColorType;
-
-	__declspec(property(put = SetPosX, get = GetPosX))
-	///	@brief	X坐标
-	nuInt PosX;
-	__declspec(property(put = SetPosY, get = GetPosY))
-	///	@brief	Y坐标
-	nuInt PosY;
-
-	__declspec(property(put = SetWidth, get = GetWidth))
-	///	@brief	宽度
-	nuInt Width;
-	__declspec(property(put = SetHeight, get = GetHeight))
-	///	@brief	高度
-	nuInt Height;
-
-	__declspec(property(put = SetFullScreen, get = GetFullScreen))
-	///	@brief	是否全屏
-	nBool FullScreen;
-
 	///	@brief	获得窗口句柄
 	HWND GetWnd() override;
 

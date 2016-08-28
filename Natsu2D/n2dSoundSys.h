@@ -1,3 +1,7 @@
+////////////////////////////////////////////////////////////////////////////////
+///	@file	n2dSoundSys.h
+///	@brief	Natsu2D声音系统
+////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "n2dInterface.h"
 #include <natVec.h>
@@ -219,7 +223,6 @@ struct n2dSoundSys
 	///	@note	OpenAL1.1暂无特性，保留此接口
 	enum class Capability
 	{
-
 	};
 
 	///	@brief	启用特性
@@ -237,15 +240,15 @@ struct n2dSoundSys
 	///	@note	请勿释放
 	virtual n2dSoundListener* GetListener() = 0;
 	///	@brief	创建声音缓存
-	///	@param[out]	pOut	创建的声音缓存
+	///	@param[out]		pOut	创建的声音缓存
 	///	@return	处理结果
 	virtual nResult CreateSoundBuffer(n2dSoundBuffer** pOut) = 0;
 	///	@brief	从流中创建波形声音缓存
-	///	@param[out]	pOut	创建的声音缓存
+	///	@param[out]		pOut	创建的声音缓存
 	///	@return	处理结果
 	virtual nResult CreateWaveSoundBufferFromStream(natStream* pStream, n2dSoundBuffer** pOut) = 0;
 	///	@brief	创建声源
-	///	@param[out]	pOut	创建的声源
+	///	@param[out]		pOut	创建的声源
 	///	@return	处理结果
 	virtual nResult CreateSoundSource(n2dSoundSource** pOut) = 0;
 };

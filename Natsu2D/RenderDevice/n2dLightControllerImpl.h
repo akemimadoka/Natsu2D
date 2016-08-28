@@ -16,5 +16,5 @@ public:
 private:
 	nuInt m_Index;
 	n2dBufferImpl* m_pBuffer;
-	n2dLightController::LightProperties m_Properties;
+	LightProperties m_Properties;
 };

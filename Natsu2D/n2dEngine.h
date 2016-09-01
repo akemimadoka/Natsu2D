@@ -229,7 +229,7 @@ struct n2dEngine
 	///	@note	函数接受一个参数natEventBase&，请转换为WndMsgEvent&并使用GetMsg方法获得窗口消息
 	///	@see	Msgdata
 	///	@see	n2dEngine::WndMsgEvent
-	virtual void AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority = Priority::Normal) = 0;
+	virtual void AddMessageHandler(natEventBus::EventListenerDelegate func, Priority::Priority priority = Priority::Normal) = 0;
 
 	///	@brief	获得按键的状态
 	///	@param[in]	Key		按键键值

@@ -1,14 +1,11 @@
-#include "n2dShaderWrapperImpl.h"
-#include "..\n2dEngine.h"
+Ôªø#include "n2dShaderWrapperImpl.h"
+#include "../n2dEngine.h"
 #include <natUtil.h>
 #include <natException.h>
 #include <natStream.h>
-#include <string>
 #include <natLog.h>
 
-#ifdef max
-#	undef max
-#endif
+#undef max
 
 n2dShaderWrapperImpl::n2dShaderWrapperImpl(n2dRenderDevice* pRenderDevice)
 	: m_pRenderDevice(pRenderDevice),
@@ -27,7 +24,6 @@ n2dShaderWrapperImpl::n2dShaderWrapperImpl(n2dRenderDevice* pRenderDevice)
 
 n2dShaderWrapperImpl::~n2dShaderWrapperImpl()
 {
-	SafeRelease(m_DefaultProgram);
 }
 
 nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, n2dShader** pOut)
@@ -39,9 +35,10 @@ nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShad
 
 	try
 	{
-		n2dShaderImpl* pTmp = new n2dShaderImpl(shaderType);
+		natRefPointer<n2dShaderImpl> pTmp = make_ref<n2dShaderImpl>(shaderType);
 		pTmp->CompileFromStream(pStream, bIsBinary);
 		*pOut = pTmp;
+		pTmp->AddRef();
 	}
 	catch (std::bad_alloc&)
 	{
@@ -223,8 +220,8 @@ n2dShaderProgram* n2dShaderWrapperImpl::GetCurrentProgram()
 		return itea->second;
 	}
 	
-	n2dShaderProgramImpl* pProgram = new n2dShaderProgramImpl(tUsingProgram);
-	m_Programs.insert(std::make_pair(tUsingProgram, pProgram));
+	auto pProgram = make_ref<n2dShaderProgramImpl>(tUsingProgram);
+	m_Programs[tUsingProgram] = pProgram;
 	return pProgram;
 }
 
@@ -243,9 +240,16 @@ n2dProgramPipeline* n2dShaderWrapperImpl::GetCurrentProgramPipeline()
 		return itea->second;
 	}
 
-	n2dProgramPipelineImpl* pProgramPipeline = new n2dProgramPipelineImpl(tBindingPipeline);
-	m_ProgramPipelines.insert(std::make_pair(tBindingPipeline, pProgramPipeline));
+	auto pProgramPipeline = make_ref<n2dProgramPipelineImpl>(tBindingPipeline);
+	m_ProgramPipelines[tBindingPipeline] = pProgramPipeline;
 	return pProgramPipeline;
+}
+
+n2dShaderProgramImpl* n2dShaderWrapperImpl::SetDefaultProgram(n2dShaderProgramImpl* pProgram)
+{
+	auto pOld = m_DefaultProgram;
+	m_DefaultProgram = natRefPointer<n2dShaderProgramImpl>(pProgram);
+	return pOld;
 }
 
 n2dShaderProgram* n2dShaderWrapperImpl::GetDefaultProgram() const
@@ -319,17 +323,17 @@ void n2dShaderImpl::CompileFromStream(natStream* pStream, nBool bIsBinary)
 	}
 
 	nuInt tLen = static_cast<nuInt>(pStream->GetSize() - pStream->GetPosition());
-	nData tBuf = new nByte[tLen + 1u];
+	std::vector<nByte> tBuf(tLen + 1u);
 	tBuf[tLen] = 0;
-	pStream->ReadBytes(tBuf, tLen);
+	pStream->ReadBytes(tBuf.data(), tLen);
 	if (bIsBinary)
 	{
-		// Œ¥—È÷§
-		glShaderBinary(1, &m_Shader, GetShaderType(m_ShaderType), tBuf, tLen);
+		glShaderBinary(1, &m_Shader, GetShaderType(m_ShaderType), tBuf.data(), tLen);
 	}
 	else
 	{
-		glShaderSource(m_Shader, 1, reinterpret_cast<const GLchar* const*>(&tBuf), nullptr);
+		auto pBufData = tBuf.data();
+		glShaderSource(m_Shader, 1, reinterpret_cast<const GLchar* const*>(&pBufData), nullptr);
 		glCompileShader(m_Shader);
 	}
 }
@@ -474,7 +478,7 @@ nResult n2dShaderProgramImpl::AttributeReferenceImpl::SetStaticValue(nBool Norma
 			glVertexAttrib3sv(m_Location, static_cast<const GLshort*>(pValue));
 			break;
 		case 4:
-			(Explicit ? glVertexAttrib4sv : (Normalized ? glVertexAttrib4Nsv : glVertexAttribI4sv))(m_Location, static_cast<const GLshort*>(pValue));
+			(Explicit ? glVertexAttrib4sv : Normalized ? glVertexAttrib4Nsv : glVertexAttribI4sv)(m_Location, static_cast<const GLshort*>(pValue));
 			break;
 		default:
 			return NatErr_IllegalState;
@@ -494,7 +498,7 @@ nResult n2dShaderProgramImpl::AttributeReferenceImpl::SetStaticValue(nBool Norma
 			glVertexAttribI3iv(m_Location, static_cast<const GLint*>(pValue));
 			break;
 		case 4:
-			(Explicit ? glVertexAttrib4iv : (Normalized ? glVertexAttrib4Niv : glVertexAttribI4iv))(m_Location, static_cast<const GLint*>(pValue));
+			(Explicit ? glVertexAttrib4iv : Normalized ? glVertexAttrib4Niv : glVertexAttribI4iv)(m_Location, static_cast<const GLint*>(pValue));
 			break;
 		default:
 			return NatErr_IllegalState;
@@ -503,7 +507,7 @@ nResult n2dShaderProgramImpl::AttributeReferenceImpl::SetStaticValue(nBool Norma
 	case GL_UNSIGNED_BYTE:
 		if (m_Size == 4)
 		{
-			(Explicit ? glVertexAttrib4ubv : (Normalized ? glVertexAttrib4Nubv : glVertexAttribI4ubv))(m_Location, static_cast<const GLubyte*>(pValue));
+			(Explicit ? glVertexAttrib4ubv : Normalized ? glVertexAttrib4Nubv : glVertexAttribI4ubv)(m_Location, static_cast<const GLubyte*>(pValue));
 			break;
 		}
 		return NatErr_IllegalState;
@@ -511,14 +515,14 @@ nResult n2dShaderProgramImpl::AttributeReferenceImpl::SetStaticValue(nBool Norma
 	case GL_HALF_FLOAT:
 		if (m_Size == 4)
 		{
-			(Explicit ? glVertexAttrib4usv : (Normalized ? glVertexAttrib4Nusv : glVertexAttribI4usv))(m_Location, static_cast<const GLushort*>(pValue));
+			(Explicit ? glVertexAttrib4usv : Normalized ? glVertexAttrib4Nusv : glVertexAttribI4usv)(m_Location, static_cast<const GLushort*>(pValue));
 			break;
 		}
 		return NatErr_IllegalState;
 	case GL_UNSIGNED_INT:
 		if (m_Size == 4)
 		{
-			(Explicit ? glVertexAttrib4uiv : (Normalized ? glVertexAttrib4Nuiv : glVertexAttribI4uiv))(m_Location, static_cast<const GLuint*>(pValue));
+			(Explicit ? glVertexAttrib4uiv : Normalized ? glVertexAttrib4Nuiv : glVertexAttribI4uiv)(m_Location, static_cast<const GLuint*>(pValue));
 			break;
 		}
 		return NatErr_IllegalState;
@@ -997,8 +1001,8 @@ nResult n2dShaderProgramImpl::OutputBinary(natStream* pStream) const
 
 	GLenum tBinaryFormat = 0u;
 
-	nData pBuf = new nByte[tLength];
-	glGetProgramBinary(m_Program, tLength, nullptr, &tBinaryFormat, pBuf);
+	std::vector<nByte> Buf(tLength);
+	glGetProgramBinary(m_Program, tLength, nullptr, &tBinaryFormat, Buf.data());
 
 	NatErr tErrCode;
 
@@ -1014,7 +1018,7 @@ nResult n2dShaderProgramImpl::OutputBinary(natStream* pStream) const
 		return tErrCode;
 	}
 
-	pStream->WriteBytes(pBuf, tLength);
+	pStream->WriteBytes(Buf.data(), tLength);
 	if ((tErrCode = pStream->GetLastErr()) != NatErr_OK)
 	{
 		return tErrCode;
@@ -1157,14 +1161,14 @@ n2dShaderProgramImpl* n2dShaderProgramImpl::CreateFromStream(natStream* pStream)
 		return nullptr;
 	}
 
-	nData pBuf = new nByte[tLen];
-	pStream->ReadBytes(pBuf, tLen);
+	std::vector<nByte> Buf(tLen);
+	pStream->ReadBytes(Buf.data(), tLen);
 	if (pStream->GetLastErr() != NatErr_OK)
 	{
 		return nullptr;
 	}
 
-	glProgramBinary(pRet->m_Program, tBinaryFormat, pBuf, tLen);
+	glProgramBinary(pRet->m_Program, tBinaryFormat, Buf.data(), tLen);
 
 	return pRet;
 }

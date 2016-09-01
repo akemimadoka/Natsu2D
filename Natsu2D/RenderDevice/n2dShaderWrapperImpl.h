@@ -3,7 +3,7 @@
 ///	@brief	Shader°ü×°Àà
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "..\n2dRenderDevice.h"
+#include "../n2dRenderDevice.h"
 #include "OpenGL.h"
 
 #include <unordered_map>
@@ -688,6 +688,7 @@ public:
 	n2dShaderProgram* GetCurrentProgram() override;
 	n2dProgramPipeline* GetCurrentProgramPipeline() override;
 
+	n2dShaderProgramImpl* SetDefaultProgram(n2dShaderProgramImpl* pProgram);
 	n2dShaderProgram* GetDefaultProgram() const override;
 
 	GLuint GetAvailableBindPoint();
@@ -699,7 +700,7 @@ private:
 	std::unordered_map<GLhandle, natRefPointer<n2dProgramPipelineImpl>> m_ProgramPipelines;
 
 	n2dRenderDevice* m_pRenderDevice;
-	n2dShaderProgramImpl* m_DefaultProgram;
+	natRefPointer<n2dShaderProgramImpl> m_DefaultProgram;
 
 	nuInt m_MaxBindingPoint;
 };

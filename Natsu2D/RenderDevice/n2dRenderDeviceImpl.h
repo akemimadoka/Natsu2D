@@ -3,7 +3,7 @@
 ///	@brief	渲染设备相关
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "..\n2dRenderDevice.h"
+#include "../n2dRenderDevice.h"
 #include "n2dShaderWrapperImpl.h"
 #include <natType.h>
 #include <natMath.h>

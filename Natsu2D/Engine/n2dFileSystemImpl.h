@@ -1,5 +1,5 @@
 #pragma once
-#include "..\n2dFileSystem.h"
+#include "../n2dFileSystem.h"
 #include <unordered_map>
 
 class n2dFileNodeImpl

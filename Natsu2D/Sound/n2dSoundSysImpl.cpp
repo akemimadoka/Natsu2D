@@ -1,7 +1,7 @@
 #include "n2dSoundSysImpl.h"
 #include "n2dSoundBufferImpl.h"
 #include "n2dSoundSourceImpl.h"
-#include "..\n2dEngine.h"
+#include "../n2dEngine.h"
 #include <natStream.h>
 
 n2dSoundSysImpl::n2dSoundSysImpl(n2dEngine* pEngine)

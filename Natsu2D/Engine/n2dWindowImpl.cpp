@@ -2,7 +2,7 @@
 #include <natException.h>
 #include "natLog.h"
 #include "n2dEngineImpl.h"
-#include "..\RenderDevice\n2dRenderDeviceImpl.h"
+#include "../RenderDevice/n2dRenderDeviceImpl.h"
 #include <natTransform.h>
 
 n2dWindowImpl::n2dWindowImpl(n2dEngineImpl* pEngine, nuInt X, nuInt Y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen)

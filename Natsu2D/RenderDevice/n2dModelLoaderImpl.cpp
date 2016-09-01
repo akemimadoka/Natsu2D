@@ -1,5 +1,5 @@
 #include "n2dModelLoaderImpl.h"
-#include "..\n2dEngine.h"
+#include "../n2dEngine.h"
 #include <natStream.h>
 #include <natUtil.h>
 #include "natLog.h"
@@ -7,9 +7,9 @@
 #include "n2dTextureImpl.h"
 #include "n2dModelImpl.h"
 #include "n2dMotionManagerImpl.h"
-#include "..\include\assimp\Importer.hpp"
-#include "..\include\assimp\scene.h"
-#include "..\include\assimp\postprocess.h"
+#include "../include/assimp/Importer.hpp"
+#include "../include/assimp/scene.h"
+#include "../include/assimp/postprocess.h"
 
 n2dModelLoaderImpl::n2dModelLoaderImpl(n2dRenderDeviceImpl* pRenderDevice)
 	: m_DefaultTexture(nullptr),

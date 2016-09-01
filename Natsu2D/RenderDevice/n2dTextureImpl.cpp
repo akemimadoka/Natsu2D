@@ -1,6 +1,6 @@
 #include "n2dTextureImpl.h"
-#include "..\include\CxImage\ximage.h"
-#include "..\extern\nv_dds\nv_dds.h"
+#include "../include/CxImage/ximage.h"
+#include "../extern/nv_dds/nv_dds.h"
 #include <natStream.h>
 #include <memory>
 

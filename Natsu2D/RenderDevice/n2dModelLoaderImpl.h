@@ -1,5 +1,5 @@
 #pragma once
-#include "..\n2dModel.h"
+#include "../n2dModel.h"
 #include "n2dRenderDeviceImpl.h"
 #include <vector>
 #include <natVec.h>

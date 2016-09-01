@@ -137,7 +137,7 @@ n2dBufferImpl* n2dDynamicMeshDataImpl::GetIndexBuffer()
 
 	if (!m_IB)
 	{
-		m_IB = std::move(make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper())));
+		m_IB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
 		m_IB->AllocData(m_Index.size() * sizeof(nuShort), reinterpret_cast<ncData>(m_Index.data()), n2dBuffer::BufferUsage::StaticDraw);
 		m_Index.clear();
 	}

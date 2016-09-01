@@ -1,6 +1,6 @@
 #include "n2dGraphicsImpl.h"
 #include "n2dRenderDeviceImpl.h"
-#include "..\Engine\n2dEngineImpl.h"
+#include "../Engine/n2dEngineImpl.h"
 #include "n2dMeshDataImpl.h"
 #include "n2dModelImpl.h"
 #include <natStream.h>

@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include <vector>
-#include "..\n2dGraphics.h"
+#include "../n2dGraphics.h"
 #include "n2dModelImpl.h"
 #include "n2dBufferImpl.h"
 

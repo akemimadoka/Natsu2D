@@ -1,14 +1,14 @@
 #include "n2dFontImpl.h"
-#include "..\n2dCommon.h"
-#include "..\n2dUtil.h"
-#include "..\RenderDevice\n2dGraphicsImpl.h"
-#include "..\RenderDevice\n2dRenderDeviceImpl.h"
+#include "../n2dCommon.h"
+#include "../n2dUtil.h"
+#include "../RenderDevice/n2dGraphicsImpl.h"
+#include "../RenderDevice/n2dRenderDeviceImpl.h"
 #include <natStream.h>
 #include <fstream>
-#include "..\extern\freetype\include\ft2build.h"
-#include "..\extern\freetype\include\freetype\freetype.h"
-#include "..\extern\freetype\include\freetype\ftglyph.h"
-#include "..\n2dGraphics.h"
+#include "../extern/freetype/include/ft2build.h"
+#include "../extern/freetype/include/freetype/freetype.h"
+#include "../extern/freetype/include/freetype/ftglyph.h"
+#include "../n2dGraphics.h"
 
 n2dFontImpl::n2dFontImpl(int Height, int Width, int Escapement, int Orientation, int Weight, bool Italic, bool Underline, bool StrikeOut, int CharSet, int OutPrecision, int ClipPrecision, int Quality, int PitchAndFamily, LPCTSTR FaceName)
 	: m_pFTLib(nullptr), m_pFTFace(nullptr), m_hFont(NULL), m_pFileBuf(nullptr)

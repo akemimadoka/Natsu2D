@@ -1,5 +1,5 @@
 #pragma once
-#include "..\n2dRenderDevice.h"
+#include "../n2dRenderDevice.h"
 #include "OpenGL.h"
 
 class n2dShaderWrapperImpl;

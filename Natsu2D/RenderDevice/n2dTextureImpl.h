@@ -6,7 +6,7 @@
 
 #include <natType.h>
 #include "OpenGL.h"
-#include "..\n2dRenderDevice.h"
+#include "../n2dRenderDevice.h"
 
 namespace NatsuLib
 {

@@ -18,7 +18,7 @@ n2dObjLoader::n2dObjLoader(ncTStr filename)
 {
 	if (!CreateStaticModelFromFile(filename, nullptr))
 	{
-		nat_Throw(natException, natUtil::FormatString(_T("Load object model \"%s\" failed"), filename).c_str());
+		nat_Throw(natException, _T("Load object model \"%s\" failed"), filename);
 	}
 }
 

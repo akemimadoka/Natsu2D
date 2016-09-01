@@ -3,12 +3,12 @@
 ///	@brief	Natsu2D◊÷ÃÂ¿‡
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "..\n2dFont.h"
+#include "../n2dFont.h"
 
 #include <Windows.h>
 #include <memory>
 #include <unordered_map>
-#include "..\RenderDevice\n2dTextureImpl.h"
+#include "../RenderDevice/n2dTextureImpl.h"
 
 struct n2dRenderDevice;
 typedef struct FT_LibraryRec_* FT_Library;

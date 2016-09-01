@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "..\n2dWindow.h"
+#include "../n2dWindow.h"
 #include <Windows.h>
 #include <natType.h>
 

@@ -5,7 +5,7 @@
 #pragma once
 #include <natType.h>
 #include <natVec.h>
-#include "..\n2dModel.h"
+#include "../n2dModel.h"
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////

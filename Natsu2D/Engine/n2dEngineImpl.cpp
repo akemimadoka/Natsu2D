@@ -2,15 +2,15 @@
 #include <natException.h>
 #include <natStream.h>
 #include "n2dFPSControllerImpl.h"
-#include "..\RenderDevice\n2dRenderDeviceImpl.h"
-#include "..\Sound\n2dSoundSysImpl.h"
-#include "..\n2dCommon.h"
-#include "..\RenderDevice\OpenGL.h"
+#include "../RenderDevice/n2dRenderDeviceImpl.h"
+#include "../Sound/n2dSoundSysImpl.h"
+#include "../n2dCommon.h"
+#include "../RenderDevice/OpenGL.h"
 #include "natLog.h"
 #include "natStopWatch.h"
 
-#include "..\Natsu2D.h"
-#include "..\resource.h"
+#include "../Natsu2D.h"
+#include "../resource.h"
 
 #pragma warning (disable: 4996)
 
@@ -66,6 +66,8 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	case DLL_THREAD_DETACH:
 	case DLL_PROCESS_DETACH:
 		break;
+	default:
+		break;
 	}
 	return TRUE;
 }
@@ -99,7 +101,7 @@ n2dRenderDevice* n2dEngineImpl::GetRenderDevice()
 {
 	if (!m_pRenderer)
 	{
-		m_pRenderer = std::move(make_ref<n2dRenderDeviceImpl>(this));
+		m_pRenderer = make_ref<n2dRenderDeviceImpl>(this);
 	}
 
 	return m_pRenderer;
@@ -109,7 +111,7 @@ n2dSoundSys * n2dEngineImpl::GetSoundSys()
 {
 	if (!m_pSoundSys)
 	{
-		m_pSoundSys = std::move(make_ref<n2dSoundSysImpl>(this));
+		m_pSoundSys = make_ref<n2dSoundSysImpl>(this);
 	}
 
 	return m_pSoundSys;
@@ -140,7 +142,7 @@ natThreadPool& n2dEngineImpl::GetThreadPool()
 	return m_ThreadPool;
 }
 
-void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority)
+void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerDelegate func, Priority::Priority priority)
 {
 	m_EventBus.RegisterEventListener<WndMsgEvent>(func, priority);
 }
@@ -305,6 +307,8 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			m_Window.SetHeight(HIWORD(lParam));
 			m_Window.ReshapeGL();
 			return FALSE;
+		default:
+			break;
 		}
 		break;
 
@@ -368,9 +372,9 @@ void n2dEngineImpl::CommonInit()
 	if (!tVert.empty() && !tFrag.empty())
 	{
 		n2dShaderWrapperImpl* pShaderWrapper = dynamic_cast<n2dShaderWrapperImpl*>(m_pRenderer->GetShaderWrapper());
-		n2dShaderProgramImpl* pProgram = new n2dShaderProgramImpl;
+		natRefPointer<n2dShaderProgramImpl> pProgram = make_ref<n2dShaderProgramImpl>();
 		
-		n2dShader* pShader[2];
+		natRefPointer<n2dShader> pShader[2];
 		auto pStream = natMemoryStream::CreateFromExternMemory(tVert.data(), tVert.size(), true, false);
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 		if (!pShader[0]->Compiled())
@@ -398,10 +402,7 @@ void n2dEngineImpl::CommonInit()
 		pProgram->DetachShader(pShader[0]);
 		pProgram->DetachShader(pShader[1]);
 
-		SafeRelease(pShader[0]);
-		SafeRelease(pShader[1]);
-
-		pShaderWrapper->m_DefaultProgram = pProgram;
+		pShaderWrapper->SetDefaultProgram(pProgram);
 	}
 }
 

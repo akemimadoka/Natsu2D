@@ -278,11 +278,8 @@ nResult n2dMotionManagerImpl::LoadMotionFromFile(ncTStr lpName, ncTStr lpPath)
 		return NatErr_InvalidArg;
 	}
 
-	natFileStream* pStream = new natFileStream(lpPath, true, false);
-	nResult tRet = LoadMotionFromStream(lpName, pStream);
-	SafeRelease(pStream);
-
-	return tRet;
+	auto pStream = make_ref<natFileStream>(lpPath, true, false);
+	return LoadMotionFromStream(lpName, pStream);
 }
 
 nResult n2dMotionManagerImpl::ApplyToModel(ncTStr lpName, n2dModelData * pModel)
@@ -492,8 +489,8 @@ void n2dIK::Solve()
 				continue;
 			}
 
-			natVec3<> dir = natTransform::normalize(m_Effector->GetPosition() - pBone->GetPosition());
-			natVec3<> tar = natTransform::normalize(m_Target->GetPosition() - pBone->GetPosition());
+			auto dir{ natTransform::normalize(m_Effector->GetPosition() - pBone->GetPosition()) };
+			auto tar{ natTransform::normalize(m_Target->GetPosition() - pBone->GetPosition()) };
 
 			natQuat<> r(static_cast<natMat3<>>(pBone->GetTransform()));
 			r.w = -r.w;

@@ -1,7 +1,7 @@
 #pragma once
-#include "..\n2dCommon.h"
-#include "..\n2dModel.h"
-#include "..\n2dGraphics.h"
+#include "../n2dCommon.h"
+#include "../n2dModel.h"
+#include "../n2dGraphics.h"
 #include "n2dBufferImpl.h"
 #include "n2dRenderDeviceImpl.h"
 #include <vector>

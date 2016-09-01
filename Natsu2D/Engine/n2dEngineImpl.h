@@ -3,7 +3,7 @@
 ///	@brief	Natsu2D引擎相关
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "..\n2dEngine.h"
+#include "../n2dEngine.h"
 
 #include <Windows.h>
 #include "n2dWindowImpl.h"
@@ -116,12 +116,11 @@ public:
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数
-	///	@param[in]	WndMsg		要处理的窗口消息
 	///	@param[in]	priority	该消息处理函数的优先级
 	///	@note	函数接受一个参数WndMsgEvent&，请使用WndMsgEvent::getData方法获得窗口消息
 	///	@see	Msgdata
 	///	@see	n2dEngine::WndMsgEvent
-	void AddMessageHandler(natEventBus::EventListenerFunc func, Priority::Priority priority) override;
+	void AddMessageHandler(natEventBus::EventListenerDelegate func, Priority::Priority priority) override;
 
 	///	@brief	获得按键的状态
 	///	@param[in]	Key		按键键值

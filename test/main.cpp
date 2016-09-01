@@ -197,35 +197,11 @@ public:
 		: m_Speed(0.0f),m_bShouldControl(false),m_RotateL(0.0f),m_RotateH(0.0f),f(nullptr),
 		m_model(nullptr)//f(48, 0, 0, 0, FW_BOLD, false, false, false, GB2312_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE | DEFAULT_PITCH, _T("Œ¢»Ì—≈∫⁄"))
 	{
-		if (NATFAIL(CreateN2DEngine(0, _T("GLAPP"), 0u, 0u, 800u, 600u, 1280u, 720u, 32u, false, hInstance, n2dEngine::ThreadMode::MultiThread, this, &m_pEngine)))
-		{
-			nat_Throw(natException, _T("Failed to create Natsu2D engine"));
-		}
+		nat_ThrowIfFailed(CreateN2DEngine(0, _T("GLAPP"), 0u, 0u, 800u, 600u, 1280u, 720u, 32u, false, hInstance, n2dEngine::ThreadMode::MultiThread, this, &m_pEngine), _T("Failed to create Natsu2D engine"));
 
 		Global::g_pEngine = m_pEngine;
 
-		m_pEngine->GetLogger().RegisterLogUpdateEventFunc([this](natEventBase& event) noexcept
-		{
-			decltype(auto) eventLogUpdated = static_cast<natLog::EventLogUpdated&>(event);
-			time_t time = std::chrono::system_clock::to_time_t(eventLogUpdated.GetTime());
-			tm timeStruct;
-			localtime_s(&timeStruct, &time);
-			natLog::LogType logType = static_cast<natLog::LogType>(eventLogUpdated.GetLogType());
-			nTString logStr = std::move(natUtil::FormatString(_T("[{0}] [{1}] {2}"), std::put_time(&timeStruct, _T("%F %T")), natLog::GetDefaultLogTypeName(logType), eventLogUpdated.GetData()));
-			switch (logType)
-			{
-			case natLog::Msg:
-			case natLog::Warn:
-				std::wclog << logStr << std::endl;
-				break;
-			case natLog::Err:
-				std::wcerr << logStr << std::endl;
-				break;
-			default:
-				break;
-			}
-			Global::g_LogFile << natUtil::W2Cstr(logStr) << std::endl;
-		});
+		m_pEngine->GetLogger().UseDefaultAction(Global::g_LogFile);
 
 		m_pEngine->GetEventBus().RegisterEventListener<n2dGlobal::natExceptionEvent>([this](natEventBase& event) noexcept
 		{
@@ -245,7 +221,7 @@ public:
 				MessageBox(nullptr, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
 			}
 
-			m_pEngine->TerminateApplication();
+			terminate();
 		});
 
 		m_pEngine->GetLogger().LogMsg(_T("÷–Œƒ≤‚ ‘"));

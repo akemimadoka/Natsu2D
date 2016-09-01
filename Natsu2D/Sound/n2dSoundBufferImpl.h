@@ -1,5 +1,5 @@
 #pragma once
-#include "..\n2dSoundSys.h"
+#include "../n2dSoundSys.h"
 #include "OpenAL.h"
 
 class n2dSoundBufferImpl

@@ -3,7 +3,7 @@
 ///	@brief	FPS¿ØÖÆÆ÷
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "..\n2dEngine.h"
+#include "../n2dEngine.h"
 
 #include <natStopWatch.h>
 #include <natType.h>

@@ -125,7 +125,7 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 		tCharTexture.delta_x = tBitmapGlyph->left;
 		tCharTexture.delta_y = tBitmapGlyph->top - tBitmap.rows;
 
-		tCharTexture.CharTexture = make_ref<n2dTexture2D>();
+		tCharTexture.CharTexture = make_ref<n2dTexture2DImpl>();
 		tCharTexture.CharTexture->LoadTexture(n2dImage{ GL_RED, GL_RED, tBitmap.buffer, tCharTexture.Width * tCharTexture.Height, tCharTexture.Width, tCharTexture.Height });
 	}
 	/*

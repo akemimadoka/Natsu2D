@@ -444,7 +444,7 @@ void n2dEngineImpl::CommonInit()
 		pProgram->DetachShader(pShader[0]);
 		pProgram->DetachShader(pShader[1]);
 
-		pShaderWrapper->SetDefaultFontProgram(pProgram);
+		pShaderWrapper->SetFontProgram(pProgram);
 	}
 }
 

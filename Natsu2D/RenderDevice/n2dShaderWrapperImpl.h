@@ -27,9 +27,9 @@ class n2dShaderImpl
 			return GL_FRAGMENT_SHADER;
 		case ShaderType::Geometry:
 			return GL_GEOMETRY_SHADER;
+		default:
+			nat_Throw(natException, _T("Not an available ShaderType"));
 		}
-
-		nat_Throw(natException, _T("Not an available ShaderType"));
 	}
 
 public:
@@ -66,31 +66,31 @@ class n2dShaderProgramImpl
 	{
 		switch (type)
 		{
-		case n2dShaderProgram::AttribType::Byte:
+		case AttribType::Byte:
 			return GL_BYTE;
-		case n2dShaderProgram::AttribType::UnsignedByte:
+		case AttribType::UnsignedByte:
 			return GL_UNSIGNED_BYTE;
-		case n2dShaderProgram::AttribType::Short:
+		case AttribType::Short:
 			return GL_SHORT;
-		case n2dShaderProgram::AttribType::UnsignedShort:
+		case AttribType::UnsignedShort:
 			return GL_UNSIGNED_SHORT;
-		case n2dShaderProgram::AttribType::Int:
+		case AttribType::Int:
 			return GL_INT;
-		case n2dShaderProgram::AttribType::UnsignedInt:
+		case AttribType::UnsignedInt:
 			return GL_UNSIGNED_INT;
-		case n2dShaderProgram::AttribType::HalfFloat:
+		case AttribType::HalfFloat:
 			return GL_HALF_FLOAT;
-		case n2dShaderProgram::AttribType::Float:
+		case AttribType::Float:
 			return GL_FLOAT;
-		case n2dShaderProgram::AttribType::Fixed:
+		case AttribType::Fixed:
 			return GL_FIXED;
-		case n2dShaderProgram::AttribType::Int_2_10_10_10_Rev:
+		case AttribType::Int_2_10_10_10_Rev:
 			return GL_INT_2_10_10_10_REV;
-		case n2dShaderProgram::AttribType::UnsignedInt_2_10_10_10_Rev:
+		case AttribType::UnsignedInt_2_10_10_10_Rev:
 			return GL_UNSIGNED_INT_2_10_10_10_REV;
-		case n2dShaderProgram::AttribType::UnsignedInt_10F_11F_11F_Rev:
+		case AttribType::UnsignedInt_10F_11F_11F_Rev:
 			return GL_UNSIGNED_INT_10F_11F_11F_REV;
-		case n2dShaderProgram::AttribType::Double:
+		case AttribType::Double:
 			return GL_DOUBLE;
 		default:
 			nat_Throw(natException, _T("Not a valid AttribType enum"));
@@ -101,213 +101,213 @@ class n2dShaderProgramImpl
 	{
 		switch (type)
 		{
-		case n2dShaderProgram::VarType::Float:
+		case VarType::Float:
 			return GL_FLOAT;
-		case n2dShaderProgram::VarType::vec2:
+		case VarType::vec2:
 			return GL_FLOAT_VEC2;
-		case n2dShaderProgram::VarType::vec3:
+		case VarType::vec3:
 			return GL_FLOAT_VEC3;
-		case n2dShaderProgram::VarType::vec4:
+		case VarType::vec4:
 			return GL_FLOAT_VEC4;
-		case n2dShaderProgram::VarType::Double:
+		case VarType::Double:
 			return GL_DOUBLE;
-		case n2dShaderProgram::VarType::dvec2:
+		case VarType::dvec2:
 			return GL_DOUBLE_VEC2;
-		case n2dShaderProgram::VarType::dvec3:
+		case VarType::dvec3:
 			return GL_DOUBLE_VEC3;
-		case n2dShaderProgram::VarType::dvec4:
+		case VarType::dvec4:
 			return GL_DOUBLE_VEC4;;
-		case n2dShaderProgram::VarType::Int:
+		case VarType::Int:
 			return GL_INT;
-		case n2dShaderProgram::VarType::ivec2:
+		case VarType::ivec2:
 			return GL_INT_VEC2;
-		case n2dShaderProgram::VarType::ivec3:
+		case VarType::ivec3:
 			return GL_INT_VEC3;
-		case n2dShaderProgram::VarType::ivec4:
+		case VarType::ivec4:
 			return GL_INT_VEC4;
-		case n2dShaderProgram::VarType::Uint:
+		case VarType::Uint:
 			return GL_UNSIGNED_INT;
-		case n2dShaderProgram::VarType::uvec2:
+		case VarType::uvec2:
 			return GL_UNSIGNED_INT_VEC2;
-		case n2dShaderProgram::VarType::uvec3:
+		case VarType::uvec3:
 			return GL_UNSIGNED_INT_VEC3;
-		case n2dShaderProgram::VarType::uvec4:
+		case VarType::uvec4:
 			return GL_UNSIGNED_INT_VEC4;
-		case n2dShaderProgram::VarType::Bool:
+		case VarType::Bool:
 			return GL_BOOL;
-		case n2dShaderProgram::VarType::bvec2:
+		case VarType::bvec2:
 			return GL_BOOL_VEC2;
-		case n2dShaderProgram::VarType::bvec3:
+		case VarType::bvec3:
 			return GL_BOOL_VEC3;
-		case n2dShaderProgram::VarType::bvec4:
+		case VarType::bvec4:
 			return GL_BOOL_VEC4;
-		case n2dShaderProgram::VarType::mat2:
+		case VarType::mat2:
 			return GL_FLOAT_MAT2;
-		case n2dShaderProgram::VarType::mat3:
+		case VarType::mat3:
 			return GL_FLOAT_MAT3;
-		case n2dShaderProgram::VarType::mat4:
+		case VarType::mat4:
 			return GL_FLOAT_MAT4;
-		case n2dShaderProgram::VarType::mat2x3:
+		case VarType::mat2x3:
 			return GL_FLOAT_MAT2x3;
-		case n2dShaderProgram::VarType::mat2x4:
+		case VarType::mat2x4:
 			return GL_FLOAT_MAT2x4;
-		case n2dShaderProgram::VarType::mat3x2:
+		case VarType::mat3x2:
 			return GL_FLOAT_MAT3x2;
-		case n2dShaderProgram::VarType::mat3x4:
+		case VarType::mat3x4:
 			return GL_FLOAT_MAT3x4;
-		case n2dShaderProgram::VarType::mat4x2:
+		case VarType::mat4x2:
 			return GL_FLOAT_MAT4x2;
-		case n2dShaderProgram::VarType::mat4x3:
+		case VarType::mat4x3:
 			return GL_FLOAT_MAT4x3;
-		case n2dShaderProgram::VarType::dmat2:
+		case VarType::dmat2:
 			return GL_DOUBLE_MAT2;
-		case n2dShaderProgram::VarType::dmat3:
+		case VarType::dmat3:
 			return GL_DOUBLE_MAT3;
-		case n2dShaderProgram::VarType::dmat4:
+		case VarType::dmat4:
 			return GL_DOUBLE_MAT4;
-		case n2dShaderProgram::VarType::dmat2x3:
+		case VarType::dmat2x3:
 			return GL_DOUBLE_MAT2x3;
-		case n2dShaderProgram::VarType::dmat2x4:
+		case VarType::dmat2x4:
 			return GL_DOUBLE_MAT2x4;
-		case n2dShaderProgram::VarType::dmat3x2:
+		case VarType::dmat3x2:
 			return GL_DOUBLE_MAT3x2;
-		case n2dShaderProgram::VarType::dmat3x4:
+		case VarType::dmat3x4:
 			return GL_DOUBLE_MAT3x4;
-		case n2dShaderProgram::VarType::dmat4x2:
+		case VarType::dmat4x2:
 			return GL_DOUBLE_MAT4x2;
-		case n2dShaderProgram::VarType::dmat4x3:
+		case VarType::dmat4x3:
 			return GL_DOUBLE_MAT4x3;
-		case n2dShaderProgram::VarType::sampler1D:
+		case VarType::sampler1D:
 			return GL_SAMPLER_1D;
-		case n2dShaderProgram::VarType::sampler2D:
+		case VarType::sampler2D:
 			return GL_SAMPLER_2D;
-		case n2dShaderProgram::VarType::sampler3D:
+		case VarType::sampler3D:
 			return GL_SAMPLER_3D;
-		case n2dShaderProgram::VarType::samplerCube:
+		case VarType::samplerCube:
 			return GL_SAMPLER_CUBE;
-		case n2dShaderProgram::VarType::sampler1DShadow:
+		case VarType::sampler1DShadow:
 			return GL_SAMPLER_1D_SHADOW;
-		case n2dShaderProgram::VarType::sampler2DShadow:
+		case VarType::sampler2DShadow:
 			return GL_SAMPLER_2D_SHADOW;
-		case n2dShaderProgram::VarType::sampler1DArray:
+		case VarType::sampler1DArray:
 			return GL_SAMPLER_1D_ARRAY;
-		case n2dShaderProgram::VarType::sampler2DArray:
+		case VarType::sampler2DArray:
 			return GL_SAMPLER_2D_ARRAY;
-		case n2dShaderProgram::VarType::sampler1DArrayShadow:
+		case VarType::sampler1DArrayShadow:
 			return GL_SAMPLER_1D_ARRAY_SHADOW;
-		case n2dShaderProgram::VarType::sampler2DArrayShadow:
+		case VarType::sampler2DArrayShadow:
 			return GL_SAMPLER_2D_ARRAY_SHADOW;
-		case n2dShaderProgram::VarType::sampler2DMS:
+		case VarType::sampler2DMS:
 			return GL_SAMPLER_2D_MULTISAMPLE;
-		case n2dShaderProgram::VarType::sampler2DMSArray:
+		case VarType::sampler2DMSArray:
 			return GL_SAMPLER_2D_MULTISAMPLE_ARRAY;
-		case n2dShaderProgram::VarType::samplerCubeShadow:
+		case VarType::samplerCubeShadow:
 			return GL_SAMPLER_CUBE_SHADOW;
-		case n2dShaderProgram::VarType::samplerBuffer:
+		case VarType::samplerBuffer:
 			return GL_SAMPLER_BUFFER;
-		case n2dShaderProgram::VarType::sampler2DRect:
+		case VarType::sampler2DRect:
 			return GL_SAMPLER_2D_RECT;
-		case n2dShaderProgram::VarType::sampler2DRectShadow:
+		case VarType::sampler2DRectShadow:
 			return GL_SAMPLER_2D_RECT_SHADOW;
-		case n2dShaderProgram::VarType::isampler1D:
+		case VarType::isampler1D:
 			return GL_INT_SAMPLER_1D;
-		case n2dShaderProgram::VarType::isampler2D:
+		case VarType::isampler2D:
 			return GL_INT_SAMPLER_2D;
-		case n2dShaderProgram::VarType::isampler3D:
+		case VarType::isampler3D:
 			return GL_INT_SAMPLER_3D;
-		case n2dShaderProgram::VarType::isamplerCube:
+		case VarType::isamplerCube:
 			return GL_INT_SAMPLER_CUBE;
-		case n2dShaderProgram::VarType::isampler1DArray:
+		case VarType::isampler1DArray:
 			return GL_INT_SAMPLER_1D_ARRAY;
-		case n2dShaderProgram::VarType::isampler2DArray:
+		case VarType::isampler2DArray:
 			return GL_INT_SAMPLER_2D_ARRAY;
-		case n2dShaderProgram::VarType::isampler2DMS:
+		case VarType::isampler2DMS:
 			return GL_INT_SAMPLER_2D_MULTISAMPLE;
-		case n2dShaderProgram::VarType::isampler2DMSArray:
+		case VarType::isampler2DMSArray:
 			return GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY;
-		case n2dShaderProgram::VarType::isamplerBuffer:
+		case VarType::isamplerBuffer:
 			return GL_INT_SAMPLER_BUFFER;
-		case n2dShaderProgram::VarType::isampler2DRect:
+		case VarType::isampler2DRect:
 			return GL_INT_SAMPLER_2D_RECT;
-		case n2dShaderProgram::VarType::usampler1D:
+		case VarType::usampler1D:
 			return GL_UNSIGNED_INT_SAMPLER_1D;
-		case n2dShaderProgram::VarType::usampler2D:
+		case VarType::usampler2D:
 			return GL_UNSIGNED_INT_SAMPLER_2D;
-		case n2dShaderProgram::VarType::usampler3D:
+		case VarType::usampler3D:
 			return GL_UNSIGNED_INT_SAMPLER_3D;
-		case n2dShaderProgram::VarType::usamplerCube:
+		case VarType::usamplerCube:
 			return GL_UNSIGNED_INT_SAMPLER_CUBE;
-		case n2dShaderProgram::VarType::usampler2DArray:
+		case VarType::usampler2DArray:
 			return GL_UNSIGNED_INT_SAMPLER_2D_ARRAY;
-		case n2dShaderProgram::VarType::usampler2DMS:
+		case VarType::usampler2DMS:
 			return GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE;
-		case n2dShaderProgram::VarType::usampler2DMSArray:
+		case VarType::usampler2DMSArray:
 			return GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY;
-		case n2dShaderProgram::VarType::usamplerBuffer:
+		case VarType::usamplerBuffer:
 			return GL_UNSIGNED_INT_SAMPLER_BUFFER;
-		case n2dShaderProgram::VarType::usampler2DRect:
+		case VarType::usampler2DRect:
 			return GL_UNSIGNED_INT_SAMPLER_2D_RECT;
-		case n2dShaderProgram::VarType::image1D:
+		case VarType::image1D:
 			return GL_IMAGE_1D;
-		case n2dShaderProgram::VarType::image2D:
+		case VarType::image2D:
 			return GL_IMAGE_2D;
-		case n2dShaderProgram::VarType::image3D:
+		case VarType::image3D:
 			return GL_IMAGE_3D;
-		case n2dShaderProgram::VarType::image2DRect:
+		case VarType::image2DRect:
 			return GL_IMAGE_2D_RECT;
-		case n2dShaderProgram::VarType::imageCube:
+		case VarType::imageCube:
 			return GL_IMAGE_CUBE;
-		case n2dShaderProgram::VarType::imageBuffer:
+		case VarType::imageBuffer:
 			return GL_IMAGE_BUFFER;
-		case n2dShaderProgram::VarType::image1DArray:
+		case VarType::image1DArray:
 			return GL_IMAGE_1D_ARRAY;
-		case n2dShaderProgram::VarType::image2DArray:
+		case VarType::image2DArray:
 			return GL_IMAGE_2D_ARRAY;
-		case n2dShaderProgram::VarType::image2DMS:
+		case VarType::image2DMS:
 			return GL_IMAGE_2D_MULTISAMPLE;
-		case n2dShaderProgram::VarType::image2DMSArray:
+		case VarType::image2DMSArray:
 			return GL_IMAGE_2D_MULTISAMPLE_ARRAY;
-		case n2dShaderProgram::VarType::iimage1D:
+		case VarType::iimage1D:
 			return GL_INT_IMAGE_1D;
-		case n2dShaderProgram::VarType::iimage2D:
+		case VarType::iimage2D:
 			return GL_INT_IMAGE_2D;
-		case n2dShaderProgram::VarType::iimage3D:
+		case VarType::iimage3D:
 			return GL_INT_IMAGE_3D;
-		case n2dShaderProgram::VarType::iimage2DRect:
+		case VarType::iimage2DRect:
 			return GL_INT_IMAGE_2D_RECT;
-		case n2dShaderProgram::VarType::iimageCube:
+		case VarType::iimageCube:
 			return GL_INT_IMAGE_CUBE;
-		case n2dShaderProgram::VarType::iimageBuffer:
+		case VarType::iimageBuffer:
 			return GL_INT_IMAGE_BUFFER;
-		case n2dShaderProgram::VarType::iimage1DArray:
+		case VarType::iimage1DArray:
 			return GL_INT_IMAGE_1D_ARRAY;
-		case n2dShaderProgram::VarType::iimage2DArray:
+		case VarType::iimage2DArray:
 			return GL_INT_IMAGE_2D_ARRAY;
-		case n2dShaderProgram::VarType::iimage2DMS:
+		case VarType::iimage2DMS:
 			return GL_INT_IMAGE_2D_MULTISAMPLE;
-		case n2dShaderProgram::VarType::iimage2DMSArray:
+		case VarType::iimage2DMSArray:
 			return GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY;
-		case n2dShaderProgram::VarType::uimage1D:
+		case VarType::uimage1D:
 			return GL_UNSIGNED_INT_IMAGE_1D;
-		case n2dShaderProgram::VarType::uimage2D:
+		case VarType::uimage2D:
 			return GL_UNSIGNED_INT_IMAGE_2D;
-		case n2dShaderProgram::VarType::uimage3D:
+		case VarType::uimage3D:
 			return GL_UNSIGNED_INT_IMAGE_3D;
-		case n2dShaderProgram::VarType::uimage2DRect:
+		case VarType::uimage2DRect:
 			return GL_UNSIGNED_INT_IMAGE_2D_RECT;
-		case n2dShaderProgram::VarType::uimageCube:
+		case VarType::uimageCube:
 			return GL_UNSIGNED_INT_IMAGE_CUBE;
-		case n2dShaderProgram::VarType::uimageBuffer:
+		case VarType::uimageBuffer:
 			return GL_UNSIGNED_INT_IMAGE_BUFFER;
-		case n2dShaderProgram::VarType::uimage1DArray:
+		case VarType::uimage1DArray:
 			return GL_UNSIGNED_INT_IMAGE_1D_ARRAY;
-		case n2dShaderProgram::VarType::uimage2DArray:
+		case VarType::uimage2DArray:
 			return GL_UNSIGNED_INT_IMAGE_2D_ARRAY;
-		case n2dShaderProgram::VarType::uimage2DMS:
+		case VarType::uimage2DMS:
 			return GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE;
-		case n2dShaderProgram::VarType::uimage2DMSArray:
+		case VarType::uimage2DMSArray:
 			return GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY;
-		case n2dShaderProgram::VarType::atomic_uint:
+		case VarType::atomic_uint:
 			return GL_UNSIGNED_INT_ATOMIC_COUNTER;
 		default:
 			nat_Throw(natException, _T("Not a valid VarType"));
@@ -319,213 +319,213 @@ class n2dShaderProgramImpl
 		switch (type)
 		{
 		case GL_FLOAT:
-			return n2dShaderProgram::VarType::Float;
+			return VarType::Float;
 		case GL_FLOAT_VEC2:
-			return n2dShaderProgram::VarType::vec2;
+			return VarType::vec2;
 		case GL_FLOAT_VEC3:
-			return n2dShaderProgram::VarType::vec3;
+			return VarType::vec3;
 		case GL_FLOAT_VEC4:
-			return n2dShaderProgram::VarType::vec4;
+			return VarType::vec4;
 		case GL_DOUBLE:
-			return n2dShaderProgram::VarType::Double;
+			return VarType::Double;
 		case GL_DOUBLE_VEC2:
-			return n2dShaderProgram::VarType::dvec2;
+			return VarType::dvec2;
 		case GL_DOUBLE_VEC3:
-			return n2dShaderProgram::VarType::dvec3;
+			return VarType::dvec3;
 		case GL_DOUBLE_VEC4:
-			return n2dShaderProgram::VarType::dvec4;
+			return VarType::dvec4;
 		case GL_INT:
-			return n2dShaderProgram::VarType::Int;
+			return VarType::Int;
 		case GL_INT_VEC2:
-			return n2dShaderProgram::VarType::ivec2;
+			return VarType::ivec2;
 		case GL_INT_VEC3:
-			return n2dShaderProgram::VarType::ivec3;
+			return VarType::ivec3;
 		case GL_INT_VEC4:
-			return n2dShaderProgram::VarType::ivec4;
+			return VarType::ivec4;
 		case GL_UNSIGNED_INT:
-			return n2dShaderProgram::VarType::Uint;
+			return VarType::Uint;
 		case GL_UNSIGNED_INT_VEC2:
-			return n2dShaderProgram::VarType::uvec2;
+			return VarType::uvec2;
 		case GL_UNSIGNED_INT_VEC3:
-			return n2dShaderProgram::VarType::uvec3;
+			return VarType::uvec3;
 		case GL_UNSIGNED_INT_VEC4:
-			return n2dShaderProgram::VarType::uvec4;
+			return VarType::uvec4;
 		case GL_BOOL:
-			return n2dShaderProgram::VarType::Bool;
+			return VarType::Bool;
 		case GL_BOOL_VEC2:
-			return n2dShaderProgram::VarType::bvec2;
+			return VarType::bvec2;
 		case GL_BOOL_VEC3:
-			return n2dShaderProgram::VarType::bvec3;
+			return VarType::bvec3;
 		case GL_BOOL_VEC4:
-			return n2dShaderProgram::VarType::bvec4;
+			return VarType::bvec4;
 		case GL_FLOAT_MAT2:
-			return n2dShaderProgram::VarType::mat2;
+			return VarType::mat2;
 		case GL_FLOAT_MAT3:
-			return n2dShaderProgram::VarType::mat3;
+			return VarType::mat3;
 		case GL_FLOAT_MAT4:
-			return n2dShaderProgram::VarType::mat4;
+			return VarType::mat4;
 		case GL_FLOAT_MAT2x3:
-			return n2dShaderProgram::VarType::mat2x3;
+			return VarType::mat2x3;
 		case GL_FLOAT_MAT2x4:
-			return n2dShaderProgram::VarType::mat2x4;
+			return VarType::mat2x4;
 		case GL_FLOAT_MAT3x2:
-			return n2dShaderProgram::VarType::mat3x2;
+			return VarType::mat3x2;
 		case GL_FLOAT_MAT3x4:
-			return n2dShaderProgram::VarType::mat3x4;
+			return VarType::mat3x4;
 		case GL_FLOAT_MAT4x2:
-			return n2dShaderProgram::VarType::mat4x2;
+			return VarType::mat4x2;
 		case GL_FLOAT_MAT4x3:
-			return n2dShaderProgram::VarType::mat4x3;
+			return VarType::mat4x3;
 		case GL_DOUBLE_MAT2:
-			return n2dShaderProgram::VarType::dmat2;
+			return VarType::dmat2;
 		case GL_DOUBLE_MAT3:
-			return n2dShaderProgram::VarType::dmat3;
+			return VarType::dmat3;
 		case GL_DOUBLE_MAT4:
-			return n2dShaderProgram::VarType::dmat4;
+			return VarType::dmat4;
 		case GL_DOUBLE_MAT2x3:
-			return n2dShaderProgram::VarType::dmat2x3;
+			return VarType::dmat2x3;
 		case GL_DOUBLE_MAT2x4:
-			return n2dShaderProgram::VarType::dmat2x4;
+			return VarType::dmat2x4;
 		case GL_DOUBLE_MAT3x2:
-			return n2dShaderProgram::VarType::dmat3x2;
+			return VarType::dmat3x2;
 		case GL_DOUBLE_MAT3x4:
-			return n2dShaderProgram::VarType::dmat3x4;
+			return VarType::dmat3x4;
 		case GL_DOUBLE_MAT4x2:
-			return n2dShaderProgram::VarType::dmat4x2;
+			return VarType::dmat4x2;
 		case GL_DOUBLE_MAT4x3:
-			return n2dShaderProgram::VarType::dmat4x3;
+			return VarType::dmat4x3;
 		case GL_SAMPLER_1D:
-			return n2dShaderProgram::VarType::sampler1D;
+			return VarType::sampler1D;
 		case GL_SAMPLER_2D:
-			return n2dShaderProgram::VarType::sampler2D;
+			return VarType::sampler2D;
 		case GL_SAMPLER_3D:
-			return n2dShaderProgram::VarType::sampler3D;
+			return VarType::sampler3D;
 		case GL_SAMPLER_CUBE:
-			return n2dShaderProgram::VarType::samplerCube;
+			return VarType::samplerCube;
 		case GL_SAMPLER_1D_SHADOW:
-			return n2dShaderProgram::VarType::sampler1DShadow;
+			return VarType::sampler1DShadow;
 		case GL_SAMPLER_2D_SHADOW:
-			return n2dShaderProgram::VarType::sampler2DShadow;
+			return VarType::sampler2DShadow;
 		case GL_SAMPLER_1D_ARRAY:
-			return n2dShaderProgram::VarType::sampler1DArray;
+			return VarType::sampler1DArray;
 		case GL_SAMPLER_2D_ARRAY:
-			return n2dShaderProgram::VarType::sampler2DArray;
+			return VarType::sampler2DArray;
 		case GL_SAMPLER_1D_ARRAY_SHADOW:
-			return n2dShaderProgram::VarType::sampler1DArrayShadow;
+			return VarType::sampler1DArrayShadow;
 		case GL_SAMPLER_2D_ARRAY_SHADOW:
-			return n2dShaderProgram::VarType::sampler2DArrayShadow;
+			return VarType::sampler2DArrayShadow;
 		case GL_SAMPLER_2D_MULTISAMPLE:
-			return n2dShaderProgram::VarType::sampler2DMS;
+			return VarType::sampler2DMS;
 		case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
-			return n2dShaderProgram::VarType::sampler2DMSArray;
+			return VarType::sampler2DMSArray;
 		case GL_SAMPLER_CUBE_SHADOW:
-			return n2dShaderProgram::VarType::samplerCubeShadow;
+			return VarType::samplerCubeShadow;
 		case GL_SAMPLER_BUFFER:
-			return n2dShaderProgram::VarType::samplerBuffer;
+			return VarType::samplerBuffer;
 		case GL_SAMPLER_2D_RECT:
-			return n2dShaderProgram::VarType::sampler2DRect;
+			return VarType::sampler2DRect;
 		case GL_SAMPLER_2D_RECT_SHADOW:
-			return n2dShaderProgram::VarType::sampler2DRectShadow;
+			return VarType::sampler2DRectShadow;
 		case GL_INT_SAMPLER_1D:
-			return n2dShaderProgram::VarType::isampler1D;
+			return VarType::isampler1D;
 		case GL_INT_SAMPLER_2D:
-			return n2dShaderProgram::VarType::isampler2D;
+			return VarType::isampler2D;
 		case GL_INT_SAMPLER_3D:
-			return n2dShaderProgram::VarType::isampler3D;
+			return VarType::isampler3D;
 		case GL_INT_SAMPLER_CUBE:
-			return n2dShaderProgram::VarType::isamplerCube;
+			return VarType::isamplerCube;
 		case GL_INT_SAMPLER_1D_ARRAY:
-			return n2dShaderProgram::VarType::isampler1DArray;
+			return VarType::isampler1DArray;
 		case GL_INT_SAMPLER_2D_ARRAY:
-			return n2dShaderProgram::VarType::isampler2DArray;
+			return VarType::isampler2DArray;
 		case GL_INT_SAMPLER_2D_MULTISAMPLE:
-			return n2dShaderProgram::VarType::isampler2DMS;
+			return VarType::isampler2DMS;
 		case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
-			return n2dShaderProgram::VarType::isampler2DMSArray;
+			return VarType::isampler2DMSArray;
 		case GL_INT_SAMPLER_BUFFER:
-			return n2dShaderProgram::VarType::isamplerBuffer;
+			return VarType::isamplerBuffer;
 		case GL_INT_SAMPLER_2D_RECT:
-			return n2dShaderProgram::VarType::isampler2DRect;
+			return VarType::isampler2DRect;
 		case GL_UNSIGNED_INT_SAMPLER_1D:
-			return n2dShaderProgram::VarType::usampler1D;
+			return VarType::usampler1D;
 		case GL_UNSIGNED_INT_SAMPLER_2D:
-			return n2dShaderProgram::VarType::usampler2D;
+			return VarType::usampler2D;
 		case GL_UNSIGNED_INT_SAMPLER_3D:
-			return n2dShaderProgram::VarType::usampler3D;
+			return VarType::usampler3D;
 		case GL_UNSIGNED_INT_SAMPLER_CUBE:
-			return n2dShaderProgram::VarType::usamplerCube;
+			return VarType::usamplerCube;
 		case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
-			return n2dShaderProgram::VarType::usampler2DArray;
+			return VarType::usampler2DArray;
 		case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE:
-			return n2dShaderProgram::VarType::usampler2DMS;
+			return VarType::usampler2DMS;
 		case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
-			return n2dShaderProgram::VarType::usampler2DMSArray;
+			return VarType::usampler2DMSArray;
 		case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-			return n2dShaderProgram::VarType::usamplerBuffer;
+			return VarType::usamplerBuffer;
 		case GL_UNSIGNED_INT_SAMPLER_2D_RECT:
-			return n2dShaderProgram::VarType::usampler2DRect;
+			return VarType::usampler2DRect;
 		case GL_IMAGE_1D:
-			return n2dShaderProgram::VarType::image1D;
+			return VarType::image1D;
 		case GL_IMAGE_2D:
-			return n2dShaderProgram::VarType::image2D;
+			return VarType::image2D;
 		case GL_IMAGE_3D:
-			return n2dShaderProgram::VarType::image3D;
+			return VarType::image3D;
 		case GL_IMAGE_2D_RECT:
-			return n2dShaderProgram::VarType::image2DRect;
+			return VarType::image2DRect;
 		case GL_IMAGE_CUBE:
-			return n2dShaderProgram::VarType::imageCube;
+			return VarType::imageCube;
 		case GL_IMAGE_BUFFER:
-			return n2dShaderProgram::VarType::imageBuffer;
+			return VarType::imageBuffer;
 		case GL_IMAGE_1D_ARRAY:
-			return n2dShaderProgram::VarType::image1DArray;
+			return VarType::image1DArray;
 		case GL_IMAGE_2D_ARRAY:
-			return n2dShaderProgram::VarType::image2DArray;
+			return VarType::image2DArray;
 		case GL_IMAGE_2D_MULTISAMPLE:
-			return n2dShaderProgram::VarType::image2DMS;
+			return VarType::image2DMS;
 		case GL_IMAGE_2D_MULTISAMPLE_ARRAY:
-			return n2dShaderProgram::VarType::image2DMSArray;
+			return VarType::image2DMSArray;
 		case GL_INT_IMAGE_1D:
-			return n2dShaderProgram::VarType::iimage1D;
+			return VarType::iimage1D;
 		case GL_INT_IMAGE_2D:
-			return n2dShaderProgram::VarType::iimage2D;
+			return VarType::iimage2D;
 		case GL_INT_IMAGE_3D:
-			return n2dShaderProgram::VarType::iimage3D;
+			return VarType::iimage3D;
 		case GL_INT_IMAGE_2D_RECT:
-			return n2dShaderProgram::VarType::iimage2DRect;
+			return VarType::iimage2DRect;
 		case GL_INT_IMAGE_CUBE:
-			return n2dShaderProgram::VarType::iimageCube;
+			return VarType::iimageCube;
 		case GL_INT_IMAGE_BUFFER:
-			return n2dShaderProgram::VarType::iimageBuffer;
+			return VarType::iimageBuffer;
 		case GL_INT_IMAGE_1D_ARRAY:
-			return n2dShaderProgram::VarType::iimage1DArray;
+			return VarType::iimage1DArray;
 		case GL_INT_IMAGE_2D_ARRAY:
-			return n2dShaderProgram::VarType::iimage2DArray;
+			return VarType::iimage2DArray;
 		case GL_INT_IMAGE_2D_MULTISAMPLE:
-			return n2dShaderProgram::VarType::iimage2DMS;
+			return VarType::iimage2DMS;
 		case GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY:
-			return n2dShaderProgram::VarType::iimage2DMSArray;
+			return VarType::iimage2DMSArray;
 		case GL_UNSIGNED_INT_IMAGE_1D:
-			return n2dShaderProgram::VarType::uimage1D;
+			return VarType::uimage1D;
 		case GL_UNSIGNED_INT_IMAGE_2D:
-			return n2dShaderProgram::VarType::uimage2D;
+			return VarType::uimage2D;
 		case GL_UNSIGNED_INT_IMAGE_3D:
-			return n2dShaderProgram::VarType::uimage3D;
+			return VarType::uimage3D;
 		case GL_UNSIGNED_INT_IMAGE_2D_RECT:
-			return n2dShaderProgram::VarType::uimage2DRect;
+			return VarType::uimage2DRect;
 		case GL_UNSIGNED_INT_IMAGE_CUBE:
-			return n2dShaderProgram::VarType::uimageCube;
+			return VarType::uimageCube;
 		case GL_UNSIGNED_INT_IMAGE_BUFFER:
-			return n2dShaderProgram::VarType::uimageBuffer;
+			return VarType::uimageBuffer;
 		case GL_UNSIGNED_INT_IMAGE_1D_ARRAY:
-			return n2dShaderProgram::VarType::uimage1DArray;
+			return VarType::uimage1DArray;
 		case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
-			return n2dShaderProgram::VarType::uimage2DArray;
+			return VarType::uimage2DArray;
 		case GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE:
-			return n2dShaderProgram::VarType::uimage2DMS;
+			return VarType::uimage2DMS;
 		case GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY:
-			return n2dShaderProgram::VarType::uimage2DMSArray;
+			return VarType::uimage2DMSArray;
 		case GL_UNSIGNED_INT_ATOMIC_COUNTER:
-			return n2dShaderProgram::VarType::atomic_uint;
+			return VarType::atomic_uint;
 		default:
 			nat_Throw(natException, _T("Not a valid type enum"));
 		}
@@ -691,6 +691,9 @@ public:
 	n2dShaderProgramImpl* SetDefaultProgram(n2dShaderProgramImpl* pProgram);
 	n2dShaderProgram* GetDefaultProgram() const override;
 
+	n2dShaderProgram* SetFontProgram(n2dShaderProgram* pProgram) override;
+	n2dShaderProgram* GetFontProgram() const override;
+
 	GLuint GetAvailableBindPoint();
 	void UseBindingPoint(GLuint BindingPoint);
 	void ReleaseBindingPoint(GLuint BindingPoint);
@@ -701,6 +704,7 @@ private:
 
 	n2dRenderDevice* m_pRenderDevice;
 	natRefPointer<n2dShaderProgramImpl> m_DefaultProgram;
+	natRefPointer<n2dShaderProgram> m_FontProgram;
 
 	nuInt m_MaxBindingPoint;
 };

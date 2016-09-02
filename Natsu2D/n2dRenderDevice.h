@@ -6,7 +6,6 @@
 #include "n2dInterface.h"
 #include "n2dCommon.h"
 #include <natMat.h>
-#include <memory>
 
 struct n2dLayer;
 struct n2dShaderWrapper;
@@ -625,6 +624,9 @@ struct n2dShaderWrapper
 	///	@brief		获得默认程序
 	///	@warning	请勿自行释放
 	virtual n2dShaderProgram* GetDefaultProgram() const = 0;
+
+	virtual n2dShaderProgram* SetFontProgram(n2dShaderProgram* pProgram) = 0;
+	virtual n2dShaderProgram* GetFontProgram() const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "n2dInterface.h"
+#include "natMath.h"
 
 struct n2dRenderDevice;
 namespace NatsuLib
@@ -18,7 +19,7 @@ struct n2dTexture2D;
 ////////////////////////////////////////////////////////////////////////////////
 struct n2dCharTexture final
 {
-	n2dTexture2D*	CharTexture;	///< @brief	生成的字符纹理
+	natRefPointer<n2dTexture2D>	CharTexture;	///< @brief	生成的字符纹理
 	nuInt			Width;			///< @brief	宽
 	nuInt			Height;			///< @brief	高
 
@@ -73,8 +74,6 @@ struct n2dFont
 	///	@brief	绘制字体
 	///	@param[in]	pGraphic	图元渲染器
 	///	@param[in]	str			要绘制的文本
-	///	@param[in]	x			要绘制到的x坐标
-	///	@param[in]	y			要绘制到的y坐标
-	///	@param[in]	z			要绘制到的z坐标
-	virtual nResult PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat z) = 0;
+	///	@param[in]	rect		要绘制到的框
+	virtual nResult PrintFont(n2dGraphics2D* pGraphic, ncTStr str, natRect<> const& rect) = 0;
 };

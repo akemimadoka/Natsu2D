@@ -223,6 +223,14 @@ void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
 	{
 		n2dGlobal::natExceptionEvent event(ex);
 		m_EventBus.Post(event);
+		throw;
+	}
+	catch (...)
+	{
+		natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
+		n2dGlobal::natExceptionEvent event(ex);
+		m_EventBus.Post(event);
+		throw;
 	}
 }
 
@@ -353,7 +361,7 @@ void n2dEngineImpl::CommonInit()
 	glewExperimental = true;
 	if ((tRet = glewInit()) != GLEW_OK)
 	{
-		nat_Throw(natException, _T("GLEW initializing failed, id=%d, description:%s"), tRet, natUtil::C2Wstr(reinterpret_cast<ncStr>(glewGetErrorString(tRet))));
+		nat_Throw(natException, _T("GLEW initializing failed, id={0}, description:{1}"), tRet, natUtil::C2Wstr(reinterpret_cast<ncStr>(glewGetErrorString(tRet))));
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -366,8 +374,10 @@ void n2dEngineImpl::CommonInit()
 	glShadeModel(GL_SMOOTH);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-	std::vector<nByte> tVert = natUtil::GetResourceData(IDR_DefaultVertShader, _T("SHADER"), n2dGlobal::hDll);
-	std::vector<nByte> tFrag = natUtil::GetResourceData(IDR_DefaultFragShader, _T("SHADER"), n2dGlobal::hDll);
+	auto tVert = natUtil::GetResourceData(IDR_DefaultVertShader, _T("SHADER"), n2dGlobal::hDll);
+	auto tFrag = natUtil::GetResourceData(IDR_DefaultFragShader, _T("SHADER"), n2dGlobal::hDll);
+	auto tFontVert = natUtil::GetResourceData(IDR_DefaultFontVertexShader, _T("SHADER"), n2dGlobal::hDll);
+	auto tFontFrag = natUtil::GetResourceData(IDR_DefaultFontFragmentShader, _T("SHADER"), n2dGlobal::hDll);
 
 	if (!tVert.empty() && !tFrag.empty())
 	{
@@ -403,6 +413,38 @@ void n2dEngineImpl::CommonInit()
 		pProgram->DetachShader(pShader[1]);
 
 		pShaderWrapper->SetDefaultProgram(pProgram);
+
+		pProgram = make_ref<n2dShaderProgramImpl>();
+		pShader[0] = nullptr;
+		pShader[1] = nullptr;
+
+		pStream = natMemoryStream::CreateFromExternMemory(tFontVert.data(), tFontVert.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
+		if (!pShader[0]->Compiled())
+		{
+			nat_Throw(natException, _T("Compile DefaultFontVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog());
+		}
+
+		pStream = natMemoryStream::CreateFromExternMemory(tFontFrag.data(), tFontFrag.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
+		if (!pShader[1]->Compiled())
+		{
+			nat_Throw(natException, _T("Compile DefaultFontFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog());
+		}
+
+		pProgram->AttachShader(pShader[0]);
+		pProgram->AttachShader(pShader[1]);
+
+		pProgram->Link();
+		if (!pProgram->IsLinked())
+		{
+			nat_Throw(natException, _T("Link DefaultFontShaderProgram Failed, Log: %s"), pProgram->GetInfoLog());
+		}
+
+		pProgram->DetachShader(pShader[0]);
+		pProgram->DetachShader(pShader[1]);
+
+		pShaderWrapper->SetDefaultFontProgram(pProgram);
 	}
 }
 
@@ -590,12 +632,9 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		{
 			n2dGlobal::natExceptionEvent event(ex);
 			reinterpret_cast<n2dEngineImpl *>(userdata)->m_EventBus.Post(event);
-			reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
 		}
-		else
-		{
-			throw;
-		}
+
+		throw;
 	}
 	catch (...)
 	{
@@ -604,7 +643,6 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
 			n2dGlobal::natExceptionEvent event(ex);
 			reinterpret_cast<n2dEngineImpl *>(userdata)->m_EventBus.Post(event);
-			reinterpret_cast<n2dEngineImpl *>(userdata)->TerminateApplication();
 		}
 
 		throw;
@@ -651,6 +689,7 @@ natThread::ResultType n2dEngineImpl::UpdateThread::ThreadJob()
 	{
 		n2dGlobal::natExceptionEvent event(ex);
 		m_pEngine->m_EventBus.Post(event);
+		throw;
 	}
 	catch (...)
 	{
@@ -708,6 +747,7 @@ natThread::ResultType n2dEngineImpl::RenderThread::ThreadJob()
 	{
 		n2dGlobal::natExceptionEvent event(ex);
 		m_pEngine->m_EventBus.Post(event);
+		throw;
 	}
 	catch (...)
 	{

@@ -125,19 +125,8 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 		tCharTexture.delta_x = tBitmapGlyph->left;
 		tCharTexture.delta_y = tBitmapGlyph->top - tBitmap.rows;
 
-		nData pBuf = new nByte[tCharTexture.Width * tCharTexture.Height * 4];
-		//memset(pBuf, 0, tCharTexture.Width * tCharTexture.Height * 4);
-
-		for (nuInt y = 0u; y < tCharTexture.Height; ++y)
-		{
-			for (nuInt x = 0u; x < tCharTexture.Width; ++x)
-			{
-				*reinterpret_cast<COLORREF*>(pBuf + 4 * i + (tCharTexture.Height - y - 1) * tCharTexture.Width * 4) = RGB(0xFF, 0xFF, 0xFF);
-				pBuf[4 * i + (tCharTexture.Height - y - 1) * tCharTexture.Width * 4 + 3] = tBitmap.buffer[x + y * tBitmap.width];
-			}
-		}
-
-		tCharTexture.CharTexture->LoadTexture(n2dImage(4u, GL_RGBA, pBuf, tCharTexture.Width * tCharTexture.Height * 4, tCharTexture.Width, tCharTexture.Height));
+		tCharTexture.CharTexture = make_ref<n2dTexture2D>();
+		tCharTexture.CharTexture->LoadTexture(n2dImage{ GL_RED, GL_RED, tBitmap.buffer, tCharTexture.Width * tCharTexture.Height, tCharTexture.Width, tCharTexture.Height });
 	}
 	/*
 	HBITMAP hBitmap, hOldBitmap;
@@ -199,7 +188,7 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 	return NatErr_OK;
 }
 
-nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat z)
+nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, natRect<> const& rect)
 {
 	/*if (!m_hFont)
 	{
@@ -207,8 +196,6 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 	}*/
 
 	nLen tLen = std::char_traits<nTChar>::length(str);
-	nInt sx, sy;
-	n2dUtil::TransformCoord(m_pRenderer, x, y, sx, sy);
 
 	for (nLen i = 0ul; i < tLen; ++i)
 	{
@@ -222,11 +209,10 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 			}
 		}
 
-		nuInt w = mapitea->second.Width, h = mapitea->second.Height;
+		/*nuInt w = mapitea->second.Width, h = mapitea->second.Height;
 		nuInt chx = sx + mapitea->second.delta_x, chy = sy - h - mapitea->second.delta_y;
 
 		n2dGraphics2DVertex tVert[4];
-		n2dUtil::TransformCoord(m_pRenderer, chx,		chy,		tVert[0].vert.x, tVert[0].vert.y);
 		tVert[0].uv = natVec2<>(0.f, 0.f);
 		n2dUtil::TransformCoord(m_pRenderer, chx,		chy + h,	tVert[1].vert.x, tVert[1].vert.y);
 		tVert[1].uv = natVec2<>(0.f, 1.f);
@@ -235,9 +221,12 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 		n2dUtil::TransformCoord(m_pRenderer, chx + w,	chy,		tVert[3].vert.x, tVert[3].vert.y);
 		tVert[3].uv = natVec2<>(1.f, 0.f);
 		
+		auto pProgram = m_pRenderer->GetShaderWrapper()->GetCurrentProgram();
+		m_pRenderer->GetShaderWrapper()->GetFontProgram()->Use();
 		pGraphic->DrawQuad(mapitea->second.CharTexture, tVert);
+		pProgram->Use();
 
-		sx += mapitea->second.adv_x;
+		sx += mapitea->second.adv_x;*/
 	}
 
 	return NatErr_OK;

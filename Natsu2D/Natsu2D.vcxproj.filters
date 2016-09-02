@@ -277,5 +277,11 @@
     <None Include="DefaultFragmentShader.glsl">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="DefaultFontVertexShader.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="DefaultFontFragmentShader.glsl">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

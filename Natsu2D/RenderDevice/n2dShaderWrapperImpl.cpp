@@ -95,11 +95,10 @@ nResult n2dShaderWrapperImpl::CreateProgramFromStream(natStream* pStream, n2dSha
 
 	try
 	{
-		n2dShaderProgramImpl* pProgram = n2dShaderProgramImpl::CreateFromStream(pStream);
+		natRefPointer<n2dShaderProgramImpl> pProgram{ n2dShaderProgramImpl::CreateFromStream(pStream) };
 		auto itea = m_Programs.find(pProgram->GetHandle());
 		if (itea != m_Programs.end())
 		{
-			SafeRelease(pProgram);
 			*pOut = itea->second;
 		}
 		else
@@ -129,16 +128,15 @@ nResult n2dShaderWrapperImpl::CreateProgramPipeline(n2dProgramPipeline** pOut)
 
 	try
 	{
-		n2dProgramPipelineImpl* pProgramPipeline = new n2dProgramPipelineImpl;
+		auto pProgramPipeline = make_ref<n2dProgramPipelineImpl>();
 		auto itea = m_ProgramPipelines.find(pProgramPipeline->GetHandle());
 		if (itea != m_ProgramPipelines.end())
 		{
-			SafeRelease(pProgramPipeline);
 			*pOut = itea->second;
 		}
 		else
 		{
-			m_ProgramPipelines.insert(std::make_pair(pProgramPipeline->GetHandle(), pProgramPipeline));
+			m_ProgramPipelines[pProgramPipeline->GetHandle()] = pProgramPipeline;
 			*pOut = pProgramPipeline;
 		}
 	}
@@ -257,6 +255,18 @@ n2dShaderProgram* n2dShaderWrapperImpl::GetDefaultProgram() const
 	return m_DefaultProgram;
 }
 
+n2dShaderProgram* n2dShaderWrapperImpl::SetFontProgram(n2dShaderProgram* pProgram)
+{
+	auto pOld = m_FontProgram;
+	m_FontProgram = natRefPointer<n2dShaderProgram>(pProgram);
+	return pOld;
+}
+
+n2dShaderProgram* n2dShaderWrapperImpl::GetFontProgram() const
+{
+	return m_FontProgram;
+}
+
 n2dShaderImpl::n2dShaderImpl(ShaderType shaderType)
 	: m_ShaderType(shaderType),
 	m_Shader(0u)
@@ -319,7 +329,7 @@ void n2dShaderImpl::CompileFromStream(natStream* pStream, nBool bIsBinary)
 {
 	if (!pStream)
 	{
-		return;
+		nat_Throw(natException, _T("pStream cannot be a nullptr."));
 	}
 
 	nuInt tLen = static_cast<nuInt>(pStream->GetSize() - pStream->GetPosition());
@@ -342,7 +352,7 @@ n2dShaderProgramImpl::AttributeReferenceImpl::AttributeReferenceImpl(n2dShaderPr
 	: m_pProgram(pProgram),
 	m_Location(Location)
 {
-	if (m_pProgram == nullptr)
+	if (!m_pProgram)
 	{
 		nat_Throw(natException, _T("Cannot refer to a valid program"));
 	}

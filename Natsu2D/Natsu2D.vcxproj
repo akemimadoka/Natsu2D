@@ -238,6 +238,8 @@
     <ResourceCompile Include="Natsu2D.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DefaultFontFragmentShader.glsl" />
+    <None Include="DefaultFontVertexShader.glsl" />
     <None Include="DefaultFragmentShader.glsl" />
     <None Include="DefaultVertexShader.glsl" />
   </ItemGroup>

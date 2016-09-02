@@ -28,6 +28,7 @@
 #include <natException.h>
 #include <natStream.h>
 #include <natLog.h>
+#include <natMisc.h>
 
 #pragma endregion
 
@@ -205,6 +206,11 @@ public:
 
 		m_pEngine->GetEventBus().RegisterEventListener<n2dGlobal::natExceptionEvent>([this](natEventBase& event) noexcept
 		{
+			auto scope = make_scope([]()
+			{
+				terminate();
+			});
+
 			std::basic_stringstream<nTChar> ss;
 			auto pEvent = dynamic_cast<n2dGlobal::natExceptionEvent*>(&event);
 			if (!pEvent)
@@ -220,8 +226,6 @@ public:
 				m_pEngine->GetLogger().LogErr(ss.str().c_str());
 				MessageBox(nullptr, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
 			}
-
-			terminate();
 		});
 
 		m_pEngine->GetLogger().LogMsg(_T("ÖÐÎÄ²âÊÔ"));
@@ -313,7 +317,6 @@ public:
 		m_Mutex = CreateMutex(NULL, FALSE, _T("GLAPP"));
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
-			CloseHandle(m_Mutex);
 			nat_Throw(natException, _T("GLAPP is already running"));
 		}
 		if (!m_Mutex)
@@ -346,8 +349,8 @@ public:
 
 			sw = renderdevice->GetShaderWrapper();
 			sw->CreateProgram(&sp);
-			n2dShader* pShader[2];
-			natStream* pStream = new natFileStream(_T("VertexShader.glsl"), true, false);
+			natRefPointer<n2dShader> pShader[2];
+			auto pStream = make_ref<natFileStream>(_T("VertexShader.glsl"), true, false);
 			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 			if (!pShader[0]->Compiled())
 			{
@@ -360,8 +363,7 @@ public:
 				m_pEngine->GetLogger().LogWarn(natUtil::FormatString(_T("Compile0Log: %s"), pLog).c_str());
 			}
 
-			SafeRelease(pStream);
-			pStream = new natFileStream(_T("FragmentShader.glsl"), true, false);
+			pStream = make_ref<natFileStream>(_T("FragmentShader.glsl"), true, false);
 			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
 			if (!pShader[1]->Compiled())
 			{
@@ -374,7 +376,6 @@ public:
 				m_pEngine->GetLogger().LogWarn(natUtil::FormatString(_T("Compile1Log: %s"), pLog).c_str());
 			}
 
-			SafeRelease(pStream);
 			sp->AttachShader(pShader[0]);
 			sp->AttachShader(pShader[1]);
 
@@ -394,9 +395,6 @@ public:
 
 			sp->DetachShader(pShader[0]);
 			sp->DetachShader(pShader[1]);
-
-			SafeRelease(pShader[0]);
-			SafeRelease(pShader[1]);
 
 			/*posID = glGetSubroutineUniformLocation(programID, n2dShaderWrapperImpl::Vertex, "positionShader");
 			if (posID >= 0)
@@ -458,9 +456,8 @@ public:
 			}*/
 
 			n2dSoundSys* pSound = m_pEngine->GetSoundSys();
-			pStream = new natFileStream(_T("Lamb.wav"), true, false);
+			pStream = make_ref<natFileStream>(_T("Lamb.wav"), true, false);
 			pSound->CreateWaveSoundBufferFromStream(pStream, &m_soundbuf);
-			SafeRelease(pStream);
 			pSound->CreateSoundSource(&m_soundsrc);
 			m_soundsrc->BindBuffer(m_soundbuf);
 			m_soundsrc->SetLooping(false);

@@ -93,28 +93,23 @@ class test final
 	: public n2dEngineEventListener
 {
 public:
-	static void WndEventHandler(natEventBase& e)
+	void WndEventHandler(natEventBase& e)
 	{
 		n2dEngine::WndMsgEvent& wndEvent = dynamic_cast<n2dEngine::WndMsgEvent&>(e);
-		test* pTest = dynamic_cast<test*>(wndEvent.GetEngine()->GetListener());
-		if (!pTest)
-		{
-			return;
-		}
 
 		switch (wndEvent.GetMsg().uMsg)
 		{
 		case WM_LBUTTONDOWN:
-			pTest->MouseClick(wndEvent);
+			MouseClick(wndEvent);
 			break;
 		case WM_MOUSEMOVE:
-			pTest->MouseMove(wndEvent);
+			MouseMove(wndEvent);
 			break;
 		case WM_MOUSEWHEEL:
-			pTest->MouseWheel(wndEvent);
+			MouseWheel(wndEvent);
 			break;
 		case WM_KEYDOWN:
-			pTest->KeyDown(wndEvent);
+			KeyDown(wndEvent);
 			break;
 		default:
 			break;
@@ -222,6 +217,14 @@ public:
 			if (ex != nullptr)
 			{
 				ss << _T("Unhandled exception: In ") << ex->GetSource() << _T(" : ") << ex->GetDesc() << std::endl;
+#ifdef EnableExceptionStackTrace
+				ss << _T("Call stack:") << std::endl;
+				for (size_t i = 0; i < ex->GetStackWalker().GetFrameCount(); ++i)
+				{
+					auto&& symbol = ex->GetStackWalker().GetSymbol(i);
+					ss << natUtil::FormatString(_T("{3}: (0x%08X) {4} at address 0x%08X (file {5}:{6} at address 0x%08X)"), reinterpret_cast<nuInt>(symbol.OriginalAddress), symbol.SymbolAddress, symbol.SourceFileAddress, i, symbol.SymbolName, symbol.SourceFileName, symbol.SourceFileLine) << std::endl;
+				}
+#endif
 
 				m_pEngine->GetLogger().LogErr(ss.str().c_str());
 				MessageBox(nullptr, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
@@ -417,7 +420,7 @@ public:
 			ModelMatrix = sp->GetUniformReference(_T("M"));
 			Light = sp->GetUniformReference(_T("LightPosition_worldspace"));
 
-			m_pEngine->AddMessageHandler(WndEventHandler);
+			m_pEngine->AddMessageHandler(natEventBus::EventListenerDelegate{ &test::WndEventHandler, *this });
 
 			renderdevice->SubmitProjMat(natTransform::perspective(45.0f, 4.0f / 3.0f, 0.1f));
 			renderdevice->SubmitViewMat(natTransform::lookAt(

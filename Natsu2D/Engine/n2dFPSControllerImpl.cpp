@@ -1,4 +1,5 @@
 #include "n2dFPSControllerImpl.h"
+#include <thread>
 
 n2dFPSControllerImpl::n2dFPSControllerImpl(nuInt iFPSLimit)
 	: m_TotalFrame(0u),
@@ -14,18 +15,19 @@ n2dFPSControllerImpl::n2dFPSControllerImpl(nuInt iFPSLimit)
 
 nDouble n2dFPSControllerImpl::Update(natStopWatch& watch)
 {
-	nDouble tElpasedTime = watch.GetElpased();
+	auto tElpasedTime = watch.GetElpased();
 
 	if (m_FPSLimit && tElpasedTime < m_FrameDelay)
 	{
-		nuInt tSleepTime = static_cast<nuInt>((m_FrameDelay - tElpasedTime) * 1000.);
+		auto tSleepTime = static_cast<nuInt>((m_FrameDelay - tElpasedTime) * 1000.);
 
 		// Sleep限速
 		if (tSleepTime > 1)
-			Sleep(tSleepTime);
+			std::this_thread::sleep_for(std::chrono::milliseconds(tSleepTime));
 
 		// 自旋精准限速
-		while ((tElpasedTime = watch.GetElpased()) < m_FrameDelay);
+		while ((tElpasedTime = watch.GetElpased()) < m_FrameDelay)
+			std::this_thread::yield();
 	}
 
 	tElpasedTime = watch.GetElpased();

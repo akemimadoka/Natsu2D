@@ -217,12 +217,22 @@ public:
 			if (ex != nullptr)
 			{
 				ss << _T("Unhandled exception: In ") << ex->GetSource() << _T(" : ") << ex->GetDesc() << std::endl;
+				if (typeid(*ex) == typeid(natWinException))
+				{
+					auto pWinException = static_cast<const natWinException*>(ex);
+					ss << _T("LastErr = ") << pWinException->GetErrNo() << _T(", Description: ") << pWinException->GetErrMsg() << std::endl;
+				}
+				else if (typeid(*ex) == typeid(natErrException))
+				{
+					auto pnatErrException = static_cast<const natErrException*>(ex);
+					ss << _T("NatErr = ") << pnatErrException->GetErrNo() << _T(", Description: ") << pnatErrException->GetErrMsg() << std::endl;
+				}
 #ifdef EnableExceptionStackTrace
 				ss << _T("Call stack:") << std::endl;
 				for (size_t i = 0; i < ex->GetStackWalker().GetFrameCount(); ++i)
 				{
 					auto&& symbol = ex->GetStackWalker().GetSymbol(i);
-					ss << natUtil::FormatString(_T("{3}: (0x%08X) {4} at address 0x%08X (file {5}:{6} at address 0x%08X)"), reinterpret_cast<nuInt>(symbol.OriginalAddress), symbol.SymbolAddress, symbol.SourceFileAddress, i, symbol.SymbolName, symbol.SourceFileName, symbol.SourceFileLine) << std::endl;
+					ss << natUtil::FormatString(_T("{3}: (0x%08X) {4} at address 0x%08X (file {5}:{6} at address 0x%08X)"), reinterpret_cast<nuLong>(symbol.OriginalAddress), symbol.SymbolAddress, symbol.SourceFileAddress, i, symbol.SymbolName, symbol.SourceFileName, symbol.SourceFileLine) << std::endl;
 				}
 #endif
 
@@ -314,7 +324,7 @@ public:
 			// 创建动作管理器
 			nat_ThrowIfFailed(renderdevice->CreateMotionManager(&m_MotionManager), _T("CreateMotionManager failed."));
 		}
-		
+
 		m_pEngine->GetLogger().LogMsg(natUtil::FormatString(_T("GLAPP initialized as {0} thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
 		m_pEngine->GetLogger().LogMsg(_T("GLAPP start initializing"));
 		m_Mutex = CreateMutex(NULL, FALSE, _T("GLAPP"));
@@ -342,6 +352,20 @@ public:
 		if (!inited)
 		{
 			inited = true;
+
+			// 测试虚拟文件系统
+			auto& schemaFactory = m_pEngine->GetSchemaFactory();
+			auto& vfs = m_pEngine->GetVirtualFileSystem();
+
+			auto schema = schemaFactory.CreateLocalFilesystemSchema(_T("local"));
+			vfs.RegisterSchema(schema);
+			auto streamInfo = vfs.GetStreamInfoFromUri(_T("local://script/boot.nut"));
+			nLen size = 0;
+			nat_ThrowIfFailed(streamInfo->GetSize(size), _T("Cannot get size."));
+			m_pEngine->GetLogger().LogMsg(_T("Path: {0}, Size: {1}"), streamInfo->GetPath(), size);
+			std::vector<nByte> data(static_cast<size_t>(size) + 1);
+			streamInfo->OpenStream(true, false)->ReadBytes(data.data(), size);
+			m_pEngine->GetLogger().LogMsg(_T("{0}"), natUtil::ToTString(reinterpret_cast<ncStr>(data.data())));
 
 			// 关闭垂直同步
 			renderdevice->SetSwapInterval(0u);

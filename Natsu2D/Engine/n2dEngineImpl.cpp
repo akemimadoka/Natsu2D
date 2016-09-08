@@ -142,6 +142,16 @@ natThreadPool& n2dEngineImpl::GetThreadPool()
 	return m_ThreadPool;
 }
 
+n2dSchemaFactory& n2dEngineImpl::GetSchemaFactory()
+{
+	return m_SchemaFactory;
+}
+
+n2dVirtualFileSystem& n2dEngineImpl::GetVirtualFileSystem()
+{
+	return m_VirtualFileSystem;
+}
+
 void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerDelegate func, Priority::Priority priority)
 {
 	m_EventBus.RegisterEventListener<WndMsgEvent>(func, priority);
@@ -170,8 +180,7 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 		nat_Throw(natException, _T("classname should be a valid string."));
 	}
 
-	WNDCLASSEX windowClass;
-	memset(&windowClass, 0, sizeof(WNDCLASSEX));
+	WNDCLASSEX windowClass{ 0 };
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	windowClass.lpfnWndProc = WindowProc;
@@ -321,7 +330,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		break;
 
 	case WM_KEYDOWN:
-		m_Keys.SetPressed(wParam);
+		m_Keys.SetPressed(static_cast<nuInt>(wParam));
 		if (m_EventBus.Post(event))
 		{
 			return msg.result;
@@ -329,7 +338,7 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		return FALSE;
 
 	case WM_KEYUP:
-		m_Keys.SetReleased(wParam);
+		m_Keys.SetReleased(static_cast<nuInt>(wParam));
 		if (m_EventBus.Post(event))
 		{
 			return msg.result;
@@ -607,7 +616,7 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 
 LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	LONG userdata = GetWindowLong(hWnd, GWL_USERDATA);
+	auto userdata = GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	try
 	{
 		if (userdata == NULL)
@@ -616,7 +625,7 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			{
 				CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
 				n2dEngineImpl* ptr = static_cast<n2dEngineImpl *>(cs->lpCreateParams);
-				SetWindowLong(hWnd, GWL_USERDATA, reinterpret_cast<LONG>(ptr));
+				SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(ptr));
 				ptr->Show();
 				return 0;
 			}

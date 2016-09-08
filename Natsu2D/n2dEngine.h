@@ -9,6 +9,7 @@
 #include "n2dInterface.h"
 #include "n2dWindow.h"
 #include "n2dSoundSys.h"
+#include "n2dVirtualFileSystem.h"
 
 #ifdef N2DEXPORT
 #	define N2DFUNC __declspec(dllexport)
@@ -39,18 +40,13 @@ namespace n2dGlobal
 		{
 		}
 
-		explicit natExceptionEvent(natException && ex)
-			: m_Exception(move(ex))
-		{
-		}
-
 		natException const& GetData() const noexcept
 		{
 			return m_Exception;
 		}
 
 	private:
-		natException m_Exception;
+		natException const& m_Exception;
 	};
 }
 
@@ -222,6 +218,9 @@ struct n2dEngine
 	virtual natEventBus& GetEventBus() = 0;
 	///	@brief	获得线程池
 	virtual natThreadPool& GetThreadPool() = 0;
+
+	virtual n2dSchemaFactory& GetSchemaFactory() = 0;
+	virtual n2dVirtualFileSystem& GetVirtualFileSystem() = 0;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数

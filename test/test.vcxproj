@@ -93,7 +93,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Platform)\$(Configuration)\;extern\squirrel\bin\$(Platform)\$(Configuration)\;..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Platform)\$(Configuration)\;extern\squirrel\bin\$(Platform)\$(Configuration)\;..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
@@ -139,7 +139,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Platform)\$(Configuration)\;extern\squirrel\bin\$(Platform)\$(Configuration)\;..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
@@ -164,7 +164,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Configuration);extern\squirrel\bin\$(Configuration);..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\sqstdlib\bin\$(Platform)\$(Configuration)\;extern\squirrel\bin\$(Platform)\$(Configuration)\;..\NatsuLib\NatsuLib\bin\$(Platform)\$(Configuration)\;..\Natsu2D\bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NatsuLib.lib;Natsu2D.lib;squirrel.lib;sqstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>

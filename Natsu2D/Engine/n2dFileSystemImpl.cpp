@@ -108,7 +108,7 @@ nResult n2dFileNodeImpl::Associate(natStream* pStream)
 
 nuInt n2dFileNodeImpl::GetChildNodeCount() const
 {
-	return m_ChildNodes.size();
+	return static_cast<nuInt>(m_ChildNodes.size());
 }
 
 nResult n2dFileNodeImpl::List(nBool Recursive, nBool Dirs, std::function<nBool(n2dFileNode*)> Callback) const

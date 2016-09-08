@@ -242,7 +242,7 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 			assert(ptMesh && "Not a static mesh.");
 
 			m_StaticMaterials.emplace_back(&ptMesh->m_Material);
-			std::vector<nuInt> tMatID = { m_StaticMaterials.size() - 1 };
+			std::vector<nuInt> tMatID = { static_cast<nuInt>(m_StaticMaterials.size() - 1) };
 			m_Commands.emplace_back(RenderCommand{ true, tMatID, ptMesh->GetVertexBuffer(), ptMesh->GetIndexBuffer(), i->GetVertexCount(), i->GetIndexCount() });
 		}
 	}

@@ -1,8 +1,9 @@
 #include "n2dMotionManagerImpl.h"
 #include <natStream.h>
 #include <natUtil.h>
-
 #include <set>
+
+#undef max
 
 namespace
 {
@@ -421,7 +422,7 @@ void n2dMotionManagerImpl::doApplyMorph(n2dDynamicMeshDataImpl * pMesh, nuInt Mo
 void n2dSkeleton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
 {
 	std::set<n2dBone*> tBoneSet;
-	nuInt nBone = pModel->m_Mesh.m_Bones.size();
+	nuInt nBone = static_cast<nuInt>(pModel->m_Mesh.m_Bones.size());
 	m_Bones.resize(nBone);
 	m_UpdateList.resize(nBone);
 
@@ -430,7 +431,7 @@ void n2dSkeleton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
 		auto& tBone = pModel->m_Mesh.m_Bones[i];
 		nuShort parentID = tBone.Parent;
 		m_Bones[i].m_InitialPosition = tBone.Pos;
-		m_Bones[i].m_pParent = (parentID == nuShort(-1) ? nullptr : &m_Bones[parentID]);
+		m_Bones[i].m_pParent = (parentID == std::numeric_limits<nuShort>::max() ? nullptr : &m_Bones[parentID]);
 		m_Bones[i].m_isLimitAngleX = tBone.Name.find(PMDBoneKneeName) != nTString::npos;
 		tBoneSet.insert(&m_Bones[i]);
 	}

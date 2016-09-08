@@ -145,6 +145,12 @@
     <ClCompile Include="RenderDevice\n2dLayerImpl.cpp">
       <Filter>RenderDevice\source</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\n2dVirtualFileSystemImpl.cpp">
+      <Filter>Engine\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\n2dSchemaImpl.cpp">
+      <Filter>Engine\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="n2dCommon.h">
@@ -263,6 +269,15 @@
     </ClInclude>
     <ClInclude Include="RenderDevice\n2dLayerImpl.h">
       <Filter>RenderDevice\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dVirtualFileSystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\n2dVirtualFileSystemImpl.h">
+      <Filter>Engine\header</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\n2dSchemaImpl.h">
+      <Filter>Engine\header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -48,14 +48,7 @@ nResult n2dSoundSysImpl::CreateSoundBuffer(n2dSoundBuffer ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
-		n2dGlobal::natExceptionEvent event(e);
-		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
-	}
-	catch (natException& e)
-	{
-		n2dGlobal::natExceptionEvent event(e);
-		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 	catch (...)
 	{
@@ -74,24 +67,19 @@ nResult n2dSoundSysImpl::CreateWaveSoundBufferFromStream(natStream * pStream, n2
 
 	try
 	{
-		*pOut = new n2dSoundBufferImpl;
+		auto pBuffer = make_ref<n2dSoundBufferImpl>();
 		std::vector<nByte> tBuffer(static_cast<nuInt>(pStream->GetSize() - pStream->GetPosition()));
 		pStream->ReadBytes(tBuffer.data(), tBuffer.size());
-		if (NATFAIL(pStream->GetLastErr()) || !ALFWLoadWaveBufferToBuffer(tBuffer.data(), tBuffer.size(), (*pOut)->GetHandle()))
+		if (NATFAIL(pStream->GetLastErr()) || !ALFWLoadWaveBufferToBuffer(tBuffer.data(), static_cast<DWORD>(tBuffer.size()), pBuffer->GetHandle()))
 		{
 			nat_Throw(natException, _T("Cannot load wave buffer"));
 		}
+		*pOut = pBuffer;
+		pBuffer->AddRef();
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
-		n2dGlobal::natExceptionEvent event(e);
-		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
-	}
-	catch (natException& e)
-	{
-		n2dGlobal::natExceptionEvent event(e);
-		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 	catch (...)
 	{
@@ -114,14 +102,7 @@ nResult n2dSoundSysImpl::CreateSoundSource(n2dSoundSource ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		natException e(_T(__FUNCTION__), _T("Unknown source"), 0, _T("Failed to allocate memory"));
-		n2dGlobal::natExceptionEvent event(e);
-		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
-	}
-	catch (natException& e)
-	{
-		n2dGlobal::natExceptionEvent event(e);
-		m_pEngine->GetEventBus().Post<n2dGlobal::natExceptionEvent>(event);
+		nat_Throw(natException, _T("Failed to allocate memory"));
 	}
 	catch (...)
 	{

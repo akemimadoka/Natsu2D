@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "../n2dEngine.h"
-
-#include <Windows.h>
 #include "n2dWindowImpl.h"
+#include "n2dVirtualFileSystemImpl.h"
+#include "n2dSchemaImpl.h"
 #include <natEvent.h>
 #include <natMultiThread.h>
 #include <natType.h>
@@ -75,7 +75,7 @@ public:
 	};
 
 	///	@brief	GL应用构造函数
-	///	@param[in]	classname	窗口类名
+	///	@param[in]	lpClassname	窗口类名
 	///	@param[in]	hInstance	实例句柄
 	///	@param[in]	threadMode	线程模式
 	///	@note	其余参数见GL窗口构造函数
@@ -113,6 +113,8 @@ public:
 	natLog& GetLogger() override;
 	natEventBus& GetEventBus() override;
 	natThreadPool& GetThreadPool() override;
+	n2dSchemaFactory& GetSchemaFactory() override;
+	n2dVirtualFileSystem& GetVirtualFileSystem() override;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数
@@ -153,6 +155,9 @@ private:
 
 	natRefPointer<n2dRenderDevice>		m_pRenderer;
 	natRefPointer<n2dSoundSys>			m_pSoundSys;
+
+	n2dVirtualFileSystemImpl			m_VirtualFileSystem;
+	n2dSchemaFactoryImpl				m_SchemaFactory;
 
 	///	@brief	当前按键状况
 	///	@note	仅当当前窗口激活时有效

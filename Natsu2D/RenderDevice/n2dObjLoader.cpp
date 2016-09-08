@@ -54,12 +54,10 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 	}
 
 	nLen tLen = pStream->GetSize() - pStream->GetPosition();
-	nStr tmpstr = new nChar[static_cast<nuInt>(tLen) + 1];
-	tmpstr[tLen] = '\0';
+	std::vector<nChar> tmpstr(static_cast<nuInt>(tLen) + 1);
 
-	pStream->ReadBytes(reinterpret_cast<nData>(tmpstr), tLen);
-	tfs.str(tmpstr);
-	SafeDelArr(tmpstr);
+	pStream->ReadBytes(reinterpret_cast<nData>(tmpstr.data()), tLen);
+	tfs.str(tmpstr.data());
 
 	while (!tfs.eof())
 	{
@@ -98,7 +96,7 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 			{
 				ss >> tstr[j];
 				std::vector<std::string> vi;
-				natUtil::split(tstr[j], std::string("/"), [&vi](ncStr str, nuInt len)
+				natUtil::split(tstr[j], std::string("/"), [&vi](ncStr str, size_t len)
 				{
 					vi.emplace_back(str, len);
 				});
@@ -116,15 +114,9 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 			uvIndices.insert(uvIndices.end(), &Index[1][0], &Index[1][2] + 1);
 			normalIndices.insert(normalIndices.end(), &Index[2][0], &Index[2][2] + 1);
 		}
-		else
-		{
-			continue;
-		}
 	}
 
-#ifdef min		// f**k windows.h
-#	undef min
-#endif
+#undef min
 
 	nuInt size = std::min({ vertexIndices.size(), uvIndices.size(), normalIndices.size() });
 

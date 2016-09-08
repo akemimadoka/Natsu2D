@@ -2,7 +2,7 @@
 
 nuInt n2dStaticModelDataImpl::GetMeshCount() const
 {
-	return m_Meshes.size();
+	return static_cast<nuInt>(m_Meshes.size());
 }
 
 void n2dDynamicModelDataImpl::Update(nuInt nFrame)

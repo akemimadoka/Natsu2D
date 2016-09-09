@@ -6,6 +6,7 @@
 #include "n2dInterface.h"
 #include "natMath.h"
 
+struct n2dTexture;
 struct n2dRenderDevice;
 namespace NatsuLib
 {
@@ -15,54 +16,23 @@ struct n2dGraphics2D;
 struct n2dTexture2D;
 
 ////////////////////////////////////////////////////////////////////////////////
-///	@brief	字符纹理
+/// @brief	Natsu2D字体
 ////////////////////////////////////////////////////////////////////////////////
-struct n2dCharTexture final
-{
-	natRefPointer<n2dTexture2D>	CharTexture;	///< @brief	生成的字符纹理
-	nuInt			Width;			///< @brief	宽
-	nuInt			Height;			///< @brief	高
-
-	nuInt			adv_x;
-	nuInt			adv_y;
-	nuInt			delta_x;
-	nuInt			delta_y;
-
-	n2dCharTexture()
-		: CharTexture(nullptr),
-		Width(0),
-		Height(0),
-		adv_x(0u),
-		adv_y(0u),
-		delta_x(0u),
-		delta_y(0u)
-	{
-	}
-};
-
 struct n2dFont
 	: n2dInterface
 {
-	///	@brief	初始化字体
-	///	@param[in]	Height			字体高度
-	///	@param[in]	Width			字体宽度
-	///	@param[in]	Escapement		移位向量和设备X轴之间的角度
-	///	@param[in]	Orientation		每个字符的基线和设备X轴之间的角度
-	///	@param[in]	Weight			字体的权值，更高的值使得字体更粗，取值[0, 1000]
-	///	@param[in]	Italic			斜体
-	///	@param[in]	Underline		下划线
-	///	@param[in]	StrikeOut		删除线
-	///	@param[in]	CharSet			字符集
-	///	@param[in]	OutPrecision	输出精度
-	///	@param[in]	ClipPrecision	裁剪精度
-	///	@param[in]	Quality			输出质量
-	///	@param[in]	PitchAndFamily	字体间距和字体族
-	///	@param[in]	FaceName		字体字样名，长度不得超过32个字符（包括\\0）
-	///	@note	在构造时被调用，之后可以再次使用该方法更换字体
-	///	@return	是否成功初始化
-	virtual nResult InitFont(int Height, int Width, int Escapement, int Orientation, int Weight, bool Italic, bool Underline, bool StrikeOut, int CharSet, int OutPrecision, int ClipPrecision, int Quality, int PitchAndFamily, ncTStr FaceName) = 0;
 
+	/// @brief	使用字体文件进行初始化
+	/// @param[in]	pRenderer	渲染设备
+	/// @param[in]	lpFontFile	字体文件名
+	/// @param[in]	iWidth		字体宽度（像素）
+	/// @param[in]	iHeight		字体高度（像素）
 	virtual nResult InitFont(n2dRenderDevice* pRenderer, ncTStr lpFontFile, nuInt iWidth, nuInt iHeight) = 0;
+	/// @brief	使用字体文件进行初始化
+	/// @param[in]	pRenderer	渲染设备
+	/// @param[in]	pStream		字体流
+	/// @param[in]	iWidth		字体宽度（像素）
+	/// @param[in]	iHeight		字体高度（像素）
 	virtual nResult InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nuInt iWidth, nuInt iHeight) = 0;
 
 	///	@brief	初始化文本
@@ -71,9 +41,37 @@ struct n2dFont
 	///	@note	重复的文本不会重复初始化
 	virtual nResult InitText(ncTStr str, nLen lStrlen) = 0;
 
-	///	@brief	绘制字体
-	///	@param[in]	pGraphic	图元渲染器
-	///	@param[in]	str			要绘制的文本
-	///	@param[in]	rect		要绘制到的框
-	virtual nResult PrintFont(n2dGraphics2D* pGraphic, ncTStr str, natRect<> const& rect) = 0;
+	nResult InitText(ncTStr str)
+	{
+		return InitText(str, std::char_traits<nTChar>::length(str));
+	}
+
+	template <size_t n>
+	nResult InitText(const nTChar (&str)[n])
+	{
+		return InitText(str, n - 1);
+	}
+
+	nResult InitText(nTString str)
+	{
+		return InitText(str.c_str(), str.size());
+	}
+
+	/// @brief	使用颜色绘制字体
+	/// @param[in]	pGraphic	图元渲染器
+	/// @param[in]	str			要绘制的字符串
+	/// @param[in]	x			要绘制到的x坐标
+	/// @param[in]	y			要绘制到的y坐标
+	/// @param[in]	scale		缩放系数
+	/// @param[in]	color		字体颜色
+	virtual nResult PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color) = 0;
+
+	/// @brief	使用纹理绘制字体
+	/// @param[in]	pGraphic	图元渲染器
+	/// @param[in]	str			要绘制的字符串
+	/// @param[in]	x			要绘制到的x坐标
+	/// @param[in]	y			要绘制到的y坐标
+	/// @param[in]	scale		缩放系数
+	/// @param[in]	pTexture	字体纹理
+	virtual nResult PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture) = 0;
 };

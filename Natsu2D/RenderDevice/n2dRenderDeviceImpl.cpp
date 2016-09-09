@@ -10,6 +10,7 @@
 #include "n2dLightControllerImpl.h"
 #include "n2dMotionManagerImpl.h"
 #include "n2dLayerImpl.h"
+#include "../Renderer/n2dFontImpl.h"
 
 n2dRenderDeviceImpl::n2dRenderDeviceImpl(n2dEngine* GLApp)
 	: m_pEngine(GLApp),
@@ -466,6 +467,29 @@ nResult n2dRenderDeviceImpl::CreateMotionManager(n2dMotionManager ** pOut)
 	try
 	{
 		*pOut = new n2dMotionManagerImpl;
+	}
+	catch (std::bad_alloc&)
+	{
+		nat_Throw(natException, _T("Failed to allocate memory"));
+	}
+	catch (...)
+	{
+		return NatErr_Unknown;
+	}
+
+	return NatErr_OK;
+}
+
+nResult n2dRenderDeviceImpl::CreateFontManager(n2dFont** pOut)
+{
+	if (pOut == nullptr)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	try
+	{
+		*pOut = new n2dFontImpl(this);
 	}
 	catch (std::bad_alloc&)
 	{

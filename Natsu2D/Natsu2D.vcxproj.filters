@@ -139,9 +139,6 @@
     <ClCompile Include="RenderDevice\n2dMotionManagerImpl.cpp">
       <Filter>RenderDevice\source</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\n2dFileSystemImpl.cpp">
-      <Filter>Engine\source</Filter>
-    </ClCompile>
     <ClCompile Include="RenderDevice\n2dLayerImpl.cpp">
       <Filter>RenderDevice\source</Filter>
     </ClCompile>
@@ -255,12 +252,6 @@
     <ClInclude Include="RenderDevice\n2dMotionManagerImpl.h">
       <Filter>RenderDevice\header</Filter>
     </ClInclude>
-    <ClInclude Include="n2dFileSystem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\n2dFileSystemImpl.h">
-      <Filter>Engine\header</Filter>
-    </ClInclude>
     <ClInclude Include="n2dRenderNode.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -278,6 +269,9 @@
     </ClInclude>
     <ClInclude Include="Engine\n2dSchemaImpl.h">
       <Filter>Engine\header</Filter>
+    </ClInclude>
+    <ClInclude Include="n2dResourceMgr.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

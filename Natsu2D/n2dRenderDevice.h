@@ -7,6 +7,7 @@
 #include "n2dCommon.h"
 #include <natMat.h>
 
+struct n2dFont;
 struct n2dLayer;
 struct n2dShaderWrapper;
 struct n2dEngine;
@@ -892,4 +893,6 @@ struct n2dRenderDevice
 	///	@param[out]	pOut	创建的动作管理器
 	///	@return	处理结果
 	virtual nResult CreateMotionManager(n2dMotionManager** pOut) = 0;
+
+	virtual nResult CreateFontManager(n2dFont** pOut) = 0;
 };

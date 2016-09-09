@@ -4,55 +4,25 @@
 #include "../RenderDevice/n2dGraphicsImpl.h"
 #include "../RenderDevice/n2dRenderDeviceImpl.h"
 #include <natStream.h>
-#include <fstream>
 #include "../extern/freetype/include/ft2build.h"
 #include "../extern/freetype/include/freetype/freetype.h"
 #include "../extern/freetype/include/freetype/ftglyph.h"
 #include "../n2dGraphics.h"
 
-n2dFontImpl::n2dFontImpl(int Height, int Width, int Escapement, int Orientation, int Weight, bool Italic, bool Underline, bool StrikeOut, int CharSet, int OutPrecision, int ClipPrecision, int Quality, int PitchAndFamily, LPCTSTR FaceName)
-	: m_pFTLib(nullptr), m_pFTFace(nullptr), m_hFont(NULL), m_pFileBuf(nullptr)
-{
-	if (NATFAIL(InitFont(Height, Width, Escapement, Orientation, Weight, Italic, Underline, StrikeOut, CharSet, OutPrecision, ClipPrecision, Quality, PitchAndFamily, FaceName)))
-	{
-		nat_Throw(natException, _T("Failed to Create Font"));
-	}
-}
-
 n2dFontImpl::n2dFontImpl(n2dRenderDeviceImpl* pRenderer)
-	: m_pFTLib(nullptr), m_pFTFace(nullptr), m_pFileBuf(nullptr), m_pRenderer(pRenderer)
+	: m_pFTLib(nullptr), m_pFTFace(nullptr), m_pRenderer(pRenderer)
 {
 }
 
 n2dFontImpl::~n2dFontImpl()
 {
-	if (m_hFont)
-	{
-		DeleteObject(m_hFont);
-		m_hFont = nullptr;
-	}
 	FT_Done_Face(m_pFTFace);
 	FT_Done_FreeType(m_pFTLib);
-	SafeDelArr(m_pFileBuf);
-}
-
-nResult n2dFontImpl::InitFont(int Height, int Width, int Escapement, int Orientation, int Weight, bool Italic, bool Underline, bool StrikeOut, int CharSet, int OutPrecision, int ClipPrecision, int Quality, int PitchAndFamily, ncTStr FaceName)
-{
-	HFONT oldFont = m_hFont;
-	m_hFont = CreateFont(Height, Width, Escapement, Orientation, Weight, Italic, Underline, StrikeOut, CharSet, OutPrecision, ClipPrecision, Quality, PitchAndFamily, FaceName);
-
-	if (oldFont != m_hFont)
-	{
-		DeleteObject(oldFont);
-	}
-
-	return m_hFont != nullptr ? NatErr_OK : NatErr_InternalErr;
 }
 
 nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, ncTStr lpFontFile, nuInt iWidth, nuInt iHeight)
 {
-	natRefPointer<natStream> pStream = make_ref<natFileStream>(lpFontFile, true, false);
-	return InitFont(pRenderer, pStream, iWidth, iHeight);
+	return InitFont(pRenderer, make_ref<natFileStream>(lpFontFile, true, false), iWidth, iHeight);
 }
 
 nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nuInt iWidth, nuInt iHeight)
@@ -72,11 +42,10 @@ nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nu
 	}
 
 	nLen tLen = pStream->GetSize();
-	SafeDelArr(m_pFileBuf);
-	m_pFileBuf = new nByte[static_cast<nuInt>(tLen)];
-	pStream->ReadBytes(m_pFileBuf, tLen);
+	m_FileBuf.resize(static_cast<size_t>(tLen));
+	pStream->ReadBytes(m_FileBuf.data(), tLen);
 
-	if (FT_New_Memory_Face(m_pFTLib, m_pFileBuf, static_cast<FT_Long>(tLen), 0, &m_pFTFace) != 0)
+	if (FT_New_Memory_Face(m_pFTLib, m_FileBuf.data(), static_cast<FT_Long>(tLen), 0, &m_pFTFace) != 0)
 	{
 		return NatErr_InternalErr;
 	}
@@ -89,10 +58,14 @@ nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nu
 
 nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 {
-	/*if (!m_hFont)
+	if (!m_pFTLib)
 	{
 		return NatErr_IllegalState;
-	}*/
+	}
+
+	GLint oldAlignment;
+	glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldAlignment);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	for (nLen i = 0; i < lStrlen; ++i)
 	{
@@ -116,117 +89,154 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 		FT_BitmapGlyph tBitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(tGlyph);
 
 		FT_Bitmap& tBitmap = tBitmapGlyph->bitmap;
-		n2dCharTexture& tCharTexture = m_FontCache[str[i]];
+		auto& tCharTexture = m_FontCache[str[i]];
 
 		tCharTexture.Width = tBitmap.width;
 		tCharTexture.Height = tBitmap.rows;
-		tCharTexture.adv_x = m_pFTFace->glyph->advance.x / 64;
+		tCharTexture.adv_x = m_pFTFace->glyph->advance.x >> 6;
 		tCharTexture.adv_y = m_pFTFace->size->metrics.y_ppem;
+		tCharTexture.bearing_x = m_pFTFace->glyph->bitmap_left;
+		tCharTexture.bearing_y = m_pFTFace->glyph->bitmap_top;
 		tCharTexture.delta_x = tBitmapGlyph->left;
 		tCharTexture.delta_y = tBitmapGlyph->top - tBitmap.rows;
 
 		tCharTexture.CharTexture = make_ref<n2dTexture2DImpl>();
 		tCharTexture.CharTexture->LoadTexture(n2dImage{ GL_RED, GL_RED, tBitmap.buffer, tCharTexture.Width * tCharTexture.Height, tCharTexture.Width, tCharTexture.Height });
 	}
-	/*
-	HBITMAP hBitmap, hOldBitmap;
-	BITMAP bmp;
-	SIZE size;
 
-	HDC hDC = CreateCompatibleDC(NULL);
-
-	SelectObject(hDC, m_hFont);
-
-	auto len = lstrlen(str);
-	GetTextExtentPoint32(hDC, str, len, &size);
-
-	hBitmap = CreateBitmap(size.cx, size.cy, 1, 1, nullptr);
-	hOldBitmap = static_cast<HBITMAP>(SelectObject(hDC, hBitmap));
-
-	SetBkColor(hDC, RGB(0, 0, 0));
-	SetTextColor(hDC, RGB(255, 255, 255));
-	SetBkMode(hDC, OPAQUE);
-	TextOut(hDC, 0, 0, str, lstrlen(str));
-	//RECT tRect;
-	
-	//DrawText(hDC, str, len, &tRect, DT_CALCRECT);
-	GetObject(hBitmap, sizeof(bmp), &bmp);
-	size.cx = (bmp.bmWidth + 31) & ~31;
-	size.cy = bmp.bmHeight;
-	int bufsize = size.cx * size.cy * 3;
-	BITMAPINFO* bin = static_cast<BITMAPINFO *>(malloc(sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)));
-	memset(bin, 0, sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD));
-	bin->bmiHeader.biSize = sizeof(bin->bmiHeader);
-	bin->bmiHeader.biWidth = bmp.bmWidth;
-	bin->bmiHeader.biHeight = bmp.bmHeight;
-	bin->bmiHeader.biPlanes = 1;
-	bin->bmiHeader.biBitCount = 24;
-	bin->bmiHeader.biCompression = BI_RGB;
-	bin->bmiHeader.biSizeImage = bufsize;
-	bin->bmiHeader.biXPelsPerMeter = 1;
-	bin->bmiHeader.biYPelsPerMeter = 1;
-	bin->bmiHeader.biClrUsed = 0;
-	bin->bmiHeader.biClrImportant = 0;
-
-	nByte* pBmpBits = nullptr;
-	if (GetDIBits(hDC, hBitmap, 0u, bmp.bmHeight, pBmpBits, bin, DIB_RGB_COLORS) == 0)
-	{
-		nat_Throw(natException, n2dUtil::FormatString(_T("Errno=%d"), GetLastError()));
-	}
-	bufsize = bin->bmiHeader.biSizeImage;
-	pBmpBits = new nByte[bufsize];
-	memset(pBmpBits, 0, bufsize);
-	//hBitmap = CreateDIBSection(hDC, bin, DIB_RGB_COLORS, reinterpret_cast<void**>(&pBmpBits), NULL, NULL);
-
-	GetDIBits(hDC, hBitmap, 0u, bmp.bmHeight, pBmpBits, bin, DIB_RGB_COLORS);
-	m_TmpImage = std::make_shared<n2dImage>(1, GL_RED, pBmpBits, bufsize, size.cx, size.cy);
-
-	free(bin);
-	DeleteObject(SelectObject(hDC, hOldBitmap));
-	DeleteDC(hDC);*/
-
+	glPixelStorei(GL_UNPACK_ALIGNMENT, oldAlignment);
 	return NatErr_OK;
 }
 
-nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, natRect<> const& rect)
+nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color)
 {
-	/*if (!m_hFont)
+	if (!m_pFTLib)
 	{
-		nat_Throw(natException, _T("Font had not initialized"));
-	}*/
+		return NatErr_IllegalState;
+	}
 
+	nBool shouldEnd;
+	auto pUsingProgram = m_pRenderer->GetShaderWrapper()->GetCurrentProgram();
+	auto pFontProgram = m_pRenderer->GetShaderWrapper()->GetFontProgram();
+	if (pGraphic->IsRendering())
+	{
+		shouldEnd = false;
+		pGraphic->Flush();
+	}
+	else
+	{
+		shouldEnd = true;
+		pGraphic->Begin();
+	}
+	m_pRenderer->PushMVPMat();
+	m_pRenderer->InitMVPMat();
+	auto window = m_pRenderer->GetEngine()->GetWindow();
+	m_pRenderer->SubmitProjMat(natTransform::ortho(0.0f, static_cast<nFloat>(window->GetWidth()), 0.0f, static_cast<nFloat>(window->GetHeight())));
+	auto scope = make_scope([shouldEnd, pGraphic, pUsingProgram, this]
+	{
+		if (shouldEnd)
+		{
+			pGraphic->End();
+		}
+		else
+		{
+			pGraphic->Flush();
+		}
+
+		m_pRenderer->PopMVPMat();
+		pUsingProgram->Use();
+	});
+
+	pFontProgram->Use();
+	GLint useTexture = GL_FALSE;
+	pFontProgram->GetUniformReference(_T("useTexture"))->SetValue(1, &useTexture);
+	pFontProgram->GetUniformReference(_T("textColor"))->SetValue(1, &color);
+
+	return PrintFontImpl(pGraphic, str, x, y, scale);
+}
+
+nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture)
+{
+	if (!m_pFTLib)
+	{
+		return NatErr_IllegalState;
+	}
+
+	nBool shouldEnd;
+	auto pUsingProgram = m_pRenderer->GetShaderWrapper()->GetCurrentProgram();
+	auto pFontProgram = m_pRenderer->GetShaderWrapper()->GetFontProgram();
+	if (pGraphic->IsRendering())
+	{
+		shouldEnd = false;
+		pGraphic->Flush();
+	}
+	else
+	{
+		shouldEnd = true;
+		pGraphic->Begin();
+	}
+	m_pRenderer->PushMVPMat();
+	m_pRenderer->InitMVPMat();
+	auto window = m_pRenderer->GetEngine()->GetWindow();
+	m_pRenderer->SubmitProjMat(natTransform::ortho(0.0f, static_cast<nFloat>(window->GetWidth()), 0.0f, static_cast<nFloat>(window->GetHeight())));
+	auto scope = make_scope([shouldEnd, pGraphic, pUsingProgram, this]
+	{
+		if (shouldEnd)
+		{
+			pGraphic->End();
+		}
+		else
+		{
+			pGraphic->Flush();
+		}
+
+		m_pRenderer->PopMVPMat();
+		pUsingProgram->Use();
+	});
+
+	pFontProgram->Use();
+	GLint useTexture = GL_TRUE;
+	pFontProgram->GetUniformReference(_T("useTexture"))->SetValue(1, &useTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, pTexture->GetTextureID());
+
+	return PrintFontImpl(pGraphic, str, x, y, scale);
+}
+
+nResult n2dFontImpl::PrintFontImpl(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale)
+{
 	nLen tLen = std::char_traits<nTChar>::length(str);
-
-	for (nLen i = 0ul; i < tLen; ++i)
+	nFloat currentx = x, currenty = y;
+	for (nLen i = 0; i < tLen; ++i)
 	{
 		auto mapitea = m_FontCache.find(str[i]);
 		if (mapitea == m_FontCache.end())
 		{
-			InitText(&str[i], 1ul);
+			InitText(&str[i], 1);
 			if ((mapitea = m_FontCache.find(str[i])) == m_FontCache.end())
 			{
 				return NatErr_InternalErr;
 			}
 		}
 
-		/*nuInt w = mapitea->second.Width, h = mapitea->second.Height;
-		nuInt chx = sx + mapitea->second.delta_x, chy = sy - h - mapitea->second.delta_y;
+		if (mapitea->first == '\n')
+		{
+			currentx = x;
+			currenty += mapitea->second.adv_y;
+			continue;
+		}
 
-		n2dGraphics2DVertex tVert[4];
-		tVert[0].uv = natVec2<>(0.f, 0.f);
-		n2dUtil::TransformCoord(m_pRenderer, chx,		chy + h,	tVert[1].vert.x, tVert[1].vert.y);
-		tVert[1].uv = natVec2<>(0.f, 1.f);
-		n2dUtil::TransformCoord(m_pRenderer, chx + w,	chy + h,	tVert[2].vert.x, tVert[2].vert.y);
-		tVert[2].uv = natVec2<>(1.f, 1.f);
-		n2dUtil::TransformCoord(m_pRenderer, chx + w,	chy,		tVert[3].vert.x, tVert[3].vert.y);
-		tVert[3].uv = natVec2<>(1.f, 0.f);
-		
-		auto pProgram = m_pRenderer->GetShaderWrapper()->GetCurrentProgram();
-		m_pRenderer->GetShaderWrapper()->GetFontProgram()->Use();
-		pGraphic->DrawQuad(mapitea->second.CharTexture, tVert);
-		pProgram->Use();
+		auto w = mapitea->second.Width * scale, h = mapitea->second.Height * scale;
+		auto xPos = currentx + mapitea->second.bearing_x * scale;
+		auto yPos = currenty - (mapitea->second.Height - mapitea->second.bearing_y) * scale;
 
-		sx += mapitea->second.adv_x;*/
+		pGraphic->DrawQuad(mapitea->second.CharTexture,
+			n2dGraphics2DVertex{ { xPos, yPos + h, 0.f }, 0,{ 0.f, 0.f } },
+			n2dGraphics2DVertex{ { xPos, yPos, 0.f }, 0,{ 0.f, 1.f } },
+			n2dGraphics2DVertex{ { xPos + w, yPos, 0.f }, 0,{ 1.f, 1.f } },
+			n2dGraphics2DVertex{ { xPos + w, yPos + h, 0.f }, 0,{ 1.f, 0.f } });
+
+		currentx += mapitea->second.adv_x * scale;
 	}
 
 	return NatErr_OK;

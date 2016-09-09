@@ -21,8 +21,6 @@ public:
 	private:
 		LocalFilesystemSchema* m_pSchema;
 		nTString m_Path;
-		std::chrono::system_clock::time_point m_EditTime;
-		nLen m_Size;
 	};
 
 	static constexpr nTChar DefaultRootPath[] = { _T('.'), std::experimental::filesystem::path::preferred_separator, 0 };

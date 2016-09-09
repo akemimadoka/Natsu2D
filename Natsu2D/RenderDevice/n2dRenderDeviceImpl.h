@@ -256,6 +256,8 @@ public:
 
 	nResult CreateMotionManager(n2dMotionManager** pOut) override;
 
+	nResult CreateFontManager(n2dFont** pOut) override;
+
 	void updateMVP();
 private:
 	n2dEngine* m_pEngine;

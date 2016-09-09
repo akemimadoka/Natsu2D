@@ -147,7 +147,7 @@ private:
 	n2dWindowImpl			m_Window;
 	natCriticalSection		m_Section;
 	ncTStr					m_ClassName;
-	nBool					m_IsProgramLooping;
+	std::atomic<nBool>		m_IsProgramLooping;
 	nBool					m_IsVisible;
 	nBool					m_ResizeDraw;
 	HINSTANCE				m_hInstance;

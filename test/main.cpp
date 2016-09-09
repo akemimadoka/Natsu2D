@@ -190,8 +190,7 @@ public:
 	}
 
 	explicit test(HINSTANCE hInstance)
-		: m_Speed(0.0f),m_bShouldControl(false),m_RotateL(0.0f),m_RotateH(0.0f),f(nullptr),
-		m_model(nullptr)//f(48, 0, 0, 0, FW_BOLD, false, false, false, GB2312_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, FF_DONTCARE | DEFAULT_PITCH, _T("微软雅黑"))
+		: m_Speed(0.0f), m_bShouldControl(false), m_RotateL(0.0f), m_RotateH(0.0f)
 	{
 		nat_ThrowIfFailed(CreateN2DEngine(0, _T("GLAPP"), 0u, 0u, 800u, 600u, 1280u, 720u, 32u, false, hInstance, n2dEngine::ThreadMode::MultiThread, this, &m_pEngine), _T("Failed to create Natsu2D engine"));
 
@@ -232,12 +231,12 @@ public:
 				for (size_t i = 0; i < ex->GetStackWalker().GetFrameCount(); ++i)
 				{
 					auto&& symbol = ex->GetStackWalker().GetSymbol(i);
-					ss << natUtil::FormatString(_T("{3}: (0x%08X) {4} at address 0x%08X (file {5}:{6} at address 0x%08X)"), reinterpret_cast<nuLong>(symbol.OriginalAddress), symbol.SymbolAddress, symbol.SourceFileAddress, i, symbol.SymbolName, symbol.SourceFileName, symbol.SourceFileLine) << std::endl;
+					ss << natUtil::FormatString(_T("{3}: (0x%p) {4} at address 0x%p (file {5}:{6} at address 0x%p)"), symbol.OriginalAddress, reinterpret_cast<LPCVOID>(symbol.SymbolAddress), reinterpret_cast<LPCVOID>(symbol.SourceFileAddress), i, symbol.SymbolName, symbol.SourceFileName, symbol.SourceFileLine) << std::endl;
 				}
 #endif
 
-				m_pEngine->GetLogger().LogErr(ss.str().c_str());
-				MessageBox(nullptr, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
+				m_pEngine->GetLogger().LogErr(ss.str());
+				MessageBox(NULL, ss.str().c_str(), _T("Unhandled exception"), MB_OK | MB_ICONERROR);
 			}
 		});
 
@@ -300,13 +299,11 @@ public:
 
 	nBool WindowInit() override
 	{
-		static bool inited = false;
+		static auto inited = false;
 		n2dRenderDevice* renderdevice = m_pEngine->GetRenderDevice();
 		
 		if (!inited)
 		{
-			// 此处忽略所有可能发生的错误，需要时请使用NATFAIL宏判断函数是否失败
-
 			// 创建二维图元渲染器
 			nat_ThrowIfFailed(renderdevice->CreateGraphics2D(&m_pGraphics), _T("CreateGraphics2D failed."));
 			// 创建三维图元渲染器
@@ -323,6 +320,8 @@ public:
 			nat_ThrowIfFailed(renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, &m_DebugBuffer), _T("CreateBuffer failed."));
 			// 创建动作管理器
 			nat_ThrowIfFailed(renderdevice->CreateMotionManager(&m_MotionManager), _T("CreateMotionManager failed."));
+
+			nat_ThrowIfFailed(renderdevice->CreateFontManager(&f), _T("CreateFontManager failed."));
 		}
 
 		m_pEngine->GetLogger().LogMsg(natUtil::FormatString(_T("GLAPP initialized as {0} thread mode"), (m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? _T("single") : _T("multi"))).c_str());
@@ -341,7 +340,7 @@ public:
 
 		if (!window->GetFullScreen())
 		{
-			SetWindowLong(window->GetWnd(), GWL_STYLE, GetWindowLong(window->GetWnd(), GWL_STYLE) & ~WS_SIZEBOX & ~WS_MAXIMIZEBOX);
+			SetWindowLongPtr(window->GetWnd(), GWL_STYLE, GetWindowLongPtr(window->GetWnd(), GWL_STYLE) & ~WS_SIZEBOX & ~WS_MAXIMIZEBOX);
 			HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APPICON));
 			SendMessage(window->GetWnd(), WM_SETICON, TRUE, LPARAM(hIcon));
 			SendMessage(window->GetWnd(), WM_SETICON, FALSE, LPARAM(hIcon));
@@ -362,6 +361,8 @@ public:
 			auto streamInfo = vfs.GetStreamInfoFromUri(_T("local://script/boot.nut"));
 			nLen size = 0;
 			nat_ThrowIfFailed(streamInfo->GetSize(size), _T("Cannot get size."));
+			std::chrono::system_clock::time_point time;
+			nat_ThrowIfFailed(streamInfo->GetEditTime(time), _T("Cannot get time."));
 			m_pEngine->GetLogger().LogMsg(_T("Path: {0}, Size: {1}"), streamInfo->GetPath(), size);
 			std::vector<nByte> data(static_cast<size_t>(size) + 1);
 			streamInfo->OpenStream(true, false)->ReadBytes(data.data(), size);
@@ -377,7 +378,7 @@ public:
 			sw = renderdevice->GetShaderWrapper();
 			sw->CreateProgram(&sp);
 			natRefPointer<n2dShader> pShader[2];
-			auto pStream = make_ref<natFileStream>(_T("VertexShader.glsl"), true, false);
+			auto pStream = vfs.GetStreamInfoFromUri(_T("local://VertexShader.glsl"))->OpenStream(true, false);
 			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 			if (!pShader[0]->Compiled())
 			{
@@ -390,7 +391,7 @@ public:
 				m_pEngine->GetLogger().LogWarn(natUtil::FormatString(_T("Compile0Log: %s"), pLog).c_str());
 			}
 
-			pStream = make_ref<natFileStream>(_T("FragmentShader.glsl"), true, false);
+			pStream = vfs.GetStreamInfoFromUri(_T("local://FragmentShader.glsl"))->OpenStream(true, false);
 			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
 			if (!pShader[1]->Compiled())
 			{
@@ -466,8 +467,8 @@ public:
 			m_DebugBuffer->AllocData(sizeof(DebugBuffer), nullptr, n2dBuffer::BufferUsage::DynamicRead);
 			m_DebugBuffer->BindBase(3u);
 
-			//f->InitFont(renderdevice, _T("fz.ttf"), 32, 32);
-			//f->InitText(_T("23"), 2);
+			f->InitFont(renderdevice, vfs.GetStreamInfoFromUri(_T("local://fz.ttf"))->OpenStream(true, false), 32, 32);
+			f->InitText(_T("23"), 2);
 			/*if (!m_texture->LoadTexture(_T("texture.dds")))
 			{
 			nat_Throw(natException, _T("Unable to load texture"));
@@ -483,7 +484,7 @@ public:
 			}*/
 
 			n2dSoundSys* pSound = m_pEngine->GetSoundSys();
-			pStream = make_ref<natFileStream>(_T("Lamb.wav"), true, false);
+			pStream = vfs.GetStreamInfoFromUri(_T("local://Lamb.wav"))->OpenStream(true, false);
 			pSound->CreateWaveSoundBufferFromStream(pStream, &m_soundbuf);
 			pSound->CreateSoundSource(&m_soundsrc);
 			m_soundsrc->BindBuffer(m_soundbuf);
@@ -550,7 +551,7 @@ public:
 			nat_Throw(natException, _T("Failed to prepare graphic renderer"));
 		}
 		
-		//f.PrintFont(m_pGraphics, _T("2333"), 0.f, 0.f, 10.f);
+		f->PrintFont(m_pGraphics, _T("琪露诺"), 0.f, 30.f, 1.0f, natVec3<>{1.0, 0.0, 0.0});
 
 		pRenderDevice->SubmitViewMat(natTransform::move(
 			natTransform::rotate(
@@ -582,8 +583,8 @@ public:
 			n2dGraphics2DVertex{ natVec3<>(100, 200, 200), 0, natVec2<>(1, 1) },
 			n2dGraphics2DVertex{ natVec3<>(-100, 200, 200), 0, natVec2<>(0, 1) });*/
 
-		n2dShaderProgram* pd = sw->GetDefaultProgram();
-		pd->Use();
+		//n2dShaderProgram* pd = sw->GetDefaultProgram();
+		//pd->Use();
 
 		m_pGraphics->End();
 
@@ -671,7 +672,7 @@ int main()
 		MessageBox(NULL, _T("Unknown exception"), _T("Uncaught exception"), MB_OK | MB_ICONERROR);
 	}
 	
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 	return 0;
 }
 

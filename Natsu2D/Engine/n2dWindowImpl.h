@@ -38,8 +38,8 @@ public:
 
 	///	@brief	创建窗口
 	///	@note	需使用Show方法显示窗口
-	///	@param[in]	title		窗口标题
-	///	@param[in]	classname	窗口类名
+	///	@param[in]	lpTitle		窗口标题
+	///	@param[in]	lpClassname	窗口类名
 	///	@param[in]	hInstance	实例句柄
 	///	@param[in]	lpParam		创建参数
 	nBool Create(ncTStr lpTitle, ncTStr lpClassname, HINSTANCE hInstance, LPVOID lpParam) override;
@@ -118,6 +118,21 @@ public:
 	HGLRC GetRC() override;
 
 	n2dEngineImpl* GetEngine() override;
+
+	void RawSetPosX(nuInt value);
+	nuInt RawGetPosX() const;
+
+	void RawSetPosY(nuInt value);
+	nuInt RawGetPosY() const;
+
+	void RawSetWidth(nuInt value);
+	nuInt RawGetWidth() const;
+
+	void RawSetHeight(nuInt value);
+	nuInt RawGetHeight() const;
+
+	void UpdatePosition();
+	void ApplyPosition();
 
 private:
 	HWND m_hWnd;

@@ -59,16 +59,7 @@ namespace
 LocalFilesystemSchema::LocalFilesystemStreamInfo::LocalFilesystemStreamInfo(LocalFilesystemSchema* pSchema, ncTStr path)
 	: m_pSchema(pSchema), m_Path(path)
 {
-	natFileStream tFile{ (nTString(pSchema->GetRootPath()) + path).c_str(), true, false };
-
-	FILETIME editTime { 0 };
-	if (!GetFileTime(tFile.GetUnsafeHandle(), nullptr, nullptr, &editTime))
-	{
-		nat_Throw(natWinException, _T("GetFileTime failed."));
-	}
-
-	m_EditTime = std::chrono::system_clock::from_time_t(FileTimeToTime_T(editTime));
-	m_Size = tFile.GetSize();
+	natFileStream tFile{ (nTString(pSchema->GetRootPath()) + path).c_str(), false, false };
 }
 
 LocalFilesystemSchema::LocalFilesystemStreamInfo::~LocalFilesystemStreamInfo()
@@ -82,13 +73,23 @@ ncTStr LocalFilesystemSchema::LocalFilesystemStreamInfo::GetPath() const
 
 nResult LocalFilesystemSchema::LocalFilesystemStreamInfo::GetEditTime(std::chrono::system_clock::time_point& time) const
 {
-	time = m_EditTime;
+	natFileStream tFile{ (nTString(m_pSchema->GetRootPath()) + m_Path).c_str(), false, false };
+
+	FILETIME editTime{ 0 };
+	if (!GetFileTime(tFile.GetUnsafeHandle(), nullptr, nullptr, &editTime))
+	{
+		return NatErr_InternalErr;
+	}
+
+	time = std::chrono::system_clock::from_time_t(FileTimeToTime_T(editTime));
 	return NatErr_OK;
 }
 
 nResult LocalFilesystemSchema::LocalFilesystemStreamInfo::GetSize(nLen& size) const
 {
-	size = m_Size;
+	natFileStream tFile{ (nTString(m_pSchema->GetRootPath()) + m_Path).c_str(), false, false };
+
+	size = tFile.GetSize();
 	return NatErr_OK;
 }
 

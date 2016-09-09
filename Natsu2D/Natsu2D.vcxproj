@@ -170,7 +170,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\n2dEngineImpl.cpp" />
-    <ClCompile Include="Engine\n2dFileSystemImpl.cpp" />
     <ClCompile Include="Engine\n2dFPSControllerImpl.cpp" />
     <ClCompile Include="Engine\n2dSchemaImpl.cpp" />
     <ClCompile Include="Engine\n2dVirtualFileSystemImpl.cpp" />
@@ -197,7 +196,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\n2dEngineImpl.h" />
-    <ClInclude Include="Engine\n2dFileSystemImpl.h" />
     <ClInclude Include="Engine\n2dFPSControllerImpl.h" />
     <ClInclude Include="Engine\n2dSchemaImpl.h" />
     <ClInclude Include="Engine\n2dVirtualFileSystemImpl.h" />
@@ -205,7 +203,6 @@
     <ClInclude Include="n2dCommon.h" />
     <ClInclude Include="extern\nv_dds\nv_dds.h" />
     <ClInclude Include="n2dEngine.h" />
-    <ClInclude Include="n2dFileSystem.h" />
     <ClInclude Include="n2dFont.h" />
     <ClInclude Include="n2dGraphics.h" />
     <ClInclude Include="n2dInterface.h" />
@@ -213,6 +210,7 @@
     <ClInclude Include="n2dModel.h" />
     <ClInclude Include="n2dRenderDevice.h" />
     <ClInclude Include="n2dRenderNode.h" />
+    <ClInclude Include="n2dResourceMgr.h" />
     <ClInclude Include="n2dSoundSys.h" />
     <ClInclude Include="n2dVirtualFileSystem.h" />
     <ClInclude Include="n2dWindow.h" />

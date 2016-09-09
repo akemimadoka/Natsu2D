@@ -70,7 +70,7 @@ nBool n2dWindowImpl::Create(ncTStr title, ncTStr classname, HINSTANCE hInstance,
 		ShowCursor(TRUE);
 	}
 
-	RECT windowRECT = { static_cast<LONG>(GetPosX()), static_cast<LONG>(GetPosY()), static_cast<LONG>(GetPosX() + GetWidth()), static_cast<LONG>(GetPosY() + GetHeight()) };
+	RECT windowRECT = { static_cast<LONG>(RawGetPosX()), static_cast<LONG>(RawGetPosY()), static_cast<LONG>(RawGetPosX() + RawGetWidth()), static_cast<LONG>(RawGetPosY() + RawGetHeight()) };
 
 	if (!m_IsFullScreen)
 	{
@@ -214,50 +214,52 @@ void n2dWindowImpl::SwapBuffers()
 
 void n2dWindowImpl::SetPosX(nuInt X)
 {
+	RawSetPosX(X);
 	if (!m_IsFullScreen)
-		m_WindowPosX = X;
+		ApplyPosition();
 }
 
 nuInt n2dWindowImpl::GetPosX()
 {
-	return m_IsFullScreen ? 0 : m_WindowPosX;
+	UpdatePosition();
+	return RawGetPosX();
 }
 
 void n2dWindowImpl::SetPosY(nuInt Y)
 {
+	RawSetPosY(Y);
 	if (!m_IsFullScreen)
-		m_WindowPosY = Y;
+		ApplyPosition();
 }
 
 nuInt n2dWindowImpl::GetPosY()
 {
-	return m_IsFullScreen ? 0 : m_WindowPosY;
+	UpdatePosition();
+	return RawGetPosY();
 }
 
 void n2dWindowImpl::SetWidth(nuInt Width)
 {
-	if (m_IsFullScreen)
-		m_ScreenWidth = Width;
-	else
-		m_WindowWidth = Width;
+	RawSetWidth(Width);
+	ApplyPosition();
 }
 
 nuInt n2dWindowImpl::GetWidth()
 {
-	return m_IsFullScreen ? m_ScreenWidth : m_WindowWidth;
+	UpdatePosition();
+	return RawGetWidth();
 }
 
 void n2dWindowImpl::SetHeight(nuInt Height)
 {
-	if (m_IsFullScreen)
-		m_ScreenHeight = Height;
-	else
-		m_WindowHeight = Height;
+	RawSetHeight(Height);
+	ApplyPosition();
 }
 
 nuInt n2dWindowImpl::GetHeight()
 {
-	return m_IsFullScreen ? m_ScreenHeight : m_WindowHeight;
+	UpdatePosition();
+	return RawGetHeight();
 }
 
 void n2dWindowImpl::SetHiColor()
@@ -326,4 +328,115 @@ HGLRC n2dWindowImpl::GetRC()
 n2dEngineImpl* n2dWindowImpl::GetEngine()
 {
 	return m_pEngine;
+}
+
+void n2dWindowImpl::RawSetPosX(nuInt value)
+{
+	if (!m_IsFullScreen)
+		m_WindowPosX = value;
+}
+
+nuInt n2dWindowImpl::RawGetPosX() const
+{
+	return m_IsFullScreen ? 0 : m_WindowPosX;
+}
+
+void n2dWindowImpl::RawSetPosY(nuInt value)
+{
+	if (!m_IsFullScreen)
+		m_WindowPosY = value;
+}
+
+nuInt n2dWindowImpl::RawGetPosY() const
+{
+	return m_IsFullScreen ? 0 : m_WindowPosY;
+}
+
+void n2dWindowImpl::RawSetWidth(nuInt value)
+{
+	if (m_IsFullScreen)
+		m_ScreenWidth = value;
+	else
+		m_WindowWidth = value;
+}
+
+nuInt n2dWindowImpl::RawGetWidth() const
+{
+	return m_IsFullScreen ? m_ScreenWidth : m_WindowWidth;
+}
+
+void n2dWindowImpl::RawSetHeight(nuInt value)
+{
+	if (m_IsFullScreen)
+		m_ScreenHeight = value;
+	else
+		m_WindowHeight = value;
+}
+
+nuInt n2dWindowImpl::RawGetHeight() const
+{
+	return m_IsFullScreen ? m_ScreenHeight : m_WindowHeight;
+}
+
+void n2dWindowImpl::UpdatePosition()
+{
+	RECT windowRect{ 0 };
+	GetWindowRect(m_hWnd, &windowRect);
+
+	RawSetPosX(static_cast<nuInt>(windowRect.left));
+	RawSetPosY(static_cast<nuInt>(windowRect.top));
+	RawSetWidth(static_cast<nuInt>(windowRect.right - windowRect.left));
+	RawSetHeight(static_cast<nuInt>(windowRect.bottom - windowRect.top));
+}
+
+void n2dWindowImpl::ApplyPosition()
+{
+	DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+	DWORD windowExtendedStyle = WS_EX_APPWINDOW;
+
+	if (m_IsFullScreen)
+	{
+		if (!ChangeScreenSetting())
+		{
+			m_IsFullScreen = false;
+		}
+		else
+		{
+			ShowCursor(FALSE);
+			windowStyle = WS_POPUP;
+			windowExtendedStyle |= WS_EX_TOPMOST;
+		}
+	}
+	else
+	{
+		ChangeDisplaySettings(nullptr, 0);
+		ShowCursor(TRUE);
+	}
+
+	RECT windowRECT = { static_cast<LONG>(RawGetPosX()), static_cast<LONG>(RawGetPosY()), static_cast<LONG>(RawGetPosX() + RawGetWidth()), static_cast<LONG>(RawGetPosY() + RawGetHeight()) };
+
+	if (!m_IsFullScreen)
+	{
+		if (!AdjustWindowRectEx(&windowRECT, windowStyle, false, windowExtendedStyle))
+		{
+			nat_Throw(natWinException, _T("AdjustWindowRectEx failed."));
+		}
+
+		if (windowRECT.left < 0)
+		{
+			windowRECT.right -= windowRECT.left;
+			windowRECT.left = 0;
+		}
+
+		if (windowRECT.top < 0)
+		{
+			windowRECT.bottom -= windowRECT.top;
+			windowRECT.top = 0;
+		}
+	}
+
+	if (!SetWindowPos(m_hWnd, NULL, windowRECT.left, windowRECT.top, windowRECT.right - windowRECT.left, windowRECT.bottom - windowRECT.top, SWP_NOACTIVATE | SWP_NOZORDER))
+	{
+		nat_Throw(natWinException, _T("SetWindowPos failed."));
+	}
 }

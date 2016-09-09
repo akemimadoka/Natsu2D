@@ -81,9 +81,7 @@ void n2dEngineImpl::TerminateApplication()
 {
 	PostMessage(m_Window.GetWnd(), WM_QUIT, 0, 0);
 
-	m_Section.Lock();
-	m_IsProgramLooping = false;
-	m_Section.UnLock();
+	m_IsProgramLooping.store(false, std::memory_order_release);
 }
 
 void n2dEngineImpl::ResizeDraw(nBool enable)
@@ -186,7 +184,7 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	windowClass.lpfnWndProc = WindowProc;
 	windowClass.hInstance = m_hInstance;
 	windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_APPWORKSPACE);
-	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	windowClass.lpszClassName = m_ClassName;
 
 	if (!RegisterClassEx(&windowClass))
@@ -209,9 +207,7 @@ void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
 {
 	try
 	{
-		m_Section.Lock();
-		m_IsProgramLooping = true;
-		m_Section.UnLock();
+		m_IsProgramLooping.store(true, std::memory_order_release);
 
 		switch (m_ThreadMode)
 		{
@@ -287,8 +283,8 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		{
 			return msg.result;
 		}
-		m_Window.SetPosX(LOWORD(lParam));
-		m_Window.SetPosY(HIWORD(wParam));
+		m_Window.RawSetPosX(LOWORD(lParam));
+		m_Window.RawSetPosY(HIWORD(wParam));
 		return FALSE;
 
 	case WM_PAINT:
@@ -300,9 +296,9 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		{
 			return msg.result;
 		}
-		RECT *rect = reinterpret_cast<RECT *>(lParam);
-		m_Window.SetWidth(rect->right - rect->left);
-		m_Window.SetHeight(rect->bottom - rect->top);
+		auto rect = reinterpret_cast<RECT *>(lParam);
+		m_Window.RawSetWidth(rect->right - rect->left);
+		m_Window.RawSetHeight(rect->bottom - rect->top);
 		return TRUE;
 	}
 
@@ -320,8 +316,8 @@ LRESULT n2dEngineImpl::Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case SIZE_MAXIMIZED:
 		case SIZE_RESTORED:
 			m_IsVisible = true;
-			m_Window.SetWidth(LOWORD(lParam));
-			m_Window.SetHeight(HIWORD(lParam));
+			m_Window.RawSetWidth(LOWORD(lParam));
+			m_Window.RawSetHeight(HIWORD(lParam));
 			m_Window.ReshapeGL();
 			return FALSE;
 		default:
@@ -472,7 +468,7 @@ void n2dEngineImpl::SingleThreadMainLoop(ncTStr title, nuInt FPS)
 		TerminateApplication();
 	}
 
-	while (m_IsProgramLooping)
+	while (m_IsProgramLooping.load(std::memory_order_acquire))
 	{
 		if (m_Window.Create(title, m_ClassName, m_hInstance, this))
 		{
@@ -524,9 +520,7 @@ void n2dEngineImpl::SingleThreadMainLoop(ncTStr title, nuInt FPS)
 		}
 		else
 		{
-			m_Section.Lock();
-			m_IsProgramLooping = false;
-			m_Section.UnLock();
+			m_IsProgramLooping.store(false, std::memory_order_release);
 			nat_Throw(natException, _T("Failed to create GL window."));
 		}
 	}
@@ -544,8 +538,7 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 		TerminateApplication();
 	}
 
-
-	while (m_IsProgramLooping)
+	while (m_IsProgramLooping.load(std::memory_order_acquire))
 	{
 		if (m_Window.Create(title, m_ClassName, m_hInstance, this))
 		{
@@ -601,9 +594,7 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 		}
 		else
 		{
-			m_Section.Lock();
-			m_IsProgramLooping = false;
-			m_Section.UnLock();
+			m_IsProgramLooping.store(false, std::memory_order_release);
 			nat_Throw(natException, _T("Failed to create GL window."));
 		}
 	}
@@ -674,15 +665,11 @@ natThread::ResultType n2dEngineImpl::UpdateThread::ThreadJob()
 
 		tTimer.Reset();
 
-		natCriticalSection& rCS = m_pEngine->m_Section;
-		bool bLoop;
+		nBool bLoop;
 
 		while (true)
 		{
-			rCS.Lock();
-			bLoop = m_pEngine->m_IsProgramLooping;
-			rCS.UnLock();
-
+			bLoop = m_pEngine->m_IsProgramLooping.load(std::memory_order_consume);
 			if (!bLoop)
 			{
 				break;
@@ -725,14 +712,10 @@ natThread::ResultType n2dEngineImpl::RenderThread::ThreadJob()
 
 		tTimer.Reset();
 
-		natCriticalSection& rCS = m_pEngine->m_Section;
 		bool bLoop;
-
 		while (true)
 		{
-			rCS.Lock();
-			bLoop = m_pEngine->m_IsProgramLooping;
-			rCS.UnLock();
+			bLoop = m_pEngine->m_IsProgramLooping.load(std::memory_order_consume);
 
 			if (!bLoop)
 			{

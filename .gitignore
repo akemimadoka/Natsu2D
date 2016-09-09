@@ -68,3 +68,6 @@ ipch/
 *.bat
 *.rar
 *.opendb
+*.psess
+*.vspx
+*.db

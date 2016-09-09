@@ -14,14 +14,14 @@ uniform vec3 textColor;
 
 void main()
 {
-    // Output color = color of the texture at the specified UV
-    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, UV).r);
-    if (useTexture)
-    {
-    	color = texture2D(text, UV).rgba * sampled;
-    }
-    else
-    {
-    	color = vec4(textColor, 1.0) * sampled;
-    }
+	// Output color = color of the texture at the specified UV
+	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, UV).r);
+	if (useTexture)
+	{
+		color = texture2D(textTexture, UV).rgba * sampled;
+	}
+	else
+	{
+		color = vec4(textColor, 1.0) * sampled;
+	}
 }

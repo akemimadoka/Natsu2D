@@ -311,7 +311,7 @@ public:
 			// 纹理加载
 			// TODO: 完成纹理管理器
 			//renderdevice->CreateTexture(&m_texture);
-			//renderdevice->CreateTexture(&m_texture2);
+			renderdevice->CreateTexture(&m_texture2);
 			//renderdevice->CreateTexture(&m_texture3);
 
 			// 创建模型加载器
@@ -472,13 +472,13 @@ public:
 			/*if (!m_texture->LoadTexture(_T("texture.dds")))
 			{
 			nat_Throw(natException, _T("Unable to load texture"));
-			}
+			}*/
 			if (!m_texture2->LoadTexture(_T("table.dds")))
 			{
-			nat_Throw(natException, _T("Unable to load texture"));
+				nat_Throw(natException, _T("Unable to load texture"));
 			}
 
-			if (!m_texture3->LoadTexture(_T("ch.png")))
+			/*if (!m_texture3->LoadTexture(_T("ch.png")))
 			{
 			nat_Throw(natException, _T("Unable to load texture"));
 			}*/
@@ -551,7 +551,13 @@ public:
 			nat_Throw(natException, _T("Failed to prepare graphic renderer"));
 		}
 		
-		f->PrintFont(m_pGraphics, _T("琪露诺"), 0.f, 30.f, 1.0f, natVec3<>{1.0, 0.0, 0.0});
+		//f->PrintFont(m_pGraphics, _T("琪露诺"), 0.0f, 30.0f, 1.0f, natVec3<>(1.0f, 1.0f, 0.0f));
+		f->PrintFont(m_pGraphics, _T("琪露诺"), 0.0f, 30.0f, 1.0f, m_texture2);
+		/*m_pGraphics->DrawQuad(m_texture2,
+			n2dGraphics2DVertex{ { 0,0,0 },0,{ 0,0 } },
+			n2dGraphics2DVertex{ { 0,1,0 },0,{ 0,1 } },
+			n2dGraphics2DVertex{ { 1,1,0 },0,{ 1,1 } },
+			n2dGraphics2DVertex{ { 1,0,0 },0,{ 1,0 } });*/
 
 		pRenderDevice->SubmitViewMat(natTransform::move(
 			natTransform::rotate(
@@ -615,7 +621,7 @@ private:
 
 	HANDLE							m_Mutex;
 	//natRefPointer<n2dTexture2D>		m_texture;
-	//natRefPointer<n2dTexture2D>		m_texture2;
+	natRefPointer<n2dTexture2D>		m_texture2;
 	//natRefPointer<n2dTexture2D>		m_texture3;
 
 	natRefPointer<n2dModelLoader>	m_modelloader;

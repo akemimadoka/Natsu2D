@@ -124,7 +124,7 @@ void n2dGraphics2DImpl::flush()
 	m_pRenderDevice->updateMVP();
 
 	GLboolean bCullFace = glIsEnabled(GL_CULL_FACE);
-	glDisable(bCullFace);
+	glDisable(GL_CULL_FACE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glEnableVertexAttribArray(0);

@@ -125,10 +125,10 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 
 		// Vertex start
 		pStream->ReadBytes(tBuf, 4ull);
-		pModel->m_Mesh.m_Vert.resize(*reinterpret_cast<size_t*>(tBuf));
-		pModel->m_Mesh.m_VertAdd.resize(*reinterpret_cast<size_t*>(tBuf));
+		pModel->m_Mesh.m_Vert.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
+		pModel->m_Mesh.m_VertAdd.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
 
-		for (nuInt i = 0u; i < *reinterpret_cast<size_t*>(tBuf); ++i)
+		for (nuInt i = 0u; i < static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)); ++i)
 		{
 			auto& vert = pModel->m_Mesh.m_Vert[i];
 			auto& vertadd = pModel->m_Mesh.m_VertAdd[i];
@@ -143,13 +143,13 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 		}
 
 		pStream->ReadBytes(tBuf, 4ull);
-		pModel->m_Mesh.m_Index.resize(*reinterpret_cast<size_t*>(tBuf));
-		pStream->ReadBytes(reinterpret_cast<nData>(pModel->m_Mesh.m_Index.data()), *reinterpret_cast<size_t*>(tBuf) * 2ull);
+		pModel->m_Mesh.m_Index.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
+		pStream->ReadBytes(reinterpret_cast<nData>(pModel->m_Mesh.m_Index.data()), static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)) * 2ull);
 		// Vertex end
 
 		// Material start
 		pStream->ReadBytes(tBuf, 4ull);
-		pModel->m_Mesh.m_Materials.resize(*reinterpret_cast<size_t*>(tBuf));
+		pModel->m_Mesh.m_Materials.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
 
 		nuInt start = 0u;
 		tBuf[20] = 0u;
@@ -189,7 +189,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 
 			std::replace(tStr.begin(), tStr.end(), _T('/'), _T('\\'));
 			std::vector<nTString> SplitResult;
-			natUtil::split(tStr, nTString(_T("*")), [&SplitResult](ncTStr str, nuInt len)
+			natUtil::split(tStr, nTString(_T("*")), [&SplitResult](ncTStr str, size_t len)
 			{
 				SplitResult.emplace_back(str, len);
 			});
@@ -280,10 +280,10 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 				reinterpret_cast<ncStr>(tBuf);
 #endif
 			pStream->ReadBytes(tBuf, 4ull);
-			tMorph.Vertexes.resize(*reinterpret_cast<nuInt*>(tBuf));
-			tMorph.Translation.resize(*reinterpret_cast<nuInt*>(tBuf));
+			tMorph.Vertexes.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
+			tMorph.Translation.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
 			pStream->ReadBytes(reinterpret_cast<nData>(&tMorph.Type), 1ull);
-			for (nuInt i = 0u; i < *reinterpret_cast<nuInt*>(tBuf); ++i)
+			for (nuInt i = 0u; i < static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)); ++i)
 			{
 				pStream->ReadBytes(reinterpret_cast<nData>(&tMorph.Vertexes[i]), 4ull);
 				pStream->ReadBytes(reinterpret_cast<nData>(&tMorph.Translation[i]), 12ull);

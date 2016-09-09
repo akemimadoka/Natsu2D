@@ -796,6 +796,22 @@ void n2dShaderProgramImpl::UniformReferenceImpl::SetValue(nuInt count, const voi
 
 	case GL_INT:
 	case GL_BOOL:
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_2D:
+	case GL_SAMPLER_3D:
+	case GL_SAMPLER_CUBE:
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY:
+	case GL_SAMPLER_2D_ARRAY:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_MULTISAMPLE:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_SAMPLER_CUBE_SHADOW:
+	case GL_SAMPLER_BUFFER:
+	case GL_SAMPLER_2D_RECT:
+	case GL_SAMPLER_2D_RECT_SHADOW:
 		glUniform1iv(m_Location, count, static_cast<const GLint*>(value));
 		break;
 	case GL_INT_VEC2:

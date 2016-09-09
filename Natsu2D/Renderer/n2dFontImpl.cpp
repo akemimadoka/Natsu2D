@@ -197,6 +197,11 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 	pFontProgram->Use();
 	GLint useTexture = GL_TRUE;
 	pFontProgram->GetUniformReference(_T("useTexture"))->SetValue(1, &useTexture);
+	GLint textureID = 0;
+	pFontProgram->GetUniformReference(_T("text"))->SetValue(1, &textureID);
+	textureID = 1;
+	pFontProgram->GetUniformReference(_T("textTexture"))->SetValue(1, &textureID);
+
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, pTexture->GetTextureID());
 

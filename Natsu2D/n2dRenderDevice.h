@@ -6,9 +6,10 @@
 #include "n2dInterface.h"
 #include "n2dCommon.h"
 #include <natMat.h>
+#include "natQuat.h"
 
+struct n2dLayerMgr;
 struct n2dFont;
-struct n2dLayer;
 struct n2dShaderWrapper;
 struct n2dEngine;
 struct n2dGraphics2D;
@@ -17,12 +18,15 @@ struct n2dTexture2D;
 struct n2dModelLoader;
 struct n2dMotionManager;
 struct n2dImage;
+struct n2dRenderDevice;
 
 namespace NatsuLib
 {
 	struct natNode;
 	struct natStream;
 }
+
+typedef nuInt HandleType;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	纹理基类
@@ -152,7 +156,7 @@ struct n2dBuffer
 	};
 
 	///	@brief	获得内部句柄
-	virtual GLhandle GetBuffer() const = 0;
+	virtual HandleType GetBuffer() const = 0;
 	///	@brief	设置目标
 	///	@brief	创建后应避免使用
 	virtual void SetTarget(BufferTarget Target) = 0;
@@ -265,7 +269,7 @@ struct n2dShader
 
 	///	@brief	获得内部句柄
 	///	@note	请勿手动删除
-	virtual GLhandle GetHandle() const = 0;
+	virtual HandleType GetHandle() const = 0;
 	///	@brief	获得着色器类型
 	virtual ShaderType GetType() const = 0;
 	///	@brief	是否已设定删除标记
@@ -505,7 +509,7 @@ struct n2dShaderProgram
 
 	///	@brief	获得内部句柄
 	///	@note	请勿手动删除
-	virtual GLhandle GetHandle() const = 0;
+	virtual HandleType GetHandle() const = 0;
 
 	///	@brief	附加着色器
 	virtual void AttachShader(n2dShader* pShader) = 0;
@@ -583,13 +587,13 @@ struct n2dProgramPipeline
 		Fragment		= 0x00000002,	///< @brief	片元处理
 		Geometry		= 0x00000004,	///< @brief	几何处理
 		TessControl		= 0x00000008,	///< @brief	细分控制
-		TessEvaluation	= 0x00000010,	///< @brief	细分评估
+		TessEvaluation	= 0x00000010,	///< @brief	细分计算
 		Compute			= 0x00000020,	///< @brief	计算
 		All				= 0xFFFFFFFF,	///< @brief	全部
 	};
 
 	///	@brief	获得内部句柄
-	virtual GLhandle GetHandle() const = 0;
+	virtual nuInt GetHandle() const = 0;
 	///	@brief	绑定当前程序管线
 	virtual void Bind() const = 0;
 	///	@brief	判断当前是否绑定
@@ -664,6 +668,82 @@ struct n2dLightController
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief	摄像机
+////////////////////////////////////////////////////////////////////////////////
+struct n2dCamera
+	: n2dInterface
+{
+	///	@brief	获得渲染设备
+	virtual n2dRenderDevice* GetRenderDevice() = 0;
+
+	///	@brief	提交模型矩阵
+	///	@param[in]	Mat	提交的矩阵
+	virtual void SubmitModelMat(natMat4<> const& Mat) = 0;
+	///	@brief	提交观察矩阵
+	///	@param[in]	Mat	提交的矩阵
+	virtual void SubmitViewMat(natMat4<> const& Mat) = 0;
+	///	@brief	提交投影矩阵
+	///	@param[in]	Mat	提交的矩阵
+	virtual void SubmitProjMat(natMat4<> const& Mat) = 0;
+
+	///	@brief	将当前模型矩阵压入栈
+	///	@note	不会引发MVP矩阵更新
+	virtual void PushModelMat() = 0;
+	///	@brief	将当前观察矩阵压入栈
+	///	@note	不会引发MVP矩阵更新
+	virtual void PushViewMat() = 0;
+	///	@brief	将当前投影矩阵压入栈
+	///	@note	不会引发MVP矩阵更新
+	virtual void PushProjMat() = 0;
+
+	///	@brief	从栈中弹出1个模型矩阵
+	///	@return	操作是否成功
+	virtual nBool PopModelMat() = 0;
+	///	@brief	从栈中弹出1个观察矩阵
+	///	@return	操作是否成功
+	virtual nBool PopViewMat() = 0;
+	///	@brief	从栈中弹出1个投影矩阵
+	///	@return	操作是否成功
+	virtual nBool PopProjMat() = 0;
+
+	///	@brief	将当前所有矩阵压入栈
+	virtual void PushMVPMat() = 0;
+	///	@brief	从栈中弹出1个所有矩阵
+	///	@return	操作是否成功
+	virtual nBool PopMVPMat() = 0;
+	///	@brief	初始化MVP矩阵
+	///	@note	仅覆盖当前栈顶矩阵
+	virtual void InitMVPMat() = 0;
+
+	///	@brief	获得当前模型矩阵
+	virtual natMat4<> const& GetCurModelMat() const = 0;
+	///	@brief	获得当前观察矩阵
+	virtual natMat4<> const& GetCurViewMat() const = 0;
+	///	@brief	获得当前投影矩阵
+	virtual natMat4<> const& GetCurProjMat() const = 0;
+
+	///	@brief	获得模型观察投影矩阵
+	///	@return	当前的模型观察投影矩阵
+	virtual natMat4<> const& GetMVPMat() = 0;
+
+	///	@brief	设置位置
+	virtual void SetPosition(natVec3<> const& pos) = 0;
+	///	@brief	获得位置
+	virtual natVec3<> const& GetPosition() = 0;
+	///	@brief	设置旋转
+	virtual void SetRotation(natQuat<> const& rot) = 0;
+	///	@brief	获得旋转
+	virtual natQuat<> const& GetRotation() = 0;
+	///	@brief	设置缩放
+	virtual void SetScale(natVec3<> const& scale) = 0;
+	///	@brief	获得缩放
+	virtual natVec3<> const& GetScale() = 0;
+
+	///	@brief	获得捕获的纹理
+	virtual natRefPointer<n2dTexture2D> GetTexture() = 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 ///	@brief	渲染设备
 ////////////////////////////////////////////////////////////////////////////////
 struct n2dRenderDevice
@@ -681,6 +761,7 @@ struct n2dRenderDevice
 	enum class Capability
 	{
 		Blend,						///< @brief	混合
+		ClipDistance,				///< @brief	夹距
 		ColorLogicOp,				///< @brief	颜色逻辑操作
 		CullFace,					///< @brief	剔除面
 		DebugOutput,				///< @brief	调试输出
@@ -710,10 +791,11 @@ struct n2dRenderDevice
 	};
 
 	///	@brief	使用索引的特性
-	/*enum class CapabilityI
+	enum class CapabilityI
 	{
-		ClipDistance,				///< @brief	夹距
-	};*/
+		Blend,						///< @brief	混合
+		ScissorTest,				///< @brief	剪裁测试
+	};
 
 	///	@brief	混合因子
 	enum class BlendFactor
@@ -751,14 +833,14 @@ struct n2dRenderDevice
 	///	@brief	禁用特性
 	virtual void DisableCapability(Capability capability) = 0;
 	///	@brief	按索引启用特性
-	//virtual void EnableCapabilityI(CapabilityI capability, nuInt Index) = 0;
+	virtual void EnableCapabilityI(CapabilityI capability, nuInt Index) = 0;
 	///	@brief	按索引禁用特性
-	//virtual void DisableCapabilityI(CapabilityI capability, nuInt Index) = 0;
+	virtual void DisableCapabilityI(CapabilityI capability, nuInt Index) = 0;
 	
 	///	@brief	判断特性是否已启用
 	virtual nBool IsCapabilityEnabled(Capability capability) const = 0;
 	///	@brief	按索引判断特性是否已启用
-	//virtual nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const = 0;
+	virtual nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const = 0;
 
 	///	@brief	设置混合模式
 	///	@param[in]	Source		源混合因子
@@ -850,15 +932,7 @@ struct n2dRenderDevice
 	///	@return	处理结果
 	virtual nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut) = 0;
 
-	///	@brief	创建图层
-	///	@param[in]	RenderHandler	渲染处理
-	///	@param[in]	UpdateHandler	更新处理
-	///	@param[out]	pOut			创建的图层
-	///	@param[in]	Order			图层顺序，可省略
-	///	@param[in]	Name			图层名，可省略
-	///	@param[in]	pParent			图层所属的节点
-	///	@return	处理结果
-	virtual nResult CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) = 0;
+	virtual nResult CreateLayerMgr(n2dLayerMgr** pOut) = 0;
 
 	///	@brief	创建二维图元渲染器
 	///	@param[out]	pOut	创建的二维图元渲染器

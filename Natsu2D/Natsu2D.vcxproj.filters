@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="头文件\include">
-      <UniqueIdentifier>{24f62364-a871-4fdd-ba1b-c15ef8ab3c85}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine">
       <UniqueIdentifier>{3d1ec9f7-4114-4ed1-adfd-5e8bd2d2cd03}</UniqueIdentifier>
     </Filter>
@@ -76,9 +73,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="n2dUtil.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="RenderDevice\n2dModelLoaderImpl.cpp">
       <Filter>RenderDevice\source</Filter>
     </ClCompile>
@@ -151,9 +145,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="n2dCommon.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="n2dUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Natsu2D.h">

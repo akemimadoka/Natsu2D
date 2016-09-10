@@ -48,7 +48,7 @@ void n2dRenderDeviceImpl::DisableCapability(Capability capability)
 	glDisable(GetCapabilityEnum(capability));
 }
 
-/*void n2dRenderDeviceImpl::EnableCapabilityI(CapabilityI capability, nuInt Index)
+void n2dRenderDeviceImpl::EnableCapabilityI(CapabilityI capability, nuInt Index)
 {
 	glEnablei(GetCapabilityIEnum(capability), Index);
 }
@@ -56,17 +56,17 @@ void n2dRenderDeviceImpl::DisableCapability(Capability capability)
 void n2dRenderDeviceImpl::DisableCapabilityI(CapabilityI capability, nuInt Index)
 {
 	glDisablei(GetCapabilityIEnum(capability), Index);
-}*/
+}
 
 nBool n2dRenderDeviceImpl::IsCapabilityEnabled(Capability capability) const
 {
 	return glIsEnabled(GetCapabilityEnum(capability)) == GL_TRUE;
 }
 
-/*nBool n2dRenderDeviceImpl::IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const
+nBool n2dRenderDeviceImpl::IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const
 {
 	return glIsEnabledi(GetCapabilityIEnum(capability), Index) == GL_TRUE;
-}*/
+}
 
 void n2dRenderDeviceImpl::SetBlendMode(BlendFactor Source, BlendFactor Destination)
 {
@@ -290,7 +290,7 @@ nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget,
 	return NatErr_OK;
 }
 
-nResult n2dRenderDeviceImpl::CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order, ncTStr Name, natNode* pParent)
+nResult n2dRenderDeviceImpl::CreateLayerMgr(n2dLayerMgr** pOut)
 {
 	if (pOut == nullptr)
 	{
@@ -299,7 +299,7 @@ nResult n2dRenderDeviceImpl::CreateLayer(std::function<nBool(nDouble, n2dRenderD
 
 	try
 	{
-		*pOut = new n2dLayerImpl(RenderHandler, UpdateHandler, Order, Name, pParent);
+		*pOut = new n2dLayerMgrImpl;
 	}
 	catch (std::bad_alloc&)
 	{

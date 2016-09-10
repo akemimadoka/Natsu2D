@@ -11,3 +11,5 @@
 #elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
 #	include "glxew.h"
 #endif
+
+typedef GLuint GLhandle;

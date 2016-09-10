@@ -256,13 +256,13 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 		}
 
 		m_DynamicMaterials.reserve(m_DynamicMaterials.size() + pModel->m_Mesh.m_Materials.size());
-		nuInt cMaterials = pModel->m_Mesh.m_Materials.size();
+		auto cMaterials = pModel->m_Mesh.m_Materials.size();
 		std::vector<nuInt> tMatID(cMaterials);
 		
-		for (nuInt i = 0u; i < cMaterials; ++i)
+		for (size_t i = 0u; i < cMaterials; ++i)
 		{
 			m_DynamicMaterials.push_back(&pModel->m_Mesh.m_Materials[i]);
-			tMatID[i] = m_DynamicMaterials.size() - 1;
+			tMatID[i] = static_cast<nuInt>(m_DynamicMaterials.size() - 1);
 		}
 
 		m_Commands.emplace_back(RenderCommand{ false, tMatID, pModel->m_Mesh.GetVertexBuffer(), pModel->m_Mesh.GetIndexBuffer(), pModel->m_Mesh.GetVertexCount(), pModel->m_Mesh.GetIndexCount() });

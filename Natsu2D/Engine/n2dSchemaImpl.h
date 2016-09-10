@@ -30,10 +30,16 @@ public:
 
 	ncTStr GetName() const override;
 	natRefPointer<IStreamInfo> GetStreamInfoFromPath(ncTStr path) override;
+	nBool PathExist(ncTStr path) const override;
+	nResult RemoveFromPath(ncTStr path) override;
+	nResult EnumPath(ncTStr path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback) override;
 
 	ncTStr GetRootPath() const noexcept;
 
 private:
+	nTString getRealPath(ncTStr path) const;
+	nResult enumPathImpl(std::experimental::filesystem::path const& path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback);
+
 	nTString m_SchemaName;
 	nTString m_RootPath;
 };

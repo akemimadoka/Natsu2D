@@ -118,7 +118,7 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 
 #undef min
 
-	nuInt size = std::min({ vertexIndices.size(), uvIndices.size(), normalIndices.size() });
+	nuInt size = static_cast<nuInt>(std::min({ vertexIndices.size(), uvIndices.size(), normalIndices.size() }));
 
 	/*for (auto i : vertexIndices)
 	{
@@ -229,12 +229,12 @@ nuInt n2dObjLoader::GetIndexBuffer()
 
 nuInt n2dObjLoader::GetVertexCount() const
 {
-	return m_Vertices.size();
+	return static_cast<nuInt>(m_Vertices.size());
 }
 
 nuInt n2dObjLoader::GetIndexCount() const
 {
-	return m_ElementIndexes.size();
+	return static_cast<nuInt>(m_ElementIndexes.size());
 }
 
 void n2dObjLoader::init()

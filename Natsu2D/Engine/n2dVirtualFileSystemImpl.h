@@ -10,6 +10,7 @@ public:
 	~n2dVirtualFileSystemImpl();
 
 	nResult RegisterSchema(ISchema* pSchema) override;
+	nBool SchemaExist(ncTStr schemaName) const override;
 	natRefPointer<ISchema> GetSchemaFromName(ncTStr name) override;
 	natRefPointer<IStreamInfo> GetStreamInfoFromUri(ncTStr uri) override;
 

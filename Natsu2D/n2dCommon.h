@@ -7,7 +7,6 @@
 #include <tchar.h>
 
 #include <natException.h>
-//#include "n2dUtil.h"
 #include <natUtil.h>
 
 #include <natType.h>
@@ -17,7 +16,7 @@
 #include <functional>
 #pragma warning(pop)
 
-typedef unsigned int GLenum;
+/*typedef unsigned int GLenum;
 typedef unsigned int GLbitfield;
 typedef unsigned int GLuint;
 typedef int GLint;
@@ -53,3 +52,4 @@ typedef struct __GLsync *GLsync;
 typedef char GLchar;
 
 typedef GLuint GLhandle;
+*/

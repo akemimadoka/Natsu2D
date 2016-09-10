@@ -34,3 +34,20 @@ struct n2dLayer
 	void SetOrder(nInt Order) override = 0;
 	nInt GetOrder() const noexcept override = 0;
 };
+
+struct n2dLayerMgr
+	: n2dInterface
+{
+	///	@brief	创建图层
+	///	@param[in]	RenderHandler	渲染处理
+	///	@param[in]	UpdateHandler	更新处理
+	///	@param[out]	pOut			创建的图层
+	///	@param[in]	Order			图层顺序，可省略
+	///	@param[in]	Name			图层名，可省略
+	///	@param[in]	pParent			图层所属的节点
+	///	@return	处理结果
+	virtual nResult CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) = 0;
+
+	/// @brief	获得根图层
+	virtual n2dLayer* GetRootLayer() = 0;
+};

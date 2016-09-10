@@ -58,3 +58,16 @@ private:
 	natRect<> m_BoundingRect;
 	nInt m_Order;
 };
+
+class n2dLayerMgrImpl
+	: public natRefObjImpl<n2dLayerMgr>
+{
+public:
+	n2dLayerMgrImpl();
+
+	nResult CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) override;
+	n2dLayer* GetRootLayer() override;
+
+private:
+	n2dLayerImpl m_RootLayer;
+};

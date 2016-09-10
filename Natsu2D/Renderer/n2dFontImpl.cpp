@@ -1,6 +1,6 @@
 #include "n2dFontImpl.h"
 #include "../n2dCommon.h"
-#include "../n2dUtil.h"
+#include "../n2dEngine.h"
 #include "../RenderDevice/n2dGraphicsImpl.h"
 #include "../RenderDevice/n2dRenderDeviceImpl.h"
 #include <natStream.h>

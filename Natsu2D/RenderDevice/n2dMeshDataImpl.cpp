@@ -32,7 +32,7 @@ n2dBufferImpl* n2dStaticMeshDataImpl::GetVertexBuffer()
 		}
 
 		m_VB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
-		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * m_Vert.size(), reinterpret_cast<ncData>(m_Vert.data()), n2dBuffer::BufferUsage::StaticDraw);
+		m_VB->AllocData(static_cast<nuInt>(sizeof(n2dGraphics3DVertex) * m_Vert.size()), reinterpret_cast<ncData>(m_Vert.data()), n2dBuffer::BufferUsage::StaticDraw);
 		m_Vert.clear();
 	}
 
@@ -49,7 +49,7 @@ n2dBufferImpl* n2dStaticMeshDataImpl::GetIndexBuffer()
 		}
 
 		m_IB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
-		m_IB->AllocData(sizeof(nuShort) * m_Index.size(), reinterpret_cast<ncData>(m_Index.data()), n2dBuffer::BufferUsage::StaticDraw);
+		m_IB->AllocData(static_cast<nuInt>(sizeof(nuShort) * m_Index.size()), reinterpret_cast<ncData>(m_Index.data()), n2dBuffer::BufferUsage::StaticDraw);
 		m_Index.clear();
 	}
 
@@ -85,7 +85,7 @@ void n2dDynamicMeshDataImpl::UpdateVertexBuffer()
 	if (!m_VB)
 	{
 		m_VB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
-		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * m_Vert.size(), reinterpret_cast<ncData>(m_Vert.data()), n2dBuffer::BufferUsage::DynamicDraw);
+		m_VB->AllocData(static_cast<nuInt>(sizeof(n2dGraphics3DVertex) * m_Vert.size()), reinterpret_cast<ncData>(m_Vert.data()), n2dBuffer::BufferUsage::DynamicDraw);
 	}
 
 	if (m_Updated)
@@ -110,7 +110,7 @@ void n2dDynamicMeshDataImpl::UpdateVertexBuffer()
 			tVert.normal = natTransform::normalize(w * (static_cast<natMat3<>>(m1) * tVert.normal) + (1.0f - w) * (static_cast<natMat3<>>(m2) * tVert.normal));
 			tVert.vert = natVec3<>(w * (m1 * vt) + (1.0f - w) * (m2 * vt)) * m_Zoom;
 		}
-		m_VB->AllocData(sizeof(n2dGraphics3DVertex) * tVerts.size(), reinterpret_cast<ncData>(tVerts.data()), n2dBuffer::BufferUsage::DynamicDraw);
+		m_VB->AllocData(static_cast<nuInt>(sizeof(n2dGraphics3DVertex) * tVerts.size()), reinterpret_cast<ncData>(tVerts.data()), n2dBuffer::BufferUsage::DynamicDraw);
 
 		m_Updated = false;
 	}
@@ -138,7 +138,7 @@ n2dBufferImpl* n2dDynamicMeshDataImpl::GetIndexBuffer()
 	if (!m_IB)
 	{
 		m_IB = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::ElementArrayBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
-		m_IB->AllocData(m_Index.size() * sizeof(nuShort), reinterpret_cast<ncData>(m_Index.data()), n2dBuffer::BufferUsage::StaticDraw);
+		m_IB->AllocData(static_cast<nuInt>(m_Index.size() * sizeof(nuShort)), reinterpret_cast<ncData>(m_Index.data()), n2dBuffer::BufferUsage::StaticDraw);
 		m_Index.clear();
 	}
 
@@ -147,12 +147,12 @@ n2dBufferImpl* n2dDynamicMeshDataImpl::GetIndexBuffer()
 
 nuInt n2dDynamicMeshDataImpl::GetVertexCount() const
 {
-	return m_Vert.size();
+	return static_cast<nuInt>(m_Vert.size());
 }
 
 nuInt n2dDynamicMeshDataImpl::GetIndexCount() const
 {
-	return m_Index.size();
+	return static_cast<nuInt>(m_Index.size());
 }
 
 nBool n2dDynamicMeshDataImpl::IsStatic() const

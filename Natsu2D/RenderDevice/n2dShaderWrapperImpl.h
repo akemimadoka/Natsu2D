@@ -37,7 +37,7 @@ public:
 	n2dShaderImpl(ShaderType shaderType, GLhandle shader);
 	~n2dShaderImpl();
 
-	GLhandle GetHandle() const override;
+	HandleType GetHandle() const override;
 	ShaderType GetType() const override;
 	nBool Deleted() const override;
 	nBool Compiled() const override;
@@ -610,7 +610,7 @@ public:
 	n2dShaderProgramImpl(n2dShaderImpl* pVertexShader, n2dShaderImpl* pFragmentShader, n2dShaderImpl* pGeometryShader);
 	~n2dShaderProgramImpl();
 
-	GLhandle GetHandle() const override;
+	HandleType GetHandle() const override;
 
 	void AttachShader(n2dShader* pShader) override;
 	void DetachShader(n2dShader* pShader) override;
@@ -660,7 +660,7 @@ public:
 	explicit n2dProgramPipelineImpl(GLhandle PipelineID = 0u);
 	~n2dProgramPipelineImpl();
 
-	GLhandle GetHandle() const override;
+	HandleType GetHandle() const override;
 	void Bind() const override;
 	nBool IsBinding() const override;
 

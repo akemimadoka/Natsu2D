@@ -36,6 +36,11 @@ nResult n2dVirtualFileSystemImpl::RegisterSchema(ISchema* pSchema)
 	return NatErr_OK;
 }
 
+nBool n2dVirtualFileSystemImpl::SchemaExist(ncTStr schemaName) const
+{
+	return m_SchemaMap.find(schemaName) != m_SchemaMap.end();
+}
+
 natRefPointer<ISchema> n2dVirtualFileSystemImpl::GetSchemaFromName(ncTStr name)
 {
 	auto iter = m_SchemaMap.find(name);

@@ -35,7 +35,7 @@ nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShad
 
 	try
 	{
-		natRefPointer<n2dShaderImpl> pTmp = make_ref<n2dShaderImpl>(shaderType);
+		auto pTmp = make_ref<n2dShaderImpl>(shaderType);
 		pTmp->CompileFromStream(pStream, bIsBinary);
 		*pOut = pTmp;
 		pTmp->AddRef();
@@ -61,17 +61,17 @@ nResult n2dShaderWrapperImpl::CreateProgram(n2dShaderProgram** pOut)
 
 	try
 	{
-		n2dShaderProgramImpl* pProgram = new n2dShaderProgramImpl;
+		auto pProgram = make_ref<n2dShaderProgramImpl>();
 		auto itea = m_Programs.find(pProgram->GetHandle());
 		if (itea != m_Programs.end())
 		{
-			SafeRelease(pProgram);
 			*pOut = itea->second;
 		}
 		else
 		{
 			m_Programs.insert(std::make_pair(pProgram->GetHandle(), pProgram));
 			*pOut = pProgram;
+			pProgram->AddRef();
 		}
 	}
 	catch (std::bad_alloc&)
@@ -285,7 +285,7 @@ n2dShaderImpl::~n2dShaderImpl()
 	glDeleteShader(m_Shader);
 }
 
-GLhandle n2dShaderImpl::GetHandle() const
+HandleType n2dShaderImpl::GetHandle() const
 {
 	return m_Shader;
 }
@@ -938,7 +938,7 @@ n2dShaderProgramImpl::~n2dShaderProgramImpl()
 	glDeleteProgram(m_Program);
 }
 
-GLhandle n2dShaderProgramImpl::GetHandle() const
+HandleType n2dShaderProgramImpl::GetHandle() const
 {
 	return m_Program;
 }
@@ -1213,7 +1213,7 @@ n2dProgramPipelineImpl::~n2dProgramPipelineImpl()
 	glDeleteProgramPipelines(1, &m_Pipeline);
 }
 
-GLhandle n2dProgramPipelineImpl::GetHandle() const
+HandleType n2dProgramPipelineImpl::GetHandle() const
 {
 	return m_Pipeline;
 }

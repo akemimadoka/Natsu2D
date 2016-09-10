@@ -369,3 +369,36 @@ nBool n2dLayerImpl::OnUpdate(nDouble ElapsedTime)
 {
 	return m_UpdateHandler(ElapsedTime);
 }
+
+n2dLayerMgrImpl::n2dLayerMgrImpl()
+	: m_RootLayer([](nDouble, n2dRenderDevice*) { return true; }, [](nDouble) { return true; })
+{
+}
+
+nResult n2dLayerMgrImpl::CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order, ncTStr Name, natNode* pParent)
+{
+	if (pOut == nullptr)
+	{
+		return NatErr_InvalidArg;
+	}
+
+	try
+	{
+		*pOut = new n2dLayerImpl(RenderHandler, UpdateHandler, Order, Name, pParent ? pParent : &m_RootLayer);
+	}
+	catch (std::bad_alloc&)
+	{
+		nat_Throw(natException, _T("Failed to allocate memory"));
+	}
+	catch (...)
+	{
+		return NatErr_Unknown;
+	}
+
+	return NatErr_OK;
+}
+
+n2dLayer* n2dLayerMgrImpl::GetRootLayer()
+{
+	return &m_RootLayer;
+}

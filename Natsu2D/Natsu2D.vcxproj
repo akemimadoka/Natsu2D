@@ -175,7 +175,6 @@
     <ClCompile Include="Engine\n2dVirtualFileSystemImpl.cpp" />
     <ClCompile Include="Engine\n2dWindowImpl.cpp" />
     <ClCompile Include="extern\nv_dds\nv_dds.cpp" />
-    <ClCompile Include="n2dUtil.cpp" />
     <ClCompile Include="RenderDevice\n2dBufferImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dGraphicsImpl.cpp" />
     <ClCompile Include="RenderDevice\n2dLayerImpl.cpp" />
@@ -215,7 +214,6 @@
     <ClInclude Include="n2dVirtualFileSystem.h" />
     <ClInclude Include="n2dWindow.h" />
     <ClInclude Include="Natsu2D.h" />
-    <ClInclude Include="n2dUtil.h" />
     <ClInclude Include="RenderDevice\n2dBufferImpl.h" />
     <ClInclude Include="RenderDevice\n2dGraphicsImpl.h" />
     <ClInclude Include="RenderDevice\n2dLayerImpl.h" />

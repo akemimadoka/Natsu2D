@@ -21,7 +21,6 @@
 
 #include <n2dRenderDevice.h>
 #include <n2dGraphics.h>
-#include <n2dUtil.h>
 #include <n2dModel.h>
 
 // NatsuLib头文件
@@ -541,7 +540,7 @@ public:
 	{
 		if (!m_pEngine->GetWindow()->GetFullScreen())
 		{
-			SetWindowText(m_pEngine->GetWindow()->GetWnd(), n2dUtil::FormatString(_T("夏之幻想 | FPS={0}"), pFPSController->GetFPS()).c_str());
+			SetWindowText(m_pEngine->GetWindow()->GetWnd(), natUtil::FormatString(_T("夏之幻想 | FPS={0}"), pFPSController->GetFPS()).c_str());
 		}
 
 		pRenderDevice->Clear(n2dRenderDevice::ClearBit_Color | n2dRenderDevice::ClearBit_Depth);
@@ -553,11 +552,6 @@ public:
 		
 		//f->PrintFont(m_pGraphics, _T("琪露诺"), 0.0f, 30.0f, 1.0f, natVec3<>(1.0f, 1.0f, 0.0f));
 		f->PrintFont(m_pGraphics, _T("琪露诺"), 0.0f, 30.0f, 1.0f, m_texture2);
-		/*m_pGraphics->DrawQuad(m_texture2,
-			n2dGraphics2DVertex{ { 0,0,0 },0,{ 0,0 } },
-			n2dGraphics2DVertex{ { 0,1,0 },0,{ 0,1 } },
-			n2dGraphics2DVertex{ { 1,1,0 },0,{ 1,1 } },
-			n2dGraphics2DVertex{ { 1,0,0 },0,{ 1,0 } });*/
 
 		pRenderDevice->SubmitViewMat(natTransform::move(
 			natTransform::rotate(

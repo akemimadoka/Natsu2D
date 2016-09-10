@@ -25,6 +25,8 @@ class n2dRenderDeviceImpl final
 		{
 		case Capability::Blend:
 			return GL_BLEND;
+		case Capability::ClipDistance:
+			return GL_CLIP_DISTANCE0;
 		case Capability::ColorLogicOp:
 			return GL_COLOR_LOGIC_OP;
 		case Capability::CullFace:
@@ -82,16 +84,18 @@ class n2dRenderDeviceImpl final
 		}
 	}
 
-	/*static GLenum GetCapabilityIEnum(CapabilityI cp)
+	static GLenum GetCapabilityIEnum(CapabilityI cp)
 	{
 		switch (cp)
 		{
-		case CapabilityI::ClipDistance:
-			return GL_CLIP_DISTANCE0;
+		case CapabilityI::Blend:
+			return GL_BLEND;
+		case CapabilityI::ScissorTest:
+			return GL_SCISSOR_TEST;
 		default:
 			nat_Throw(natException, _T("Not an available CapabilityI enum"));
 		}
-	}*/
+	}
 
 	static GLenum GetBlendFactorEnum(BlendFactor blendfactor)
 	{
@@ -157,14 +161,14 @@ public:
 	///	@brief	禁用特性
 	void DisableCapability(Capability capability) override;
 	///	@brief	按索引启用特性
-	//void EnableCapabilityI(CapabilityI capability, nuInt Index) override;
+	void EnableCapabilityI(CapabilityI capability, nuInt Index) override;
 	///	@brief	按索引禁用特性
-	//void DisableCapabilityI(CapabilityI capability, nuInt Index) override;
+	void DisableCapabilityI(CapabilityI capability, nuInt Index) override;
 
 	///	@brief	判断特性是否已启用
 	nBool IsCapabilityEnabled(Capability capability) const override;
 	///	@brief	按索引判断特性是否已启用
-	//nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const override;
+	nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const override;
 
 	void SetBlendMode(BlendFactor Source, BlendFactor Destination) override;
 	void SetBlendModeI(n2dBuffer* Buf, BlendFactor Source, BlendFactor Destination) override;
@@ -238,24 +242,15 @@ public:
 	n2dLightController* GetLightController(nuInt Index) override;
 
 	nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut) override;
-
-	nResult CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) override;
-
+	nResult CreateLayerMgr(n2dLayerMgr** pOut) override;
 	nResult CreateGraphics2D(n2dGraphics2D** pOut) override;
-
 	nResult CreateGraphics3D(n2dGraphics3D** pOut) override;
-
 	nResult CreateTexture(n2dTexture2D** pOut) override;
-
 	nResult CreateTextureFromStream(natStream* pStream, DWORD dwFileType, n2dTexture2D** pOut) override;
-
 	nResult CreateModelLoader(n2dModelLoader** pOut) override;
-
 	///	@deprecated		仅实验用
 	nResult CreateObjLoader(n2dModelLoader** pOut) override;
-
 	nResult CreateMotionManager(n2dMotionManager** pOut) override;
-
 	nResult CreateFontManager(n2dFont** pOut) override;
 
 	void updateMVP();

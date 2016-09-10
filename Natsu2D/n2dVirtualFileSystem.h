@@ -43,6 +43,24 @@ struct ISchema
 	///	@note	若失败则会抛出异常
 	///	@param[in]	path	路径
 	virtual natRefPointer<IStreamInfo> GetStreamInfoFromPath(ncTStr path) = 0;
+
+	/// @brief	路径是否存在
+	/// @param[in]	path	路径
+	virtual nBool PathExist(ncTStr path) const = 0;
+
+	/// @brief	移除指定路径的文件或文件夹
+	///	@note	可选支持，若模式不支持该操作则会返回NatErr_NotSupport
+	/// @param[in]	path	路径
+	virtual nResult RemoveFromPath(ncTStr path) = 0;
+
+	/// @brief	枚举指定路径下的文件或文件夹
+	///	@note	可选支持，若模式不支持该操作则会返回NatErr_NotSupport\n
+	///			每次符合条件的枚举都会调用一次enumCallback，若enumCallback返回true则枚举立即终止并返回NatErr_Interrupted，若枚举全部完成则会返回NatErr_OK
+	/// @param[in]	path			路径
+	///	@param[in]	recursive		递归地枚举
+	///	@param[in]	includeFolder	包含文件夹
+	/// @param[in]	enumCallback	枚举回调
+	virtual nResult EnumPath(ncTStr path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +90,8 @@ struct n2dVirtualFileSystem
 	///	@note	使用返回值判断注册是否成功
 	///	@param[in]	pSchema	模式
 	virtual nResult RegisterSchema(ISchema* pSchema) = 0;
+
+	virtual nBool SchemaExist(ncTStr schemaName) const = 0;
 
 	///	@brief	从模式名获得模式
 	///	@note	若失败则会抛出异常

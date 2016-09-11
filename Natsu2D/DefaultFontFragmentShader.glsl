@@ -1,4 +1,4 @@
-#version 420 core
+#version 430 core
 
 // Interpolated values from the vertex shaders
 in vec2 UV;
@@ -7,10 +7,10 @@ in vec2 UV;
 out vec4 color;
 
 // Values that stay constant for the whole mesh.
-layout(binding = 1) uniform sampler2D text;
-layout(binding = 2) uniform sampler2D textTexture;
-layout(binding = 3) uniform bool useTexture;
-layout(binding = 4) uniform vec3 textColor;
+layout(location = 1) uniform sampler2D text;
+layout(location = 2) uniform sampler2D textTexture;
+layout(location = 3) uniform bool useTexture;
+layout(location = 4) uniform vec3 textColor;
 
 void main()
 {

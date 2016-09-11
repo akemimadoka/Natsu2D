@@ -43,7 +43,7 @@ namespace n2dVBOHelper
 
 		std::map<PackedVertex, nuShort> VertexToOutIndex;
 
-		nuInt count = std::min({ vertices.size(), uvs.size(), normals.size() });
+		nuInt count = static_cast<nuInt>(std::min({ vertices.size(), uvs.size(), normals.size() }));
 
 		for (nuInt i = 0u; i < count; ++i)
 		{

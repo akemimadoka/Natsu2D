@@ -240,7 +240,7 @@ public:
 		});
 
 		m_pEngine->GetLogger().LogMsg(_T("中文测试"));
-		m_pEngine->MainLoop(_T("夏之幻想"), 6000u);
+		m_pEngine->MainLoop(_T("夏之幻想"), 60u);
 	}
 	~test()
 	{
@@ -368,7 +368,7 @@ public:
 			m_pEngine->GetLogger().LogMsg(_T("{0}"), natUtil::ToTString(reinterpret_cast<ncStr>(data.data())));
 
 			// 关闭垂直同步
-			renderdevice->SetSwapInterval(0u);
+			renderdevice->SetSwapInterval(1u);
 
 			//renderdevice->DisableCapability(n2dRenderDevice::Capability::Blend);
 			renderdevice->EnableCapability(n2dRenderDevice::Capability::Blend);

@@ -46,7 +46,7 @@ private:
 	struct RenderCommand
 	{
 		nBool bKeepBuffer;
-		n2dTexture2D* pTex;	///< @brief	ÎÆÀí
+		natRefPointer<n2dTexture2D> pTex;	///< @brief	ÎÆÀí
 		nuInt VertexBuffer;
 		nuInt UVBuffer;
 		nuInt NormalBuffer;
@@ -60,8 +60,7 @@ private:
 
 	n2dRenderDeviceImpl* m_pRenderDevice;
 
-	n2dBuffer *m_VB, *m_IB;
-
+	natRefPointer<n2dBuffer> m_VB, m_IB;
 
 	std::vector<RenderCommand> m_Commands;
 

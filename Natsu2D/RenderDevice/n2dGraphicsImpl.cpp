@@ -92,11 +92,6 @@ nResult n2dGraphics2DImpl::DrawRaw(n2dTexture2D* pTex, nuInt cVertex, nuInt cInd
 
 void n2dGraphics2DImpl::pushCommand(n2dTexture2D* pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr)
 {
-	if (pTex)
-	{
-		pTex->AddRef();
-	}
-
 	std::vector<natVec3<>> tVert(cVertex);
 	std::vector<natVec2<>> tUV(cVertex);
 	for (nuInt i = 0u; i < cVertex; ++i)
@@ -116,7 +111,7 @@ void n2dGraphics2DImpl::pushCommand(n2dTexture2D* pTex, nuInt cVertex, nuInt cIn
 	glBufferData(GL_ARRAY_BUFFER, cVertex * sizeof(natVec2<>), &tUV[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cIndex * sizeof(nuShort), iarr, GL_STATIC_DRAW);
-	m_Commands.emplace_back(RenderCommand{ false, pTex, VB, UVB, 0u, IB, cVertex, cIndex });
+	m_Commands.emplace_back(RenderCommand{ false, natRefPointer<n2dTexture2D>(pTex), VB, UVB, 0u, IB, cVertex, cIndex });
 }
 
 void n2dGraphics2DImpl::flush()
@@ -315,14 +310,7 @@ void n2dGraphics3DImpl::flush()
 
 			glPolygonMode(GL_FRONT_AND_BACK, material->WireFrame ? GL_LINE : GL_FILL);
 
-			if (material->Both_sided)
-			{
-				glEnable(GL_CULL_FACE);
-			}
-			else
-			{
-				glDisable(GL_CULL_FACE);
-			}
+			(material->Both_sided ? glEnable : glDisable)(GL_CULL_FACE);
 
 			glBindTexture(GL_TEXTURE_2D, material->Texture->GetTextureID());
 			glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, tOffset);

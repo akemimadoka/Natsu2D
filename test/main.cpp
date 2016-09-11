@@ -550,7 +550,7 @@ public:
 			nat_Throw(natException, _T("Failed to prepare graphic renderer"));
 		}
 		
-		//f->PrintFont(m_pGraphics, _T("ç÷Â¶Åµ"), 0.0f, 30.0f, 1.0f, natVec3<>(1.0f, 1.0f, 0.0f));
+		f->PrintFont(m_pGraphics, _T("ç÷Â¶Åµ"), 0.0f, 60.0f, 1.0f, natVec3<>(1.0f, 1.0f, 0.0f));
 		f->PrintFont(m_pGraphics, _T("ç÷Â¶Åµ"), 0.0f, 30.0f, 1.0f, m_texture2);
 
 		pRenderDevice->SubmitViewMat(natTransform::move(

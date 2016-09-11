@@ -148,9 +148,12 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 	});
 
 	pFontProgram->Use();
+	GLint textureID = 0;
 	GLint useTexture = GL_FALSE;
-	pFontProgram->GetUniformReference(_T("useTexture"))->SetValue(1, &useTexture);
-	pFontProgram->GetUniformReference(_T("textColor"))->SetValue(1, &color);
+	pFontProgram->GetUniformReference(1)->SetValue(1, &textureID);
+	pFontProgram->GetUniformReference(2)->SetValue(1, &textureID);
+	pFontProgram->GetUniformReference(3)->SetValue(1, &useTexture);
+	pFontProgram->GetUniformReference(4)->SetValue(1, &color);
 
 	return PrintFontImpl(pGraphic, str, x, y, scale);
 }
@@ -195,12 +198,12 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 	});
 
 	pFontProgram->Use();
-	GLint useTexture = GL_TRUE;
-	pFontProgram->GetUniformReference(_T("useTexture"))->SetValue(1, &useTexture);
 	GLint textureID = 0;
-	pFontProgram->GetUniformReference(_T("text"))->SetValue(1, &textureID);
+	pFontProgram->GetUniformReference(1)->SetValue(1, &textureID);
 	textureID = 1;
-	pFontProgram->GetUniformReference(_T("textTexture"))->SetValue(1, &textureID);
+	pFontProgram->GetUniformReference(2)->SetValue(1, &textureID);
+	GLint useTexture = GL_TRUE;
+	pFontProgram->GetUniformReference(3)->SetValue(1, &useTexture);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, pTexture->GetTextureID());

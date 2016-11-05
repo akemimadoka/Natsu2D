@@ -8,7 +8,7 @@ class n2dLayerImpl
 	: public natRefObjImpl<n2dLayer>
 {
 public:
-	n2dLayerImpl(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr);
+	explicit n2dLayerImpl(n2dLayerHandler* Handler, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr);
 	~n2dLayerImpl();
 
 	void AddChild(natNode* pChild) override;
@@ -50,8 +50,7 @@ private:
 	/// @brief key: Order
 	std::map<nInt, ChildRenderNodes> m_ChildRenderNodes;
 
-	std::function<nBool(nDouble, n2dRenderDevice*)> m_RenderHandler;
-	std::function<nBool(nDouble)> m_UpdateHandler;
+	n2dLayerHandler* m_Handler;
 
 	natNode* m_pParent;
 	nTString m_Name;
@@ -65,7 +64,7 @@ class n2dLayerMgrImpl
 public:
 	n2dLayerMgrImpl();
 
-	nResult CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) override;
+	nResult CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) override;
 	n2dLayer* GetRootLayer() override;
 
 private:

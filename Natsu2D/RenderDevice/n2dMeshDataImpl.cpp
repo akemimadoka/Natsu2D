@@ -72,7 +72,7 @@ nBool n2dStaticMeshDataImpl::IsStatic() const
 }
 
 n2dStaticMeshDataImpl::n2dStaticMeshDataImpl()
-	: m_Material { false }, m_pRenderDevice(nullptr), m_VB(0u), m_IB(0u), m_VertCount(0), m_IndexCount(0), m_Zoom(1.0f)
+	: m_Material { false }, m_pRenderDevice(nullptr), m_VB(), m_IB(), m_VertCount(0), m_IndexCount(0), m_Zoom(1.0f)
 {
 }
 

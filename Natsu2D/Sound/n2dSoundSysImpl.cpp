@@ -70,7 +70,7 @@ nResult n2dSoundSysImpl::CreateWaveSoundBufferFromStream(natStream * pStream, n2
 		auto pBuffer = make_ref<n2dSoundBufferImpl>();
 		std::vector<nByte> tBuffer(static_cast<nuInt>(pStream->GetSize() - pStream->GetPosition()));
 		pStream->ReadBytes(tBuffer.data(), tBuffer.size());
-		if (NATFAIL(pStream->GetLastErr()) || !ALFWLoadWaveBufferToBuffer(tBuffer.data(), static_cast<DWORD>(tBuffer.size()), pBuffer->GetHandle()))
+		if (!ALFWLoadWaveBufferToBuffer(tBuffer.data(), static_cast<DWORD>(tBuffer.size()), pBuffer->GetHandle()))
 		{
 			nat_Throw(natException, _T("Cannot load wave buffer"));
 		}

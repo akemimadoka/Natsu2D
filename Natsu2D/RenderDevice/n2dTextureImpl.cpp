@@ -8,15 +8,16 @@ namespace
 {
 	std::unique_ptr<n2dImage> LoadPicture(natStream* pStream, DWORD dTypeId)
 	{
-		pStream->Lock();
+		static natCriticalSection s_Section;
+		natRefScopeGuard<natCriticalSection> guard{ s_Section };
+
 		//pStream->SetPosition(NatSeek::Beg, 0l);
 		nLen lSize = pStream->GetSize() - pStream->GetPosition();
 		std::vector<nByte> Buf(static_cast<nuInt>(lSize));
-		if (pStream->ReadBytes(Buf.data(), lSize) != lSize || pStream->GetLastErr() != NatErr_OK)
+		if (pStream->ReadBytes(Buf.data(), lSize) != lSize)
 		{
 			return nullptr;
 		}
-		pStream->Unlock();
 
 		CxImage ci(Buf.data(), static_cast<DWORD>(lSize), dTypeId);
 

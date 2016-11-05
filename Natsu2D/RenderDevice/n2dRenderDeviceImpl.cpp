@@ -107,7 +107,7 @@ n2dShaderWrapper* n2dRenderDeviceImpl::GetShaderWrapper()
 {
 	if (!m_Shader)
 	{
-		m_Shader = new n2dShaderWrapperImpl(this);
+		m_Shader = make_ref<n2dShaderWrapperImpl>(this);
 	}
 
 	return m_Shader;
@@ -257,14 +257,13 @@ n2dLightController* n2dRenderDeviceImpl::GetLightController(nuInt Index)
 		return nullptr;
 	}
 
-	nUnsafePtr<n2dLightControllerImpl> pLight;
+	natRefPointer<n2dLightControllerImpl> pLight;
 
 	pLight = m_Lights[Index];
-	if (pLight != nullptr)
+	if (pLight)
 		return pLight;
 	
-	pLight = m_Lights[Index] = make_ref<n2dLightControllerImpl>(Index, m_pLightBuffer);
-	return pLight;
+	return m_Lights[Index] = make_ref<n2dLightControllerImpl>(Index, m_pLightBuffer);
 }
 
 nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut)

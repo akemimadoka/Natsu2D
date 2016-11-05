@@ -4,6 +4,7 @@
 #include "../RenderDevice/n2dGraphicsImpl.h"
 #include "../RenderDevice/n2dRenderDeviceImpl.h"
 #include <natStream.h>
+//#include <natLog.h>
 #include "../extern/freetype/include/ft2build.h"
 #include "../extern/freetype/include/freetype/freetype.h"
 #include "../extern/freetype/include/freetype/ftglyph.h"
@@ -150,8 +151,9 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 	pFontProgram->Use();
 	GLint textureID = 0;
 	GLint useTexture = GL_FALSE;
+	//auto p = static_cast<n2dShaderProgramImpl::UniformReferenceImpl*>(pFontProgram->GetUniformReference(_T("textColor")));
+	//m_pRenderer->GetEngine()->GetLogger().LogMsg(_T("textColor: {0}, type: {1}"), p->GetLocation(), static_cast<nuInt>(p->GetType()));
 	pFontProgram->GetUniformReference(1)->SetValue(1, &textureID);
-	pFontProgram->GetUniformReference(2)->SetValue(1, &textureID);
 	pFontProgram->GetUniformReference(3)->SetValue(1, &useTexture);
 	pFontProgram->GetUniformReference(4)->SetValue(1, &color);
 
@@ -239,10 +241,10 @@ nResult n2dFontImpl::PrintFontImpl(n2dGraphics2D* pGraphic, ncTStr str, nFloat x
 		auto yPos = currenty - (mapitea->second.Height - mapitea->second.bearing_y) * scale;
 
 		pGraphic->DrawQuad(mapitea->second.CharTexture,
-			n2dGraphics2DVertex{ { xPos, yPos + h, 0.f }, 0,{ 0.f, 0.f } },
-			n2dGraphics2DVertex{ { xPos, yPos, 0.f }, 0,{ 0.f, 1.f } },
-			n2dGraphics2DVertex{ { xPos + w, yPos, 0.f }, 0,{ 1.f, 1.f } },
-			n2dGraphics2DVertex{ { xPos + w, yPos + h, 0.f }, 0,{ 1.f, 0.f } });
+			{ { xPos, yPos + h, 0.f }, 0,{ 0.f, 0.f } },
+			{ { xPos, yPos, 0.f }, 0,{ 0.f, 1.f } },
+			{ { xPos + w, yPos, 0.f }, 0,{ 1.f, 1.f } },
+			{ { xPos + w, yPos + h, 0.f }, 0,{ 1.f, 0.f } });
 
 		currentx += mapitea->second.adv_x * scale;
 	}

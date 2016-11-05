@@ -2,8 +2,8 @@
 #include <natUtil.h>
 #include <cassert>
 
-n2dLayerImpl::n2dLayerImpl(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, nInt Order, ncTStr Name, natNode* pParent)
-	: m_RenderHandler(move(RenderHandler)), m_UpdateHandler(move(UpdateHandler)), m_pParent(pParent), m_Name(Name), m_Order(Order)
+n2dLayerImpl::n2dLayerImpl(n2dLayerHandler* Handler, nInt Order, ncTStr Name, natNode* pParent)
+	: m_Handler(Handler), m_pParent(pParent), m_Name(Name), m_Order(Order)
 {
 }
 
@@ -362,20 +362,37 @@ nInt n2dLayerImpl::GetOrder() const noexcept
 
 nBool n2dLayerImpl::OnRender(nDouble ElapsedTime, n2dRenderDevice* pRenderer)
 {
-	return m_RenderHandler(ElapsedTime, pRenderer);
+	return m_Handler->OnRender(ElapsedTime, pRenderer);
 }
 
 nBool n2dLayerImpl::OnUpdate(nDouble ElapsedTime)
 {
-	return m_UpdateHandler(ElapsedTime);
+	return m_Handler->OnUpdate(ElapsedTime);
+}
+
+namespace
+{
+	struct DummyLayerHandler
+		: natRefObjImpl<n2dLayerHandler>
+	{
+		nBool OnRender(nDouble ElapsedTime, n2dRenderDevice* pRenderer) override
+		{
+			return true;
+		}
+
+		nBool OnUpdate(nDouble ElapsedTime) override
+		{
+			return true;
+		}
+	} g_DummyLayerHandler;
 }
 
 n2dLayerMgrImpl::n2dLayerMgrImpl()
-	: m_RootLayer([](nDouble, n2dRenderDevice*) { return true; }, [](nDouble) { return true; })
+	: m_RootLayer(&g_DummyLayerHandler)
 {
 }
 
-nResult n2dLayerMgrImpl::CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order, ncTStr Name, natNode* pParent)
+nResult n2dLayerMgrImpl::CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order, ncTStr Name, natNode* pParent)
 {
 	if (pOut == nullptr)
 	{
@@ -384,7 +401,7 @@ nResult n2dLayerMgrImpl::CreateLayer(std::function<nBool(nDouble, n2dRenderDevic
 
 	try
 	{
-		*pOut = new n2dLayerImpl(RenderHandler, UpdateHandler, Order, Name, pParent ? pParent : &m_RootLayer);
+		*pOut = new n2dLayerImpl(Handler, Order, Name, pParent ? pParent : &m_RootLayer);
 	}
 	catch (std::bad_alloc&)
 	{

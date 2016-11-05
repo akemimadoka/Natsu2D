@@ -684,6 +684,23 @@ void n2dShaderProgramImpl::UniformReferenceImpl::GetValue(nuInt Size, void* valu
 	case GL_BOOL_VEC2:
 	case GL_BOOL_VEC3:
 	case GL_BOOL_VEC4:
+
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_2D:
+	case GL_SAMPLER_3D:
+	case GL_SAMPLER_CUBE:
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY:
+	case GL_SAMPLER_2D_ARRAY:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_MULTISAMPLE:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_SAMPLER_CUBE_SHADOW:
+	case GL_SAMPLER_BUFFER:
+	case GL_SAMPLER_2D_RECT:
+	case GL_SAMPLER_2D_RECT_SHADOW:
 		glGetnUniformiv(m_pProgram->m_Program, m_Location, Size, static_cast<GLint*>(value));
 		break;
 
@@ -695,12 +712,12 @@ void n2dShaderProgramImpl::UniformReferenceImpl::GetValue(nuInt Size, void* valu
 		break;
 
 	default:
-		nat_Throw(natException, natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
+		nat_Throw(natException, _T("Unknown type : %u."), m_Type);
 	}
 
 	if (glGetError() == GL_INVALID_OPERATION)
 	{
-		nat_Throw(natException, _T("Cannot get value, maybe size is too small"));
+		nat_Throw(natException, _T("Cannot get value, maybe size is too small or this uniform reference object is invalid."));
 	}
 }
 
@@ -1033,22 +1050,8 @@ nResult n2dShaderProgramImpl::OutputBinary(natStream* pStream) const
 	NatErr tErrCode;
 
 	pStream->WriteBytes(reinterpret_cast<ncData>(&tBinaryFormat), sizeof(tBinaryFormat));
-	if ((tErrCode = pStream->GetLastErr()) != NatErr_OK)
-	{
-		return tErrCode;
-	}
-
 	pStream->WriteBytes(reinterpret_cast<ncData>(&tLength), sizeof(tLength));
-	if ((tErrCode = pStream->GetLastErr()) != NatErr_OK)
-	{
-		return tErrCode;
-	}
-
 	pStream->WriteBytes(Buf.data(), tLength);
-	if ((tErrCode = pStream->GetLastErr()) != NatErr_OK)
-	{
-		return tErrCode;
-	}
 
 	return NatErr_OK;
 }
@@ -1175,24 +1178,10 @@ n2dShaderProgramImpl* n2dShaderProgramImpl::CreateFromStream(natStream* pStream)
 	
 	GLenum tBinaryFormat = 0u;
 	pStream->ReadBytes(reinterpret_cast<nData>(&tBinaryFormat), sizeof(tBinaryFormat));
-	if (pStream->GetLastErr() != NatErr_OK)
-	{
-		return nullptr;
-	}
-
 	nuInt tLen = 0u;
 	pStream->ReadBytes(reinterpret_cast<nData>(&tLen), sizeof(tLen));
-	if (pStream->GetLastErr() != NatErr_OK)
-	{
-		return nullptr;
-	}
-
 	std::vector<nByte> Buf(tLen);
 	pStream->ReadBytes(Buf.data(), tLen);
-	if (pStream->GetLastErr() != NatErr_OK)
-	{
-		return nullptr;
-	}
 
 	glProgramBinary(pRet->m_Program, tBinaryFormat, Buf.data(), tLen);
 

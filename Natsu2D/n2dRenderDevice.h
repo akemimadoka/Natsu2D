@@ -8,6 +8,7 @@
 #include <natMat.h>
 #include "natQuat.h"
 
+struct n2dLayer;
 struct n2dLayerMgr;
 struct n2dFont;
 struct n2dShaderWrapper;
@@ -663,6 +664,7 @@ struct n2dLightController
 
 	///	@brief	获得灯光属性
 	virtual LightProperties const& GetProperties() const = 0;
+
 	///	@brief	设置灯光属性
 	virtual void SetProperties(LightProperties const& prop) = 0;
 };
@@ -675,6 +677,8 @@ struct n2dCamera
 {
 	///	@brief	获得渲染设备
 	virtual n2dRenderDevice* GetRenderDevice() = 0;
+
+	virtual void Attach(n2dLayer* layer) = 0;
 
 	///	@brief	提交模型矩阵
 	///	@param[in]	Mat	提交的矩阵

@@ -574,6 +574,11 @@ public:
 		void GetValue(nuInt Size, void* Value) const override;
 		void SetValue(nuInt Count, const void* Value, nBool Transpose) override;
 
+		HandleType GetLocation() const noexcept
+		{
+			return m_Location;
+		}
+
 	private:
 		void onProgramDestroy();
 

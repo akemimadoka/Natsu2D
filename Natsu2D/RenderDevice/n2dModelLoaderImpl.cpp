@@ -40,7 +40,7 @@ nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dM
 	nLen tLen = pStream->GetSize() - pStream->GetPosition();
 	nData tBuf = new nByte[static_cast<nuInt>(tLen)];
 	
-	if (pStream->ReadBytes(tBuf, tLen) != tLen || pStream->GetLastErr() != NatErr_OK)
+	if (pStream->ReadBytes(tBuf, tLen) != tLen)
 	{
 		SafeDelArr(tBuf);
 		return NatErr_InternalErr;

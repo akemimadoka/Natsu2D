@@ -256,7 +256,7 @@ public:
 	void updateMVP();
 private:
 	n2dEngine* m_pEngine;
-	n2dShaderWrapperImpl* m_Shader;
+	natRefPointer<n2dShaderWrapperImpl> m_Shader;
 
 	nBool m_bUpdated;
 

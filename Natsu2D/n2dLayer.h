@@ -35,18 +35,26 @@ struct n2dLayer
 	nInt GetOrder() const noexcept override = 0;
 };
 
+struct n2dLayerHandler
+	: n2dInterface
+{
+	///	@brief	渲染时回调
+	virtual nBool OnRender(nDouble ElapsedTime, n2dRenderDevice* pRenderer) = 0;
+	///	@brief	更新时回调
+	virtual nBool OnUpdate(nDouble ElapsedTime) = 0;
+};
+
 struct n2dLayerMgr
 	: n2dInterface
 {
 	///	@brief	创建图层
-	///	@param[in]	RenderHandler	渲染处理
-	///	@param[in]	UpdateHandler	更新处理
-	///	@param[out]	pOut			创建的图层
-	///	@param[in]	Order			图层顺序，可省略
-	///	@param[in]	Name			图层名，可省略
-	///	@param[in]	pParent			图层所属的节点
+	///	@param[in]	Handler	处理对象
+	///	@param[out]	pOut	创建的图层
+	///	@param[in]	Order	图层顺序，可省略
+	///	@param[in]	Name	图层名，可省略
+	///	@param[in]	pParent	图层所属的节点
 	///	@return	处理结果
-	virtual nResult CreateLayer(std::function<nBool(nDouble, n2dRenderDevice*)> RenderHandler, std::function<nBool(nDouble)> UpdateHandler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) = 0;
+	virtual nResult CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) = 0;
 
 	/// @brief	获得根图层
 	virtual n2dLayer* GetRootLayer() = 0;

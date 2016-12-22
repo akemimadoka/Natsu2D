@@ -11,15 +11,15 @@ n2dGraphics2DImpl::n2dGraphics2DImpl(n2dRenderDeviceImpl* pRenderDevice)
 	m_IB(nullptr),
 	m_bIsRendering(false)
 {
-	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, &m_VB), _T("Create vertex buffer failed."));
-	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, &m_IB), _T("Create index buffer failed."));
+	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, &m_VB), "Create vertex buffer failed."_nv);
+	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, &m_IB), "Create index buffer failed."_nv);
 }
 
 n2dGraphics2DImpl::~n2dGraphics2DImpl()
 {
 	if (m_bIsRendering)
 	{
-		m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("n2dGraphics2DImpl::End should be invoked before destroy"));
+		m_pRenderDevice->GetEngine()->GetLogger().LogWarn("n2dGraphics2DImpl::End should be invoked before destroy"_nv);
 		End();
 	}
 }
@@ -177,7 +177,7 @@ n2dGraphics3DImpl::~n2dGraphics3DImpl()
 {
 	if (m_bIsRendering)
 	{
-		m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("n2dGraphics3DImpl::End should be invoked before destroy"));
+		m_pRenderDevice->GetEngine()->GetLogger().LogWarn("n2dGraphics3DImpl::End should be invoked before destroy"_nv);
 		n2dGraphics3DImpl::End();
 	}
 }

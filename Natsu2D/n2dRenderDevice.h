@@ -45,7 +45,7 @@ struct n2dTexture2D
 	///	@brief	加载纹理
 	///	@param[in]	filename	文件名
 	///	@return	是否加载成功
-	virtual nBool LoadTexture(nTString const& filename) = 0;
+	virtual nBool LoadTexture(nString const& filename) = 0;
 
 	///	@brief	从流中加载纹理
 	///	@param[in]	pStream		流
@@ -278,7 +278,7 @@ struct n2dShader
 	///	@brief	是否已经编译
 	virtual nBool Compiled() const = 0;
 	///	@brief	获得编译日志
-	virtual ncTStr GetInfoLog() const = 0;
+	virtual nStrView GetInfoLog() const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -535,7 +535,7 @@ struct n2dShaderProgram
 	///	@return	验证结果
 	virtual nBool Validate() const = 0;
 	///	@brief	获得信息日志
-	virtual ncTStr GetInfoLog() const = 0;
+	virtual nStrView GetInfoLog() const = 0;
 	///	@brief	使用着色器
 	virtual void Use() const = 0;
 	///	@brief	该着色器是否正在使用
@@ -558,21 +558,21 @@ struct n2dShaderProgram
 	virtual AttributeReference* GetAttributeReference(nuInt Location) = 0;
 	///	@brief	获得Attribute引用
 	///	@param[in]	Name	名称
-	virtual AttributeReference* GetAttributeReference(ncTStr Name) = 0;
+	virtual AttributeReference* GetAttributeReference(nStrView Name) = 0;
 
 	///	@brief	获得Uniform引用
 	///	@param[in]	Location	位置
 	virtual UniformReference* GetUniformReference(nuInt Location) = 0;
 	///	@brief	获得Uniform引用
 	///	@param[in]	Name	名称
-	virtual UniformReference* GetUniformReference(ncTStr Name) = 0;
+	virtual UniformReference* GetUniformReference(nStrView Name) = 0;
 
 	///	@brief	获得Uniform块引用
 	///	@param[in]	Location	位置
 	virtual UniformBlockReference* GetUniformBlockReference(nuInt Location) = 0;
 	///	@brief	获得Uniform块引用
 	///	@param[in]	Name	名称
-	virtual UniformBlockReference* GetUniformBlockReference(ncTStr Name) = 0;
+	virtual UniformBlockReference* GetUniformBlockReference(nStrView Name) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

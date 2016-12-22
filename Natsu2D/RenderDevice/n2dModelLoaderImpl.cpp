@@ -51,7 +51,7 @@ nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dM
 
 	if (!tpScene)
 	{
-		m_pRenderDevice->GetEngine()->GetLogger().LogErr(natUtil::C2Wstr(tImporter.GetErrorString()).c_str());
+		m_pRenderDevice->GetEngine()->GetLogger().LogErr(nString{ AnsiStringView(tImporter.GetErrorString()) });
 		return NatErr_InternalErr;
 	}
 
@@ -66,7 +66,7 @@ nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dM
 	return NatErr_OK;
 }
 
-nResult n2dModelLoaderImpl::CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut)
+nResult n2dModelLoaderImpl::CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut)
 {
 	natStream* tpStream = new natFileStream(lpPath, true, false);
 	nResult tRet = CreateStaticModelFromStream(tpStream, pOut);
@@ -107,19 +107,9 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 
 		// Model info start
 		pStream->ReadBytes(tBuf, 20ull);
-		pModel->m_Name =
-#ifdef _UNICODE
-			natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-			reinterpret_cast<ncStr>(tBuf);
-#endif
+		pModel->m_Name = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
 		pStream->ReadBytes(tBuf, 256ull);
-		pModel->m_Comment =
-#ifdef _UNICODE
-			natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-			reinterpret_cast<ncStr>(tBuf);
-#endif
+		pModel->m_Comment = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
 
 		// Model info end
 
@@ -180,40 +170,35 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 
 			pStream->ReadBytes(tBuf, 20ull);
 
-			nTString tStr =
-#ifdef _UNICODE
-				natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-				reinterpret_cast<ncStr>(tBuf);
-#endif
+			nString tStr = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
+			std::replace(tStr.begin(), tStr.end(), '/', '\\');
 
-			std::replace(tStr.begin(), tStr.end(), _T('/'), _T('\\'));
-			std::vector<nTString> SplitResult;
-			natUtil::split(tStr, nTString(_T("*")), [&SplitResult](ncTStr str, size_t len)
+			std::vector<nString> SplitResult;
+			tStr.GetView().Split("*"_nv, [&SplitResult](nStrView str)
 			{
-				SplitResult.emplace_back(str, len);
+				SplitResult.emplace_back(std::move(str));
 			});
 
 #ifndef NDEBUG
 			if (SplitResult.size() > 2)
 			{
-				m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("Texture and spa filename count dismatch, continue anyway"));
+				m_pRenderDevice->GetEngine()->GetLogger().LogWarn("Texture and spa filename count dismatch, continue anyway"_nv);
 			}
 #endif
 
 			mat.BaseMaterial.Texture = make_ref<n2dTexture2DImpl>();
-			if (!SplitResult.empty() && SplitResult[0] != _T("") && !mat.BaseMaterial.Texture->LoadTexture(SplitResult[0]))
+			if (!SplitResult.empty() && SplitResult[0] != ""_nv && !mat.BaseMaterial.Texture->LoadTexture(SplitResult[0]))
 			{
-				m_pRenderDevice->GetEngine()->GetLogger().LogWarn(natUtil::FormatString(_T("Unable to load texture file \"%s\""), SplitResult[0].c_str()).c_str());
+				m_pRenderDevice->GetEngine()->GetLogger().LogWarn("Unable to load texture file \"%s\""_nv, SplitResult[0]);
 				mat.BaseMaterial.Texture = m_DefaultTexture;
 			}
 
-			if (SplitResult.size() >= 2 && SplitResult[1] != _T(""))
+			if (SplitResult.size() >= 2 && SplitResult[1] != ""_nv)
 			{
 				mat.Spa = make_ref<n2dTexture2DImpl>();
 				if (!mat.Spa->LoadTexture(SplitResult[1]))
 				{
-					m_pRenderDevice->GetEngine()->GetLogger().LogWarn(natUtil::FormatString(_T("Unable to load spa file \"%s\""), SplitResult[1].c_str()).c_str());
+					m_pRenderDevice->GetEngine()->GetLogger().LogWarn("Unable to load spa file \"%s\""_nv, SplitResult[1]);
 					mat.Spa = m_DefaultTexture;
 				}
 			}
@@ -229,12 +214,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 		for (auto& tBone : pModel->m_Mesh.m_Bones)
 		{
 			pStream->ReadBytes(tBuf, 20ull);
-			tBone.Name =
-#ifdef _UNICODE
-				natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-				reinterpret_cast<ncStr>(tBuf);
-#endif
+			tBone.Name = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
 			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Parent), 2ull);
 			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Child), 2ull);
 			pStream->ReadBytes(reinterpret_cast<nData>(&tBone.Type), 1ull);
@@ -273,12 +253,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 		for (auto& tMorph : pModel->m_Mesh.m_Morphes)
 		{
 			pStream->ReadBytes(tBuf, 20ull);
-			tMorph.Name =
-#ifdef _UNICODE
-				natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-				reinterpret_cast<ncStr>(tBuf);
-#endif
+			tMorph.Name = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
 			pStream->ReadBytes(tBuf, 4ull);
 			tMorph.Vertexes.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
 			tMorph.Translation.resize(static_cast<size_t>(*reinterpret_cast<nuInt*>(tBuf)));
@@ -321,7 +296,7 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 	return NatErr_OK;
 }
 
-nResult n2dModelLoaderImpl::CreateDynamicModelFromFile(ncTStr lpPath, n2dModelData ** pOut)
+nResult n2dModelLoaderImpl::CreateDynamicModelFromFile(nStrView lpPath, n2dModelData ** pOut)
 {
 	natRefPointer<natStream> pStream = make_ref<natFileStream>(lpPath, true, false);
 	nResult tRet = CreateDynamicModelFromStream(pStream, pOut);
@@ -352,11 +327,11 @@ void n2dModelLoaderImpl::loadMeshData(n2dStaticModelDataImpl* pModel, const aiSc
 
 		aiString tTexPath;
 		tMaterial.Texture = make_ref<n2dTexture2DImpl>();
-		if (AI_SUCCESS != pMaterial->GetTexture(aiTextureType_DIFFUSE, 0u, &tTexPath) || !tMaterial.Texture->LoadTexture(natUtil::C2Wstr(tTexPath.C_Str())))
+		if (AI_SUCCESS != pMaterial->GetTexture(aiTextureType_DIFFUSE, 0u, &tTexPath) || !tMaterial.Texture->LoadTexture(AnsiStringView(tTexPath.C_Str())))
 		{
 			if (tTexPath.length > 0)
 			{
-				m_pRenderDevice->GetEngine()->GetLogger().LogWarn(natUtil::FormatString(_T("Cannot load texture \"%s\", use default texture instead"), natUtil::C2Wstr(tTexPath.data).c_str()).c_str());
+				m_pRenderDevice->GetEngine()->GetLogger().LogWarn("Cannot load texture \"%s\", use default texture instead"_nv, AnsiStringView(tTexPath.data));
 			}
 
 			tMaterial.Texture = m_DefaultTexture;
@@ -402,7 +377,7 @@ void n2dModelLoaderImpl::loadMeshData(n2dStaticModelDataImpl* pModel, const aiSc
 		const aiFace* pFace = tMesh->mFaces;
 		if (pFace->mNumIndices != 3u)
 		{
-			nat_Throw(natException, _T("Not Supported model"));
+			nat_Throw(natException, "Not Supported model"_nv);
 		}
 
 		auto pMesh = make_ref<n2dStaticMeshDataImpl>();

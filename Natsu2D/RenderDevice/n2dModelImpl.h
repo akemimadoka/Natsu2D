@@ -79,5 +79,5 @@ public:
 private:
 	n2dDynamicMeshDataImpl m_Mesh;
 
-	nTString m_Name, m_Comment;
+	nString m_Name, m_Comment;
 };

@@ -28,7 +28,7 @@ class n2dShaderImpl
 		case ShaderType::Geometry:
 			return GL_GEOMETRY_SHADER;
 		default:
-			nat_Throw(natException, _T("Not an available ShaderType"));
+			nat_Throw(natException, "Not an available ShaderType"_nv);
 		}
 	}
 
@@ -41,14 +41,14 @@ public:
 	ShaderType GetType() const override;
 	nBool Deleted() const override;
 	nBool Compiled() const override;
-	ncTStr GetInfoLog() const override;
+	nStrView GetInfoLog() const override;
 
 	void CompileFromStream(natStream* pStream, nBool bIsBinary = false);
 private:
 	ShaderType m_ShaderType;
 	GLhandle m_Shader;
 
-	mutable nTString m_Log;
+	mutable nString m_Log;
 };
 
 class n2dShaderProgramImpl
@@ -93,7 +93,7 @@ class n2dShaderProgramImpl
 		case AttribType::Double:
 			return GL_DOUBLE;
 		default:
-			nat_Throw(natException, _T("Not a valid AttribType enum"));
+			nat_Throw(natException, "Not a valid AttribType enum"_nv);
 		}
 	}
 
@@ -310,7 +310,7 @@ class n2dShaderProgramImpl
 		case VarType::atomic_uint:
 			return GL_UNSIGNED_INT_ATOMIC_COUNTER;
 		default:
-			nat_Throw(natException, _T("Not a valid VarType"));
+			nat_Throw(natException, "Not a valid VarType"_nv);
 		}
 	}
 
@@ -527,7 +527,7 @@ class n2dShaderProgramImpl
 		case GL_UNSIGNED_INT_ATOMIC_COUNTER:
 			return VarType::atomic_uint;
 		default:
-			nat_Throw(natException, _T("Not a valid type enum"));
+			nat_Throw(natException, "Not a valid type enum"_nv);
 		}
 	}
 public:
@@ -628,7 +628,7 @@ public:
 	void Link() override;
 	nBool IsLinked() const override;
 	nBool Validate() const override;
-	ncTStr GetInfoLog() const override;
+	nStrView GetInfoLog() const override;
 	void Use() const override;
 	nBool IsUsing() const override;
 
@@ -639,13 +639,13 @@ public:
 	nuInt ActiveUniformBlockCount() const override;
 
 	AttributeReference* GetAttributeReference(nuInt Location) override;
-	AttributeReference* GetAttributeReference(ncTStr Name) override;
+	AttributeReference* GetAttributeReference(nStrView Name) override;
 
 	UniformReference* GetUniformReference(nuInt Location) override;
-	UniformReference* GetUniformReference(ncTStr Name) override;
+	UniformReference* GetUniformReference(nStrView Name) override;
 
 	UniformBlockReference* GetUniformBlockReference(nuInt Location) override;
-	UniformBlockReference* GetUniformBlockReference(ncTStr Name) override;
+	UniformBlockReference* GetUniformBlockReference(nStrView Name) override;
 
 	static n2dShaderProgramImpl* CreateFromStream(natStream* pStream);
 private:
@@ -655,7 +655,7 @@ private:
 	std::unordered_map<GLuint, natRefPointer<UniformReferenceImpl>> m_UniformMap;
 	std::unordered_map<GLuint, natRefPointer<UniformBlockReferenceImpl>> m_UniformBlockMap;
 
-	mutable nTString m_Log;
+	mutable nString m_Log;
 };
 
 class n2dProgramPipelineImpl

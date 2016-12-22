@@ -44,16 +44,16 @@ public:
 	explicit n2dFontImpl(n2dRenderDeviceImpl* pRenderer);
 	~n2dFontImpl();
 
-	nResult InitFont(n2dRenderDevice* pRenderer, ncTStr lpFontFile, nuInt iWidth, nuInt iHeight) override;
+	nResult InitFont(n2dRenderDevice* pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight) override;
 	nResult InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nuInt iWidth, nuInt iHeight) override;
 
-	nResult InitText(ncTStr str, nLen lStrlen) override;
+	nResult InitText(nStrView str, nLen lStrlen) override;
 
-	nResult PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color) override;
-	nResult PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture) override;
+	nResult PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color) override;
+	nResult PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture) override;
 
 private:
-	nResult PrintFontImpl(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale);
+	nResult PrintFontImpl(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale);
 
 	FT_Library m_pFTLib;
 	FT_Face m_pFTFace;

@@ -7,10 +7,10 @@ in vec2 UV;
 out vec4 color;
 
 // Values that stay constant for the whole mesh.
-layout(location = 1) uniform sampler2D text;
-layout(location = 2) uniform sampler2D textTexture;
-layout(location = 3) uniform bool useTexture;
-layout(location = 4) uniform vec3 textColor;
+uniform sampler2D text;
+uniform sampler2D textTexture;
+uniform bool useTexture;
+uniform vec3 textColor;
 
 void main()
 {

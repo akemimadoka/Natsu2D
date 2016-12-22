@@ -75,7 +75,7 @@ enum class VMDVersion
 
 struct BoneFrameData
 {
-	nTString TargetBone;
+	nString TargetBone;
 	nuInt FrameNumber;
 	natVec3<> Translation;
 	natQuat<> Rotation;
@@ -84,7 +84,7 @@ struct BoneFrameData
 
 struct MorphFrameData
 {
-	nTString TargetMorph;
+	nString TargetMorph;
 	nuInt nFrame;
 	nFloat Weight;
 };
@@ -219,10 +219,10 @@ private:
 struct MotionData
 {
 	VMDVersion Ver;
-	nTString OriginModelName;
+	nString OriginModelName;
 
-	std::unordered_map<nTString, nuInt> BoneMap;
-	std::unordered_map<nTString, nuInt> MorphMap;
+	std::unordered_map<nString, nuInt> BoneMap;
+	std::unordered_map<nString, nuInt> MorphMap;
 
 	std::vector<BoneFrameData> BoneFrames;
 	std::vector<MorphFrameData> MorphFrames;
@@ -255,10 +255,10 @@ public:
 	n2dMotionManagerImpl();
 	~n2dMotionManagerImpl();
 
-	nResult LoadMotionFromStream(ncTStr lpName, natStream* pStream) override;
-	nResult LoadMotionFromFile(ncTStr lpName, ncTStr lpPath) override;
+	nResult LoadMotionFromStream(nStrView lpName, natStream* pStream) override;
+	nResult LoadMotionFromFile(nStrView lpName, nStrView lpPath) override;
 
-	nResult ApplyToModel(ncTStr lpName, n2dModelData* pModel) override;
+	nResult ApplyToModel(nStrView lpName, n2dModelData* pModel) override;
 	void RestoreMotion(n2dModelData* pModel) override;
 	void RestoreMorph(n2dModelData* pModel) override;
 
@@ -270,5 +270,5 @@ public:
 
 	void doApplyMorph(n2dDynamicMeshDataImpl* pMesh, nuInt MorphID, nFloat Weight);
 private:
-	std::unordered_map<nTString, MotionData> m_MotionMap;
+	std::unordered_map<nString, MotionData> m_MotionMap;
 };

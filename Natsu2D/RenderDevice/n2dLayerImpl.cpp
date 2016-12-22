@@ -2,7 +2,7 @@
 #include <natUtil.h>
 #include <cassert>
 
-n2dLayerImpl::n2dLayerImpl(n2dLayerHandler* Handler, nInt Order, ncTStr Name, natNode* pParent)
+n2dLayerImpl::n2dLayerImpl(n2dLayerHandler* Handler, nInt Order, nStrView Name, natNode* pParent)
 	: m_Handler(Handler), m_pParent(pParent), m_Name(Name), m_Order(Order)
 {
 }
@@ -25,7 +25,7 @@ void n2dLayerImpl::AddChild(natNode* pChild)
 	n2dRenderNode* pChildn2dRenderNode = dynamic_cast<n2dRenderNode*>(pChild);
 	if (!pChildn2dRenderNode)
 	{
-		nat_Throw(natException, _T("pChild is not a Layer."));
+		nat_Throw(natException, "pChild is not a Layer."_nv);
 	}
 
 	auto Order = pChildn2dRenderNode->GetOrder();
@@ -33,9 +33,9 @@ void n2dLayerImpl::AddChild(natNode* pChild)
 	auto Name = pChildn2dRenderNode->GetName();
 	natRefPointer<n2dRenderNode> pRefChild(pChildn2dRenderNode);
 
-	if (Name)
+	if (!Name.empty())
 	{
-		nTString StrName(Name);
+		nString StrName(Name);
 		auto iter = Child.m_NamedRenderNodes.find(StrName);
 		if (iter == Child.m_NamedRenderNodes.end())
 		{
@@ -43,7 +43,7 @@ void n2dLayerImpl::AddChild(natNode* pChild)
 			pChildn2dRenderNode->SetParent(this);
 			return;
 		}
-		nat_Throw(natException, natUtil::FormatString(_T("Node \"%s\" already existed."), Name).c_str());
+		nat_Throw(natException, "Node \"%s\" already existed."_nv, Name);
 	}
 
 	auto iter = Child.m_UnnamedRenderNodes.find(pRefChild);
@@ -53,7 +53,7 @@ void n2dLayerImpl::AddChild(natNode* pChild)
 		pChildn2dRenderNode->SetParent(this);
 		return;
 	}
-	nat_Throw(natException, natUtil::FormatString(_T("Node %p already existed."), pChildn2dRenderNode).c_str());
+	nat_Throw(natException, "Node %p already existed."_nv, pChildn2dRenderNode);
 }
 
 nBool n2dLayerImpl::ChildExists(natNode* pChild) const noexcept
@@ -68,7 +68,7 @@ nBool n2dLayerImpl::ChildExists(natNode* pChild) const noexcept
 	if (iter != m_ChildRenderNodes.end())
 	{
 		auto Name = pChild->GetName();
-		if (Name && iter->second.m_NamedRenderNodes.find(Name) != iter->second.m_NamedRenderNodes.end())
+		if (!Name.empty() && iter->second.m_NamedRenderNodes.find(Name) != iter->second.m_NamedRenderNodes.end())
 		{
 			return true;
 		}
@@ -79,11 +79,11 @@ nBool n2dLayerImpl::ChildExists(natNode* pChild) const noexcept
 	return false;
 }
 
-nBool n2dLayerImpl::ChildExists(ncTStr Name) const noexcept
+nBool n2dLayerImpl::ChildExists(nStrView Name) const noexcept
 {
-	assert(Name && "Name should be a valid pointer.");
+	assert(!Name.empty() && "Name should be a valid pointer.");
 
-	nTString StrName(Name);
+	nString StrName(Name);
 	for (auto& iter : m_ChildRenderNodes)
 	{
 		if (iter.second.m_NamedRenderNodes.find(StrName) != iter.second.m_NamedRenderNodes.end())
@@ -95,11 +95,11 @@ nBool n2dLayerImpl::ChildExists(ncTStr Name) const noexcept
 	return false;
 }
 
-natNode* n2dLayerImpl::GetChildByName(ncTStr Name) const noexcept
+natNode* n2dLayerImpl::GetChildByName(nStrView Name) const noexcept
 {
-	assert(Name && "Name should be a valid pointer.");
+	assert(!Name.empty() && "Name should be a valid pointer.");
 
-	nTString StrName(Name);
+	nString StrName(Name);
 	for (auto& iter : m_ChildRenderNodes)
 	{
 		auto iter2 = iter.second.m_NamedRenderNodes.find(StrName);
@@ -217,9 +217,9 @@ void n2dLayerImpl::RemoveChild(natNode* pNode)
 	}
 }
 
-void n2dLayerImpl::RemoveChildByName(ncTStr Name)
+void n2dLayerImpl::RemoveChildByName(nStrView Name)
 {
-	assert(Name && "Name should be a valid pointer.");
+	assert(!Name.empty() && "Name should be a valid pointer.");
 
 	for (auto& iter : m_ChildRenderNodes)
 	{
@@ -235,35 +235,35 @@ void n2dLayerImpl::RemoveAllChild()
 	m_ChildRenderNodes.clear();
 }
 
-void n2dLayerImpl::SetName(ncTStr Name)
+void n2dLayerImpl::SetName(nStrView Name)
 {
-	assert(Name && "Name should be a valid pointer.");
+	assert(!Name.empty() && "Name should be a valid pointer.");
 
 	if (m_Name != Name)
 	{
-		nTString OldName(move(m_Name));
-		if (Name)
+		nString OldName(std::move(m_Name));
+		if (!Name.empty())
 		{
 			m_Name = Name;
 		}
 		else
 		{
-			m_Name.clear();
+			m_Name.Clear();
 		}
 
 		if (m_pParent)
 		{
 			AddRef();
-			m_pParent->RemoveChildByName(OldName.c_str());
+			m_pParent->RemoveChildByName(OldName);
 			m_pParent->AddChild(this);
 			Release();
 		}
 	}
 }
 
-ncTStr n2dLayerImpl::GetName() const noexcept
+nStrView n2dLayerImpl::GetName() const noexcept
 {
-	return m_Name.c_str();
+	return m_Name;
 }
 
 nBool n2dLayerImpl::Render(nDouble ElapsedTime, n2dRenderDevice* pRenderer)
@@ -392,7 +392,7 @@ n2dLayerMgrImpl::n2dLayerMgrImpl()
 {
 }
 
-nResult n2dLayerMgrImpl::CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order, ncTStr Name, natNode* pParent)
+nResult n2dLayerMgrImpl::CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order, nStrView Name, natNode* pParent)
 {
 	if (pOut == nullptr)
 	{
@@ -405,7 +405,7 @@ nResult n2dLayerMgrImpl::CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, 
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{

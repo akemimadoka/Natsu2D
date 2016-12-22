@@ -80,7 +80,7 @@ public:
 	///	@param[in]	threadMode	线程模式
 	///	@note	其余参数见GL窗口构造函数
 	///	@see	n2dWindowImpl::n2dWindowImpl
-	n2dEngineImpl(ncTStr lpClassname, nuInt x, nuInt y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen, HINSTANCE hInstance, ThreadMode threadMode = ThreadMode::SingleThread, n2dEngineEventListener* pListener = nullptr);
+	n2dEngineImpl(nStrView lpClassname, nuInt x, nuInt y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen, HINSTANCE hInstance, ThreadMode threadMode = ThreadMode::SingleThread, n2dEngineEventListener* pListener = nullptr);
 	virtual ~n2dEngineImpl();
 
 	///	@brief	切换全屏
@@ -133,20 +133,20 @@ public:
 	///	@param[in]	title	窗口名
 	///	@param[in]	FPS		渲染和更新FPS
 	///	@note	将来可能分离渲染及更新FPS
-	void MainLoop(ncTStr title, nuInt FPS) override;
+	void MainLoop(nStrView title, nuInt FPS) override;
 
 	///	@brief	应用程序消息处理函数
 	LRESULT Message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
 	void CommonInit();
-	void SingleThreadMainLoop(ncTStr title, nuInt FPS);
-	void MultiThreadMainLoop(ncTStr title, nuInt FPS);
+	void SingleThreadMainLoop(nStrView title, nuInt FPS);
+	void MultiThreadMainLoop(nStrView title, nuInt FPS);
 
 	n2dEngineEventListener*	m_pListener;
 	n2dWindowImpl			m_Window;
 	natCriticalSection		m_Section;
-	ncTStr					m_ClassName;
+	nString					m_ClassName;
 	std::atomic<nBool>		m_IsProgramLooping;
 	nBool					m_IsVisible;
 	nBool					m_ResizeDraw;

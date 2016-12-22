@@ -26,7 +26,7 @@ n2dWindowImpl::~n2dWindowImpl()
 	n2dWindowImpl::Destroy();
 }
 
-nBool n2dWindowImpl::Create(ncTStr title, ncTStr classname, HINSTANCE hInstance, LPVOID lpParam)
+nBool n2dWindowImpl::Create(nStrView title, nStrView classname, HINSTANCE hInstance, LPVOID lpParam)
 {
 	PIXELFORMATDESCRIPTOR pfd =
 	{
@@ -91,8 +91,8 @@ nBool n2dWindowImpl::Create(ncTStr title, ncTStr classname, HINSTANCE hInstance,
 
 	m_hWnd = CreateWindowEx(
 		windowExtendedStyle,
-		classname,
-		title,
+		WideString{ classname }.data(),
+		WideString{ title }.data(),
 		windowStyle,
 		windowRECT.left,
 		windowRECT.top,
@@ -185,7 +185,7 @@ nBool n2dWindowImpl::ChangeScreenSetting()
 
 	if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 	{
-		m_pEngine->GetLogger().LogWarn(_T("转换分辨率失败"));
+		m_pEngine->GetLogger().LogWarn("转换分辨率失败"_nv);
 		return false;
 	}
 
@@ -306,7 +306,7 @@ n2dWindowImpl::colorType n2dWindowImpl::GetColorType()
 	case 32u:
 		return colorType::TrueColor;
 	default:
-		nat_Throw(natException, _T("Not a enum of ColorType"));
+		nat_Throw(natException, "Not a enum of ColorType"_nv);
 	}
 }
 
@@ -419,7 +419,7 @@ void n2dWindowImpl::ApplyPosition()
 	{
 		if (!AdjustWindowRectEx(&windowRECT, windowStyle, false, windowExtendedStyle))
 		{
-			nat_Throw(natWinException, _T("AdjustWindowRectEx failed."));
+			nat_Throw(natWinException, "AdjustWindowRectEx failed."_nv);
 		}
 
 		if (windowRECT.left < 0)
@@ -437,6 +437,6 @@ void n2dWindowImpl::ApplyPosition()
 
 	if (!SetWindowPos(m_hWnd, NULL, windowRECT.left, windowRECT.top, windowRECT.right - windowRECT.left, windowRECT.bottom - windowRECT.top, SWP_NOACTIVATE | SWP_NOZORDER))
 	{
-		nat_Throw(natWinException, _T("SetWindowPos failed."));
+		nat_Throw(natWinException, "SetWindowPos failed."_nv);
 	}
 }

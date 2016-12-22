@@ -97,13 +97,13 @@
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Platform)/$(Configuration)/assimp-vc140-mt.lib;lib/CxImage/$(Platform)/$(Configuration)/cximage.lib;lib/CxImage/$(Platform)/$(Configuration)/jasper.lib;lib/CxImage/$(Platform)/$(Configuration)/jbig.lib;lib/CxImage/$(Platform)/$(Configuration)/Jpeg.lib;lib/CxImage/$(Platform)/$(Configuration)/libdcr.lib;lib/CxImage/$(Platform)/$(Configuration)/mng.lib;lib/CxImage/$(Platform)/$(Configuration)/png.lib;lib/CxImage/$(Platform)/$(Configuration)/Tiff.lib;lib/CxImage/$(Platform)/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,12 +115,12 @@
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win64;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win64;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Platform)/$(Configuration)/assimp-vc140-mt.lib;lib/CxImage/$(Platform)/$(Configuration)/cximage.lib;lib/CxImage/$(Platform)/$(Configuration)/jasper.lib;lib/CxImage/$(Platform)/$(Configuration)/jbig.lib;lib/CxImage/$(Platform)/$(Configuration)/Jpeg.lib;lib/CxImage/$(Platform)/$(Configuration)/libdcr.lib;lib/CxImage/$(Platform)/$(Configuration)/mng.lib;lib/CxImage/$(Platform)/$(Configuration)/png.lib;lib/CxImage/$(Platform)/$(Configuration)/Tiff.lib;lib/CxImage/$(Platform)/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -143,7 +143,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Platform)/$(Configuration)/assimp-vc140-mt.lib;lib/CxImage/$(Platform)/$(Configuration)/cximage.lib;lib/CxImage/$(Platform)/$(Configuration)/jasper.lib;lib/CxImage/$(Platform)/$(Configuration)/jbig.lib;lib/CxImage/$(Platform)/$(Configuration)/Jpeg.lib;lib/CxImage/$(Platform)/$(Configuration)/libdcr.lib;lib/CxImage/$(Platform)/$(Configuration)/mng.lib;lib/CxImage/$(Platform)/$(Configuration)/png.lib;lib/CxImage/$(Platform)/$(Configuration)/Tiff.lib;lib/CxImage/$(Platform)/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win32;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,14 +157,14 @@
       <PreprocessorDefinitions>WIN32;_USRDLL;N2DEXPORT;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;..\NatsuLib\NatsuLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NatsuLib\NatsuLib;extern\glew\include\GL;extern\freetype\include;extern\alfw\include;include;include\OpenAL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win64;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../NatsuLib/NatsuLib/bin/$(PlatformName)/$(Configuration)/;extern/freetype/bin/$(Platform)/$(Configuration)/;extern/glew/bin/$(Platform)/$(Configuration)/;extern/alfw/bin/$(Platform)/$(Configuration)/;lib/OpenAL/Win64;%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NatsuLib.lib;opengl32.lib;glu32.lib;freetype.lib;glew.lib;OpenAL32.lib;alfw.lib;lib/assimp/$(Platform)/$(Configuration)/assimp-vc140-mt.lib;lib/CxImage/$(Platform)/$(Configuration)/cximage.lib;lib/CxImage/$(Platform)/$(Configuration)/jasper.lib;lib/CxImage/$(Platform)/$(Configuration)/jbig.lib;lib/CxImage/$(Platform)/$(Configuration)/Jpeg.lib;lib/CxImage/$(Platform)/$(Configuration)/libdcr.lib;lib/CxImage/$(Platform)/$(Configuration)/mng.lib;lib/CxImage/$(Platform)/$(Configuration)/png.lib;lib/CxImage/$(Platform)/$(Configuration)/Tiff.lib;lib/CxImage/$(Platform)/$(Configuration)/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

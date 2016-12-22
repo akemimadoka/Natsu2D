@@ -13,7 +13,7 @@ struct n2dWindow
 	///	@param[in]	classname	窗口类名
 	///	@param[in]	hInstance	实例句柄
 	///	@param[in]	lpParam		创建参数
-	virtual nBool Create(ncTStr lpTitle, ncTStr lpClassname, HINSTANCE hInstance, LPVOID lpParam) = 0;
+	virtual nBool Create(nStrView lpTitle, nStrView lpClassname, HINSTANCE hInstance, LPVOID lpParam) = 0;
 
 	///	@brief	显示/隐藏窗口
 	///	@param[in]	show	是否显示窗口

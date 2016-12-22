@@ -77,7 +77,7 @@ void n2dRenderDeviceImpl::SetBlendModeI(n2dBuffer* Buf, BlendFactor Source, Blen
 {
 	if (!Buf || Buf->GetTarget() != n2dBuffer::BufferTarget::DrawIndirectBuffer)
 	{
-		nat_Throw(natException, _T("Buf is not a draw buffer"));
+		nat_Throw(natException, "Buf is not a draw buffer"_nv);
 	}
 
 	glBlendFunci(Buf->GetBuffer(), GetBlendFactorEnum(Source), GetBlendFactorEnum(Destination));
@@ -279,7 +279,7 @@ nResult n2dRenderDeviceImpl::CreateBuffer(n2dBuffer::BufferTarget DefaultTarget,
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -302,7 +302,7 @@ nResult n2dRenderDeviceImpl::CreateLayerMgr(n2dLayerMgr** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -325,7 +325,7 @@ nResult n2dRenderDeviceImpl::CreateGraphics2D(n2dGraphics2D** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -348,7 +348,7 @@ nResult n2dRenderDeviceImpl::CreateGraphics3D(n2dGraphics3D** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -371,7 +371,7 @@ nResult n2dRenderDeviceImpl::CreateTexture(n2dTexture2D** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -400,7 +400,7 @@ nResult n2dRenderDeviceImpl::CreateTextureFromStream(natStream* pStream, DWORD d
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -423,7 +423,7 @@ nResult n2dRenderDeviceImpl::CreateModelLoader(n2dModelLoader** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -446,7 +446,7 @@ nResult n2dRenderDeviceImpl::CreateObjLoader(n2dModelLoader** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -469,7 +469,7 @@ nResult n2dRenderDeviceImpl::CreateMotionManager(n2dMotionManager ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -492,7 +492,7 @@ nResult n2dRenderDeviceImpl::CreateFontManager(n2dFont** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{

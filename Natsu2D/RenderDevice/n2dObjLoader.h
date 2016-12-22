@@ -21,12 +21,12 @@ public:
 	///	@brief	构造时加载构造函数
 	///	@note	加载失败会抛出异常
 	///	@param[in]	filename	文件名
-	explicit n2dObjLoader(ncTStr filename);
+	explicit n2dObjLoader(nStrView filename);
 	~n2dObjLoader();
 
 	///	@brief	加载Obj模型
 	///	@param[in]	filename	文件名
-	nResult CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut) override;
+	nResult CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut) override;
 	nResult CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut) override;
 
 	nResult CreateDynamicModelFromStream(natStream* pStream, n2dModelData** pOut) override
@@ -34,7 +34,7 @@ public:
 		return NatErr_NotImpl;
 	}
 
-	nResult CreateDynamicModelFromFile(ncTStr lpPath, n2dModelData** pOut) override
+	nResult CreateDynamicModelFromFile(nStrView lpPath, n2dModelData** pOut) override
 	{
 		return NatErr_NotImpl;
 	}

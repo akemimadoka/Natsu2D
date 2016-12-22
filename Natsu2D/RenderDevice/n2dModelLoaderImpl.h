@@ -16,10 +16,10 @@ public:
 	n2dModelLoaderImpl(n2dRenderDeviceImpl* pRenderDevice);
 
 	nResult CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut) override;
-	nResult CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut) override;
+	nResult CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut) override;
 
 	nResult CreateDynamicModelFromStream(natStream* pStream, n2dModelData** pOut) override;
-	nResult CreateDynamicModelFromFile(ncTStr lpPath, n2dModelData** pOut) override;
+	nResult CreateDynamicModelFromFile(nStrView lpPath, n2dModelData** pOut) override;
 
 	void SetDefaultTexture(n2dTexture2D* Texture) override;
 private:

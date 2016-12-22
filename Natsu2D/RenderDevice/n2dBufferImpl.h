@@ -40,7 +40,7 @@ class n2dBufferImpl
 		case BufferTarget::UniformBuffer:
 			return GL_UNIFORM_BUFFER;
 		default:
-			nat_Throw(natException, _T("Not an available BufferTarget"));
+			nat_Throw(natException, "Not an available BufferTarget"_nv);
 		}
 	}
 
@@ -77,7 +77,7 @@ class n2dBufferImpl
 		case GL_UNIFORM_BUFFER:
 			return BufferTarget::UniformBuffer;
 		default:
-			nat_Throw(natException, _T("Not an available target"));
+			nat_Throw(natException, "Not an available target"_nv);
 		}
 	}
 
@@ -104,7 +104,7 @@ class n2dBufferImpl
 		case BufferUsage::StreamCopy:
 			return GL_STREAM_COPY;
 		default:
-			nat_Throw(natException, _T("Not an available BufferUsage"));
+			nat_Throw(natException, "Not an available BufferUsage"_nv);
 		}
 	}
 
@@ -119,7 +119,7 @@ class n2dBufferImpl
 		case BufferAccess::ReadWrite:
 			return GL_READ_WRITE;
 		default:
-			nat_Throw(natException, _T("Not an available BufferAccess"));
+			nat_Throw(natException, "Not an available BufferAccess"_nv);
 		}
 	}
 
@@ -188,7 +188,7 @@ class n2dBufferImpl
 		case InternalFormat::RGBA32UI:
 			return GL_RGBA32UI;
 		default:
-			nat_Throw(natException, _T("Not an available InternalFormat"));
+			nat_Throw(natException, "Not an available InternalFormat"_nv);
 		}
 	}
 public:

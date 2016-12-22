@@ -42,7 +42,7 @@ nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShad
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -76,7 +76,7 @@ nResult n2dShaderWrapperImpl::CreateProgram(n2dShaderProgram** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -109,7 +109,7 @@ nResult n2dShaderWrapperImpl::CreateProgramFromStream(natStream* pStream, n2dSha
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -142,7 +142,7 @@ nResult n2dShaderWrapperImpl::CreateProgramPipeline(n2dProgramPipeline** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -165,7 +165,7 @@ void n2dShaderWrapperImpl::UseBindingPoint(GLuint BindingPoint)
 	if (BindingPoint >= m_MaxBindingPoint)
 	{
 #ifdef _DEBUG
-		m_pRenderDevice->GetEngine()->GetLogger().LogErr(_T("Try to use a binding point %u which is illeagl, continue anyway"), BindingPoint);
+		m_pRenderDevice->GetEngine()->GetLogger().LogErr("Try to use a binding point %u which is illeagl, continue anyway"_nv, BindingPoint);
 #endif
 		return;
 	}
@@ -174,7 +174,7 @@ void n2dShaderWrapperImpl::UseBindingPoint(GLuint BindingPoint)
 	{
 #ifdef _DEBUG
 		if (BindingPoint > 2u)
-			m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("Try to use a binding point %u which is already used, continue anyway"), BindingPoint);
+			m_pRenderDevice->GetEngine()->GetLogger().LogWarn("Try to use a binding point %u which is already used, continue anyway"_nv, BindingPoint);
 #endif
 		return;
 	}
@@ -187,7 +187,7 @@ void n2dShaderWrapperImpl::ReleaseBindingPoint(GLuint BindingPoint)
 	if (BindingPoint >= m_MaxBindingPoint)
 	{
 #ifdef _DEBUG
-		m_pRenderDevice->GetEngine()->GetLogger().LogErr(_T("Try to release a binding point %u which is illeagl, continue anyway"), BindingPoint);
+		m_pRenderDevice->GetEngine()->GetLogger().LogErr("Try to release a binding point %u which is illeagl, continue anyway"_nv, BindingPoint);
 #endif
 		return;
 	}
@@ -195,7 +195,7 @@ void n2dShaderWrapperImpl::ReleaseBindingPoint(GLuint BindingPoint)
 	if (m_AvailableBindingPoint.find(BindingPoint) != m_AvailableBindingPoint.end())
 	{
 #ifdef _DEBUG
-		m_pRenderDevice->GetEngine()->GetLogger().LogWarn(_T("Try to release a binding point %u which is unused, continue anyway"), BindingPoint);
+		m_pRenderDevice->GetEngine()->GetLogger().LogWarn("Try to release a binding point %u which is unused, continue anyway"_nv, BindingPoint);
 #endif
 		return;
 	}
@@ -309,27 +309,27 @@ nBool n2dShaderImpl::Compiled() const
 	return tCompiled == GL_TRUE;
 }
 
-ncTStr n2dShaderImpl::GetInfoLog() const
+nStrView n2dShaderImpl::GetInfoLog() const
 {
 	GLint tLogLength = 0;
 	glGetShaderiv(m_Shader, GL_INFO_LOG_LENGTH, &tLogLength);
 	if (tLogLength <= 1)
 	{
-		return _T("");
+		return ""_nv;
 	}
 
 	std::vector<nChar> tLog(tLogLength + 1);
 	glGetShaderInfoLog(m_Shader, tLogLength, nullptr, tLog.data());
-	m_Log.assign(tLog.data(), tLog.data() + tLogLength);
+	m_Log.Assign(AnsiStringView{ tLog.data(), tLog.data() + tLogLength });
 
-	return m_Log.c_str();
+	return m_Log;
 }
 
 void n2dShaderImpl::CompileFromStream(natStream* pStream, nBool bIsBinary)
 {
 	if (!pStream)
 	{
-		nat_Throw(natException, _T("pStream cannot be a nullptr."));
+		nat_Throw(natException, "pStream cannot be a nullptr."_nv);
 	}
 
 	nuInt tLen = static_cast<nuInt>(pStream->GetSize() - pStream->GetPosition());
@@ -354,7 +354,7 @@ n2dShaderProgramImpl::AttributeReferenceImpl::AttributeReferenceImpl(n2dShaderPr
 {
 	if (!m_pProgram)
 	{
-		nat_Throw(natException, _T("Cannot refer to a valid program"));
+		nat_Throw(natException, "Cannot refer to a valid program"_nv);
 	}
 
 	glGetVertexAttribiv(m_Location, GL_VERTEX_ATTRIB_ARRAY_SIZE, &m_Size);
@@ -613,7 +613,7 @@ n2dShaderProgramImpl::UniformReferenceImpl::UniformReferenceImpl(n2dShaderProgra
 {
 	if (m_pProgram == nullptr)
 	{
-		nat_Throw(natException, _T("Cannot refer to a valid program"));
+		nat_Throw(natException, "Cannot refer to a valid program"_nv);
 	}
 
 	glGetActiveUniform(m_pProgram->GetHandle(), m_Location, 0, nullptr, &m_Size, &m_Type, nullptr);
@@ -712,12 +712,12 @@ void n2dShaderProgramImpl::UniformReferenceImpl::GetValue(nuInt Size, void* valu
 		break;
 
 	default:
-		nat_Throw(natException, _T("Unknown type : %u."), m_Type);
+		nat_Throw(natException, "Unknown type : %u."_nv, m_Type);
 	}
 
 	if (glGetError() == GL_INVALID_OPERATION)
 	{
-		nat_Throw(natException, _T("Cannot get value, maybe size is too small or this uniform reference object is invalid."));
+		nat_Throw(natException, "Cannot get value, maybe size is too small or this uniform reference object is invalid."_nv);
 	}
 }
 
@@ -858,12 +858,12 @@ void n2dShaderProgramImpl::UniformReferenceImpl::SetValue(nuInt count, const voi
 		break;
 
 	default:
-		nat_Throw(natException, natUtil::FormatString(_T("Unknown type : %u"), m_Type).c_str());
+		nat_Throw(natException, "Unknown type : %u"_nv, m_Type);
 	}
 
 	/*if (glGetError() != GL_NO_ERROR)
 	{
-		nat_Throw(natException, _T("Set uniform failed"));
+		nat_Throw(natException, "Set uniform failed"_nv);
 	}*/
 }
 
@@ -878,7 +878,7 @@ n2dShaderProgramImpl::UniformBlockReferenceImpl::UniformBlockReferenceImpl(n2dSh
 {
 	if (m_pProgram == nullptr)
 	{
-		nat_Throw(natException, _T("Cannot refer to a valid program"));
+		nat_Throw(natException, "Cannot refer to a valid program"_nv);
 	}
 
 	glGetActiveUniformBlockiv(m_pProgram->GetHandle(), m_Location, GL_UNIFORM_BLOCK_DATA_SIZE, &m_Size);
@@ -1005,18 +1005,18 @@ nBool n2dShaderProgramImpl::Validate() const
 	return GetParameter(GL_VALIDATE_STATUS) == GL_TRUE;
 }
 
-ncTStr n2dShaderProgramImpl::GetInfoLog() const
+nStrView n2dShaderProgramImpl::GetInfoLog() const
 {
 	GLint tLogLength = GetParameter(GL_INFO_LOG_LENGTH);
 	if (tLogLength <= 1)
 	{
-		return _T("");
+		return ""_nv;
 	}
 	
 	std::vector<nChar> tLog(tLogLength + 1);
 	glGetProgramInfoLog(m_Program, tLogLength, nullptr, tLog.data());
-	m_Log.assign(tLog.data(), tLog.data() + tLogLength);
-	return m_Log.c_str();
+	m_Log.Assign(AnsiStringView{ tLog.data(), tLog.data() + tLogLength });
+	return m_Log;
 }
 
 void n2dShaderProgramImpl::Use() const
@@ -1047,7 +1047,7 @@ nResult n2dShaderProgramImpl::OutputBinary(natStream* pStream) const
 	std::vector<nByte> Buf(tLength);
 	glGetProgramBinary(m_Program, tLength, nullptr, &tBinaryFormat, Buf.data());
 
-	NatErr tErrCode;
+	//NatErr tErrCode;
 
 	pStream->WriteBytes(reinterpret_cast<ncData>(&tBinaryFormat), sizeof(tBinaryFormat));
 	pStream->WriteBytes(reinterpret_cast<ncData>(&tLength), sizeof(tLength));
@@ -1090,15 +1090,9 @@ n2dShaderProgram::AttributeReference* n2dShaderProgramImpl::GetAttributeReferenc
 	return pRet;
 }
 
-n2dShaderProgram::AttributeReference* n2dShaderProgramImpl::GetAttributeReference(ncTStr Name)
+n2dShaderProgram::AttributeReference* n2dShaderProgramImpl::GetAttributeReference(nStrView Name)
 {
-	GLhandle tLocation = glGetAttribLocation(m_Program,
-#ifdef _UNICODE
-		natUtil::W2Cstr(Name).c_str()
-#else
-		Name
-#endif
-		);
+	GLhandle tLocation = glGetAttribLocation(m_Program, AnsiString{ Name }.data());
 
 	return tLocation == GLhandle(-1) ? nullptr : GetAttributeReference(tLocation);
 }
@@ -1122,15 +1116,9 @@ n2dShaderProgram::UniformReference* n2dShaderProgramImpl::GetUniformReference(nu
 	return pRet;
 }
 
-n2dShaderProgram::UniformReference* n2dShaderProgramImpl::GetUniformReference(ncTStr Name)
+n2dShaderProgram::UniformReference* n2dShaderProgramImpl::GetUniformReference(nStrView Name)
 {
-	GLhandle tLocation = glGetUniformLocation(m_Program,
-#ifdef _UNICODE
-		natUtil::W2Cstr(Name).c_str()
-#else
-		Name
-#endif
-		);
+	GLhandle tLocation = glGetUniformLocation(m_Program, AnsiString{ Name }.data());
 
 	return tLocation == GLhandle(-1) ? nullptr : GetUniformReference(tLocation);
 }
@@ -1154,15 +1142,9 @@ n2dShaderProgram::UniformBlockReference* n2dShaderProgramImpl::GetUniformBlockRe
 	return pRet;
 }
 
-n2dShaderProgram::UniformBlockReference* n2dShaderProgramImpl::GetUniformBlockReference(ncTStr Name)
+n2dShaderProgram::UniformBlockReference* n2dShaderProgramImpl::GetUniformBlockReference(nStrView Name)
 {
-	GLhandle tLocation = glGetUniformBlockIndex(m_Program,
-#ifdef _UNICODE
-		natUtil::W2Cstr(Name).c_str()
-#else
-		Name
-#endif
-		);
+	GLhandle tLocation = glGetUniformBlockIndex(m_Program, AnsiString{ Name }.data());
 
 	return tLocation == GLhandle(-1) ? nullptr : GetUniformBlockReference(tLocation);
 }

@@ -10,44 +10,44 @@ public:
 		: public natRefObjImpl<IStreamInfo>
 	{
 	public:
-		LocalFilesystemStreamInfo(LocalFilesystemSchema* pSchema, ncTStr path);
+		LocalFilesystemStreamInfo(LocalFilesystemSchema* pSchema, nStrView path);
 		~LocalFilesystemStreamInfo();
 
-		ncTStr GetPath() const override;
+		nStrView GetPath() const override;
 		nResult GetEditTime(std::chrono::system_clock::time_point& time) const override;
 		nResult GetSize(nLen& size) const override;
 		natRefPointer<natStream> OpenStream(nBool Readable, nBool Writable) override;
 
 	private:
 		LocalFilesystemSchema* m_pSchema;
-		nTString m_Path;
+		nString m_Path;
 	};
 
-	static constexpr nTChar DefaultRootPath[] = { _T('.'), std::experimental::filesystem::path::preferred_separator, 0 };
+	static const nString DefaultRootPath;
 
-	explicit LocalFilesystemSchema(ncTStr schemaName, ncTStr rootPath = DefaultRootPath);
+	explicit LocalFilesystemSchema(nStrView schemaName, nStrView rootPath = DefaultRootPath);
 	~LocalFilesystemSchema();
 
-	ncTStr GetName() const override;
-	natRefPointer<IStreamInfo> GetStreamInfoFromPath(ncTStr path) override;
-	nBool PathExist(ncTStr path) const override;
-	nResult RemoveFromPath(ncTStr path) override;
-	nResult EnumPath(ncTStr path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback) override;
+	nStrView GetName() const override;
+	natRefPointer<IStreamInfo> GetStreamInfoFromPath(nStrView path) override;
+	nBool PathExist(nStrView path) const override;
+	nResult RemoveFromPath(nStrView path) override;
+	nResult EnumPath(nStrView path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback) override;
 
-	ncTStr GetRootPath() const noexcept;
+	nStrView GetRootPath() const noexcept;
 
 private:
-	nTString getRealPath(ncTStr path) const;
+	nString getRealPath(nStrView path) const;
 	nResult enumPathImpl(std::experimental::filesystem::path const& path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback);
 
-	nTString m_SchemaName;
-	nTString m_RootPath;
+	nString m_SchemaName;
+	nString m_RootPath;
 };
 
 class n2dSchemaFactoryImpl
 	: public natRefObjImpl<n2dSchemaFactory>
 {
 public:
-	natRefPointer<ISchema> CreateLocalFilesystemSchema(ncTStr schemaName) const override;
-	natRefPointer<ISchema> CreateLocalFilesystemSchema(ncTStr schemaName, ncTStr rootPath) const override;
+	natRefPointer<ISchema> CreateLocalFilesystemSchema(nStrView schemaName) const override;
+	natRefPointer<ISchema> CreateLocalFilesystemSchema(nStrView schemaName, nStrView rootPath) const override;
 };

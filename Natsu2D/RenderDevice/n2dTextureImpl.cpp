@@ -74,18 +74,19 @@ n2dTexture2DImpl::~n2dTexture2DImpl()
 	glDeleteTextures(1, &m_TextureID);
 }
 
-nBool n2dTexture2DImpl::LoadTexture(nTString const& filename)
+nBool n2dTexture2DImpl::LoadTexture(nString const& filename)
 {
-	auto tName = filename.substr(filename.find_last_of(_T('.')) + 1u);
+	auto view = filename.GetView();
+	nString tName = view.Slice(view.FindBackward('.') + 1u, -1);
 
-	natFileStream Stream(filename.c_str(), true, false);
+	natFileStream Stream(filename, true, false);
 
-	if (lstrcmpi(tName.c_str(), _T("dds")) == 0)
+	if (tName == "dds"_nv)
 	{
 		return LoadDDS(&Stream);
 	}
 
-	return LoadTexture(&Stream, CxImage::GetTypeIdFromName(tName.c_str()));
+	return LoadTexture(&Stream, CxImage::GetTypeIdFromName(WideString(tName).data()));
 }
 
 nBool n2dTexture2DImpl::LoadTexture(natStream* pStream, DWORD dwFileType)

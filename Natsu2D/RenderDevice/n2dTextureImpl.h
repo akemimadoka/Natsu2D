@@ -49,7 +49,7 @@ public:
 	///	@brief	加载纹理
 	///	@param[in]	filename	文件名
 	///	@return	是否加载成功
-	nBool LoadTexture(nTString const& filename) override;
+	nBool LoadTexture(nString const& filename) override;
 
 	nBool LoadTexture(natStream* pStream, DWORD dwFileType) override;
 

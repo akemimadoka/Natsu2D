@@ -16,7 +16,7 @@
 
 extern "C" nResult N2DFUNC CreateN2DEngine(
 	nInt Reserved,
-	ncTStr classname,
+	nStrView classname,
 	nuInt x,
 	nuInt y,
 	nuInt WindowWidth,
@@ -61,6 +61,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 		n2dGlobal::hDll = hModule;
+		DisableThreadLibraryCalls(hModule);
 		break;
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
@@ -155,7 +156,7 @@ void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerDelegate func, P
 	m_EventBus.RegisterEventListener<WndMsgEvent>(func, priority);
 }
 
-n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen, HINSTANCE hInstance, ThreadMode threadMode, n2dEngineEventListener* pListener)
+n2dEngineImpl::n2dEngineImpl(nStrView classname, nuInt x, nuInt y, nuInt WindowWidth, nuInt WindowHeight, nuInt ScreenWidth, nuInt ScreenHeight, nuInt BitsPerPixel, nBool fullscreen, HINSTANCE hInstance, ThreadMode threadMode, n2dEngineEventListener* pListener)
 	: m_pListener(pListener),
 	m_Window(this, x, y, WindowWidth, WindowHeight, ScreenWidth, ScreenHeight, BitsPerPixel, fullscreen),
 	m_ClassName(classname),
@@ -171,11 +172,11 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 
 	if (!m_pListener)
 	{
-		nat_Throw(natException, _T("m_pListener should be a valid pointer."));
+		nat_Throw(natException, "m_pListener should be a valid pointer."_nv);
 	}
-	if (!m_ClassName)
+	if (m_ClassName.empty())
 	{
-		nat_Throw(natException, _T("classname should be a valid string."));
+		nat_Throw(natException, "classname should be a valid string."_nv);
 	}
 
 	WNDCLASSEX windowClass{ 0 };
@@ -185,11 +186,12 @@ n2dEngineImpl::n2dEngineImpl(ncTStr classname, nuInt x, nuInt y, nuInt WindowWid
 	windowClass.hInstance = m_hInstance;
 	windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_APPWORKSPACE);
 	windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	windowClass.lpszClassName = m_ClassName;
+	WideString wClassName = m_ClassName;
+	windowClass.lpszClassName = wClassName.data();
 
 	if (!RegisterClassEx(&windowClass))
 	{
-		nat_Throw(natException, _T("Failed to register window"));
+		nat_Throw(natWinException, "Failed to register window"_nv);
 	}
 }
 
@@ -203,7 +205,7 @@ nBool n2dEngineImpl::IsKeyPressed(nuInt Key) const
 	return m_Keys.IsPressed(Key);
 }
 
-void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
+void n2dEngineImpl::MainLoop(nStrView title, nuInt FPS)
 {
 	try
 	{
@@ -221,7 +223,7 @@ void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
 			break;
 		}
 
-		UnregisterClass(m_ClassName, m_hInstance);
+		UnregisterClass(std::wstring{ m_ClassName }.c_str(), m_hInstance);
 		m_Window.Destroy();
 	}
 	catch (natException& ex)
@@ -232,7 +234,7 @@ void n2dEngineImpl::MainLoop(ncTStr title, nuInt FPS)
 	}
 	catch (...)
 	{
-		natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
+		natException ex("Unknown source"_nv, "Unknown source"_nv, 0, "Unknown exception"_nv);
 		n2dGlobal::natExceptionEvent event(ex);
 		m_EventBus.Post(event);
 		throw;
@@ -366,7 +368,7 @@ void n2dEngineImpl::CommonInit()
 	glewExperimental = true;
 	if ((tRet = glewInit()) != GLEW_OK)
 	{
-		nat_Throw(natException, _T("GLEW initializing failed, id={0}, description:{1}"), tRet, natUtil::C2Wstr(reinterpret_cast<ncStr>(glewGetErrorString(tRet))));
+		nat_Throw(natException, "GLEW initializing failed, id={0}, description:{1}"_nv, tRet, AnsiStringView(reinterpret_cast<ncStr>(glewGetErrorString(tRet))));
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -379,10 +381,12 @@ void n2dEngineImpl::CommonInit()
 	glShadeModel(GL_SMOOTH);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-	auto tVert = natUtil::GetResourceData(IDR_DefaultVertShader, _T("SHADER"), n2dGlobal::hDll);
-	auto tFrag = natUtil::GetResourceData(IDR_DefaultFragShader, _T("SHADER"), n2dGlobal::hDll);
-	auto tFontVert = natUtil::GetResourceData(IDR_DefaultFontVertexShader, _T("SHADER"), n2dGlobal::hDll);
-	auto tFontFrag = natUtil::GetResourceData(IDR_DefaultFontFragmentShader, _T("SHADER"), n2dGlobal::hDll);
+	static const auto s_ShaderType = _T("SHADER");
+
+	auto tVert = natUtil::GetResourceData(IDR_DefaultVertShader, s_ShaderType, n2dGlobal::hDll);
+	auto tFrag = natUtil::GetResourceData(IDR_DefaultFragShader, s_ShaderType, n2dGlobal::hDll);
+	auto tFontVert = natUtil::GetResourceData(IDR_DefaultFontVertexShader, s_ShaderType, n2dGlobal::hDll);
+	auto tFontFrag = natUtil::GetResourceData(IDR_DefaultFontFragmentShader, s_ShaderType, n2dGlobal::hDll);
 
 	if (!tVert.empty() && !tFrag.empty())
 	{
@@ -394,14 +398,14 @@ void n2dEngineImpl::CommonInit()
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 		if (!pShader[0]->Compiled())
 		{
-			nat_Throw(natException, _T("Compile DefaultVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog());
+			nat_Throw(natException, "Compile DefaultVertexShader Failed, Log: %s"_nv, pShader[0]->GetInfoLog());
 		}
 
 		pStream = natMemoryStream::CreateFromExternMemory(tFrag.data(), tFrag.size(), true, false);
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
 		if (!pShader[1]->Compiled())
 		{
-			nat_Throw(natException, _T("Compile DefaultFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog());
+			nat_Throw(natException, "Compile DefaultFragmentShader Failed, Log: %s"_nv, pShader[1]->GetInfoLog());
 		}
 
 		pProgram->AttachShader(pShader[0]);
@@ -410,7 +414,7 @@ void n2dEngineImpl::CommonInit()
 		pProgram->Link();
 		if (!pProgram->IsLinked())
 		{
-			nat_Throw(natException, _T("Link DefaultShaderProgram Failed, Log: %s"), pProgram->GetInfoLog());
+			nat_Throw(natException, "Link DefaultShaderProgram Failed, Log: %s"_nv, pProgram->GetInfoLog());
 		}
 		pProgram->Use();
 
@@ -427,14 +431,14 @@ void n2dEngineImpl::CommonInit()
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
 		if (!pShader[0]->Compiled())
 		{
-			nat_Throw(natException, _T("Compile DefaultFontVertexShader Failed, Log: %s"), pShader[0]->GetInfoLog());
+			nat_Throw(natException, "Compile DefaultFontVertexShader Failed, Log: %s"_nv, pShader[0]->GetInfoLog());
 		}
 
 		pStream = natMemoryStream::CreateFromExternMemory(tFontFrag.data(), tFontFrag.size(), true, false);
 		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
 		if (!pShader[1]->Compiled())
 		{
-			nat_Throw(natException, _T("Compile DefaultFontFragmentShader Failed, Log: %s"), pShader[1]->GetInfoLog());
+			nat_Throw(natException, "Compile DefaultFontFragmentShader Failed, Log: %s"_nv, pShader[1]->GetInfoLog());
 		}
 
 		pProgram->AttachShader(pShader[0]);
@@ -443,7 +447,7 @@ void n2dEngineImpl::CommonInit()
 		pProgram->Link();
 		if (!pProgram->IsLinked())
 		{
-			nat_Throw(natException, _T("Link DefaultFontShaderProgram Failed, Log: %s"), pProgram->GetInfoLog());
+			nat_Throw(natException, "Link DefaultFontShaderProgram Failed, Log: %s"_nv, pProgram->GetInfoLog());
 		}
 
 		pProgram->DetachShader(pShader[0]);
@@ -453,7 +457,7 @@ void n2dEngineImpl::CommonInit()
 	}
 }
 
-void n2dEngineImpl::SingleThreadMainLoop(ncTStr title, nuInt FPS)
+void n2dEngineImpl::SingleThreadMainLoop(nStrView title, nuInt FPS)
 {
 	// Å¾£¡
 	SetThreadAffinityMask(GetCurrentThread(), 1);
@@ -521,14 +525,14 @@ void n2dEngineImpl::SingleThreadMainLoop(ncTStr title, nuInt FPS)
 		else
 		{
 			m_IsProgramLooping.store(false, std::memory_order_release);
-			nat_Throw(natException, _T("Failed to create GL window."));
+			nat_Throw(natException, "Failed to create GL window."_nv);
 		}
 	}
 
 	m_pListener->EngineUninit();
 }
 
-void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
+void n2dEngineImpl::MultiThreadMainLoop(nStrView title, nuInt FPS)
 {
 	UpdateThread updateThread(this, FPS);
 	RenderThread renderThread(this, FPS);
@@ -595,7 +599,7 @@ void n2dEngineImpl::MultiThreadMainLoop(ncTStr title, nuInt FPS)
 		else
 		{
 			m_IsProgramLooping.store(false, std::memory_order_release);
-			nat_Throw(natException, _T("Failed to create GL window."));
+			nat_Throw(natException, "Failed to create GL window."_nv);
 		}
 	}
 
@@ -640,7 +644,7 @@ LRESULT n2dEngineImpl::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	{
 		if (userdata)
 		{
-			natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
+			natException ex("Unknown source"_nv, "Unknown source"_nv, 0, "Unknown exception"_nv);
 			n2dGlobal::natExceptionEvent event(ex);
 			reinterpret_cast<n2dEngineImpl *>(userdata)->m_EventBus.Post(event);
 		}
@@ -689,7 +693,7 @@ natThread::ResultType n2dEngineImpl::UpdateThread::ThreadJob()
 	}
 	catch (...)
 	{
-		natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
+		natException ex("Unknown source"_nv, "Unknown source"_nv, 0, "Unknown exception"_nv);
 		n2dGlobal::natExceptionEvent event(ex);
 		m_pEngine->m_EventBus.Post(event);
 		throw;
@@ -743,7 +747,7 @@ natThread::ResultType n2dEngineImpl::RenderThread::ThreadJob()
 	}
 	catch (...)
 	{
-		natException ex(_T("Unknown source"), _T("Unknown source"), 0, _T("Unknown exception"));
+		natException ex("Unknown source"_nv, "Unknown source"_nv, 0, "Unknown exception"_nv);
 		n2dGlobal::natExceptionEvent event(ex);
 		m_pEngine->m_EventBus.Post(event);
 		throw;

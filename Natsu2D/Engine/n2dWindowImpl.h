@@ -42,7 +42,7 @@ public:
 	///	@param[in]	lpClassname	窗口类名
 	///	@param[in]	hInstance	实例句柄
 	///	@param[in]	lpParam		创建参数
-	nBool Create(ncTStr lpTitle, ncTStr lpClassname, HINSTANCE hInstance, LPVOID lpParam) override;
+	nBool Create(nStrView lpTitle, nStrView lpClassname, HINSTANCE hInstance, LPVOID lpParam) override;
 
 	///	@brief	显示/隐藏窗口
 	///	@param[in]	show	是否显示窗口

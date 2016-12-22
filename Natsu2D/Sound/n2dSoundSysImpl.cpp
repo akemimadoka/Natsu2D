@@ -11,7 +11,7 @@ n2dSoundSysImpl::n2dSoundSysImpl(n2dEngine* pEngine)
 
 	if (!ALFWInitOpenAL())
 	{
-		nat_Throw(natException, _T("ALFW initializing failed"));
+		nat_Throw(natException, "ALFW initializing failed"_nv);
 	}
 }
 
@@ -48,7 +48,7 @@ nResult n2dSoundSysImpl::CreateSoundBuffer(n2dSoundBuffer ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -72,14 +72,14 @@ nResult n2dSoundSysImpl::CreateWaveSoundBufferFromStream(natStream * pStream, n2
 		pStream->ReadBytes(tBuffer.data(), tBuffer.size());
 		if (!ALFWLoadWaveBufferToBuffer(tBuffer.data(), static_cast<DWORD>(tBuffer.size()), pBuffer->GetHandle()))
 		{
-			nat_Throw(natException, _T("Cannot load wave buffer"));
+			nat_Throw(natException, "Cannot load wave buffer"_nv);
 		}
 		*pOut = pBuffer;
 		pBuffer->AddRef();
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{
@@ -102,7 +102,7 @@ nResult n2dSoundSysImpl::CreateSoundSource(n2dSoundSource ** pOut)
 	}
 	catch (std::bad_alloc&)
 	{
-		nat_Throw(natException, _T("Failed to allocate memory"));
+		nat_Throw(natException, "Failed to allocate memory"_nv);
 	}
 	catch (...)
 	{

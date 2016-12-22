@@ -18,7 +18,7 @@ class n2dSoundBufferImpl
 		case n2dSoundBuffer::BufferFormat::Stereo16:
 			return AL_FORMAT_STEREO16;
 		default:
-			nat_Throw(natException, _T("Invaild BufferFormat"));
+			nat_Throw(natException, "Invaild BufferFormat"_nv);
 		}
 	}
 public:

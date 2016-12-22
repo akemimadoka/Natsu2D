@@ -10,10 +10,10 @@ public:
 	~n2dVirtualFileSystemImpl();
 
 	nResult RegisterSchema(ISchema* pSchema) override;
-	nBool SchemaExist(ncTStr schemaName) const override;
-	natRefPointer<ISchema> GetSchemaFromName(ncTStr name) override;
-	natRefPointer<IStreamInfo> GetStreamInfoFromUri(ncTStr uri) override;
+	nBool SchemaExist(nStrView schemaName) const override;
+	natRefPointer<ISchema> GetSchemaFromName(nStrView name) override;
+	natRefPointer<IStreamInfo> GetStreamInfoFromUri(nStrView uri) override;
 
 private:
-	std::unordered_map<nTString, natRefPointer<ISchema>> m_SchemaMap;
+	std::unordered_map<nString, natRefPointer<ISchema>> m_SchemaMap;
 };

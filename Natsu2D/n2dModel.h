@@ -61,7 +61,7 @@ struct n2dMeshData
 	///	@param[in]	Weight	权重
 	///	@return	处理结果
 	///	@note	仅对动态网格数据有效
-	virtual nResult ApplyExpression(nTString const& Name, nFloat Weight) = 0;
+	virtual nResult ApplyExpression(nStrView const& Name, nFloat Weight) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ struct n2dModelLoader
 	///	@param[in]	lpPath	文件路径
 	///	@param[out]	pOut	创建的模型数据
 	///	@return	处理结果
-	virtual nResult CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut) = 0;
+	virtual nResult CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut) = 0;
 
 	///	@brief	从流中创建动态模型
 	///	@param[in]	pStream	流
@@ -115,7 +115,7 @@ struct n2dModelLoader
 	///	@param[in]	lpPath	文件路径
 	///	@param[out]	pOut	创建的模型数据
 	///	@return	处理结果
-	virtual nResult CreateDynamicModelFromFile(ncTStr lpPath, n2dModelData** pOut) = 0;
+	virtual nResult CreateDynamicModelFromFile(nStrView lpPath, n2dModelData** pOut) = 0;
 
 	///	@brief	设置纹理缺失时使用的纹理
 	///	@param[in]	Texture	选定的默认纹理
@@ -134,20 +134,20 @@ struct n2dMotionManager
 	///	@param[in]	pStream	流
 	///	@return	处理结果
 	///	@note	动作名称作为标识符
-	virtual nResult LoadMotionFromStream(ncTStr lpName, natStream* pStream) = 0;
+	virtual nResult LoadMotionFromStream(nStrView lpName, natStream* pStream) = 0;
 	///	@brief	从文件中加载动作
 	///	@param[in]	lpName	动作名称
 	///	@param[in]	lpPath	文件路径
 	///	@return	处理结果
 	///	@note	动作名称作为标识符
-	virtual nResult LoadMotionFromFile(ncTStr lpName, ncTStr lpPath) = 0;
+	virtual nResult LoadMotionFromFile(nStrView lpName, nStrView lpPath) = 0;
 
 	///	@brief	将动作应用在模型上
 	///	@param[in]	lpName	动作名称
 	///	@param[in]	pModel	应用到的模型
 	///	@return	处理结果
 	///	@note	仅对动态模型有效
-	virtual nResult ApplyToModel(ncTStr lpName, n2dModelData* pModel) = 0;
+	virtual nResult ApplyToModel(nStrView lpName, n2dModelData* pModel) = 0;
 	///	@brief	回复对应模型的动作
 	virtual void RestoreMotion(n2dModelData* pModel) = 0;
 	///	@brief	回复对应模型的变型

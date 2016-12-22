@@ -2,16 +2,16 @@
 
 namespace
 {
-	nBool ParseUri(nTString const& Uri, nTString& SchemaName, nTString& Path)
+	nBool ParseUri(nStrView const& Uri, nString& SchemaName, nString& Path)
 	{
-		auto division = Uri.find(_T("://"));
-		if (division == nTString::npos)
+		auto division = Uri.Find("://"_nv);
+		if (division == nString::npos)
 		{
 			return false;
 		}
 
-		SchemaName.assign(Uri, 0, division);
-		Path.assign(Uri, division + 3);
+		SchemaName.Assign(Uri.Slice(0, division));
+		Path.Assign(Uri.Slice(division + 3, -1));
 		return true;
 	}
 }
@@ -36,12 +36,12 @@ nResult n2dVirtualFileSystemImpl::RegisterSchema(ISchema* pSchema)
 	return NatErr_OK;
 }
 
-nBool n2dVirtualFileSystemImpl::SchemaExist(ncTStr schemaName) const
+nBool n2dVirtualFileSystemImpl::SchemaExist(nStrView schemaName) const
 {
 	return m_SchemaMap.find(schemaName) != m_SchemaMap.end();
 }
 
-natRefPointer<ISchema> n2dVirtualFileSystemImpl::GetSchemaFromName(ncTStr name)
+natRefPointer<ISchema> n2dVirtualFileSystemImpl::GetSchemaFromName(nStrView name)
 {
 	auto iter = m_SchemaMap.find(name);
 	if (iter != m_SchemaMap.end())
@@ -49,22 +49,22 @@ natRefPointer<ISchema> n2dVirtualFileSystemImpl::GetSchemaFromName(ncTStr name)
 		return iter->second;
 	}
 
-	nat_Throw(natException, _T("No schema named \"{0}\"."), name);
+	nat_Throw(natException, "No schema named \"{0}\"."_nv, name);
 }
 
-natRefPointer<IStreamInfo> n2dVirtualFileSystemImpl::GetStreamInfoFromUri(ncTStr uri)
+natRefPointer<IStreamInfo> n2dVirtualFileSystemImpl::GetStreamInfoFromUri(nStrView uri)
 {
-	nTString schemaName, path;
+	nString schemaName, path;
 	if (!ParseUri(uri, schemaName, path))
 	{
-		nat_Throw(natException, _T("Bad uri."));
+		nat_Throw(natException, "Bad uri."_nv);
 	}
 
 	auto iter = m_SchemaMap.find(schemaName);
 	if (iter != m_SchemaMap.end())
 	{
-		return iter->second->GetStreamInfoFromPath(path.c_str());
+		return iter->second->GetStreamInfoFromPath(path);
 	}
 
-	nat_Throw(natException, _T("No schema named \"{0}\"."), schemaName);
+	nat_Throw(natException, "No schema named \"{0}\"."_nv, schemaName);
 }

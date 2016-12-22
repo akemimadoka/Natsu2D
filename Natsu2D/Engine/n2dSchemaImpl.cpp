@@ -5,7 +5,7 @@ namespace
 {
 	///	@brief	判断路径是否安全
 	///	@note	若指定的路径可能访问到根路径以上的路径则判断为不安全
-	nBool IsPathSafe(ncTStr path)
+	nBool IsPathSafe(const nChar* path)
 	{
 		nInt depth = 0;
 		while (*path)
@@ -38,25 +38,31 @@ namespace
 	template <nBool test>
 	struct PathTransformer
 	{
-		static nTString Impl(ncTStr path)
+		static nString Impl(const nChar* path)
 		{
-			nTString tPath;
-			replace_copy(path, path + std::char_traits<nTChar>::length(path), back_inserter(tPath), _T('/'), std::experimental::filesystem::path::preferred_separator);
-			return move(tPath);
+			nString tPath;
+			for (auto pRead = path; *pRead; ++pRead)
+			{
+				tPath.Append(*pRead == '/' ? static_cast<nChar>(std::experimental::filesystem::path::preferred_separator) : *pRead);
+			}
+			
+			return std::move(tPath);
 		}
 	};
 
 	template <>
 	struct PathTransformer<true>
 	{
-		static nTString Impl(ncTStr path)
+		static nString Impl(nStrView path)
 		{
 			return path;
 		}
 	};
 }
 
-LocalFilesystemSchema::LocalFilesystemStreamInfo::LocalFilesystemStreamInfo(LocalFilesystemSchema* pSchema, ncTStr path)
+const nString LocalFilesystemSchema::DefaultRootPath = WideStringView{ L'.', std::experimental::filesystem::path::preferred_separator, 0 };
+
+LocalFilesystemSchema::LocalFilesystemStreamInfo::LocalFilesystemStreamInfo(LocalFilesystemSchema* pSchema, nStrView path)
 	: m_pSchema(pSchema), m_Path(path)
 {
 	natFileStream{ path, false, false };
@@ -66,14 +72,14 @@ LocalFilesystemSchema::LocalFilesystemStreamInfo::~LocalFilesystemStreamInfo()
 {
 }
 
-ncTStr LocalFilesystemSchema::LocalFilesystemStreamInfo::GetPath() const
+nStrView LocalFilesystemSchema::LocalFilesystemStreamInfo::GetPath() const
 {
-	return m_Path.c_str();
+	return m_Path;
 }
 
 nResult LocalFilesystemSchema::LocalFilesystemStreamInfo::GetEditTime(std::chrono::system_clock::time_point& time) const
 {
-	natFileStream tFile{ m_Path.c_str(), false, false };
+	natFileStream tFile{ m_Path, false, false };
 
 	FILETIME editTime{ 0 };
 	if (!GetFileTime(tFile.GetUnsafeHandle(), nullptr, nullptr, &editTime))
@@ -87,7 +93,7 @@ nResult LocalFilesystemSchema::LocalFilesystemStreamInfo::GetEditTime(std::chron
 
 nResult LocalFilesystemSchema::LocalFilesystemStreamInfo::GetSize(nLen& size) const
 {
-	natFileStream tFile{ m_Path.c_str(), false, false };
+	natFileStream tFile{ m_Path, false, false };
 
 	size = tFile.GetSize();
 	return NatErr_OK;
@@ -95,24 +101,24 @@ nResult LocalFilesystemSchema::LocalFilesystemStreamInfo::GetSize(nLen& size) co
 
 natRefPointer<natStream> LocalFilesystemSchema::LocalFilesystemStreamInfo::OpenStream(nBool Readable, nBool Writable)
 {
-	return make_ref<natFileStream>(m_Path.c_str(), Readable, Writable);
+	return make_ref<natFileStream>(m_Path, Readable, Writable);
 }
 
-LocalFilesystemSchema::LocalFilesystemSchema(ncTStr schemaName, ncTStr rootPath)
+LocalFilesystemSchema::LocalFilesystemSchema(nStrView schemaName, nStrView rootPath)
 	: m_SchemaName(schemaName), m_RootPath(rootPath)
 {
 	if (m_RootPath.empty())
 	{
 		m_RootPath = DefaultRootPath;
 	}
-	else if (m_RootPath.back() != std::experimental::filesystem::path::preferred_separator)
+	else if (m_RootPath[m_RootPath.size() - 1] != std::experimental::filesystem::path::preferred_separator)
 	{
-		m_RootPath += std::experimental::filesystem::path::preferred_separator;
+		m_RootPath += WideStringView{ std::experimental::filesystem::path::preferred_separator };
 	}
 
-	if (!std::experimental::filesystem::exists(m_RootPath))
+	if (!std::experimental::filesystem::exists(static_cast<std::wstring>(m_RootPath)))
 	{
-		nat_Throw(natException, _T("rootPath \"{0}\" doesn't exist."), m_RootPath);
+		nat_Throw(natException, "rootPath \"{0}\" doesn't exist."_nv, m_RootPath);
 	}
 }
 
@@ -120,61 +126,61 @@ LocalFilesystemSchema::~LocalFilesystemSchema()
 {
 }
 
-ncTStr LocalFilesystemSchema::GetName() const
+nStrView LocalFilesystemSchema::GetName() const
 {
-	return m_SchemaName.c_str();
+	return m_SchemaName;
 }
 
-natRefPointer<IStreamInfo> LocalFilesystemSchema::GetStreamInfoFromPath(ncTStr path)
+natRefPointer<IStreamInfo> LocalFilesystemSchema::GetStreamInfoFromPath(nStrView path)
 {
-	auto tPath{ PathTransformer<std::experimental::filesystem::path::preferred_separator == _T('/')>::Impl(path) };
-	if (!IsPathSafe(tPath.c_str()))
+	auto tPath{ PathTransformer<std::experimental::filesystem::path::preferred_separator == '/'>::Impl(path.data()) };
+	if (!IsPathSafe(tPath.data()))
 	{
-		nat_Throw(natException, _T("path \"{0}\" is not safe."), tPath);
+		nat_Throw(natException, "path \"{0}\" is not safe."_nv, tPath);
 	}
 
-	return make_ref<LocalFilesystemStreamInfo>(this, tPath.c_str());
+	return make_ref<LocalFilesystemStreamInfo>(this, tPath);
 }
 
-nBool LocalFilesystemSchema::PathExist(ncTStr path) const
+nBool LocalFilesystemSchema::PathExist(nStrView path) const
 {
-	return std::experimental::filesystem::exists(getRealPath(path));
+	return std::experimental::filesystem::exists(WideString{ getRealPath(path) }.data());
 }
 
-nResult LocalFilesystemSchema::RemoveFromPath(ncTStr path)
+nResult LocalFilesystemSchema::RemoveFromPath(nStrView path)
 {
-	auto tPath{ PathTransformer<std::experimental::filesystem::path::preferred_separator == _T('/')>::Impl(path) };
-	if (!IsPathSafe(tPath.c_str()))
+	auto tPath{ PathTransformer<std::experimental::filesystem::path::preferred_separator == '/'>::Impl(path.data()) };
+	if (!IsPathSafe(tPath.data()))
 	{
-		nat_Throw(natException, _T("path \"{0}\" is not safe."), tPath);
+		nat_Throw(natException, "path \"{0}\" is not safe."_nv, tPath);
 	}
 
-	std::experimental::filesystem::path realPath{ GetRootPath() + tPath };
+	std::experimental::filesystem::path realPath{ static_cast<std::wstring>(GetRootPath() + tPath) };
 	return remove_all(realPath) > 0 ? NatErr_OK : NatErr_NotFound;
 }
 
-nResult LocalFilesystemSchema::EnumPath(ncTStr path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback)
+nResult LocalFilesystemSchema::EnumPath(nStrView path, nBool recursive, nBool includeFolder, std::function<nBool(IStreamInfo*)> enumCallback)
 {
 	auto realPath = getRealPath(path);
-	if (!std::experimental::filesystem::exists(realPath))
+	if (!std::experimental::filesystem::exists(static_cast<std::wstring>(realPath)))
 	{
 		return NatErr_NotFound;
 	}
 
-	return enumPathImpl(path, recursive, includeFolder, enumCallback);
+	return enumPathImpl(static_cast<std::wstring>(nString{ path }), recursive, includeFolder, enumCallback);
 }
 
-ncTStr LocalFilesystemSchema::GetRootPath() const noexcept
+nStrView LocalFilesystemSchema::GetRootPath() const noexcept
 {
-	return m_RootPath.c_str();
+	return m_RootPath;
 }
 
-nTString LocalFilesystemSchema::getRealPath(ncTStr path) const
+nString LocalFilesystemSchema::getRealPath(nStrView path) const
 {
-	auto tPath{ PathTransformer<std::experimental::filesystem::path::preferred_separator == _T('/')>::Impl(path) };
-	if (!IsPathSafe(tPath.c_str()))
+	auto tPath{ PathTransformer<std::experimental::filesystem::path::preferred_separator == '/'>::Impl(path.data()) };
+	if (!IsPathSafe(tPath.data()))
 	{
-		nat_Throw(natException, _T("path \"{0}\" is not safe."), tPath);
+		nat_Throw(natException, "path \"{0}\" is not safe."_nv, tPath);
 	}
 
 	return GetRootPath() + tPath;
@@ -187,7 +193,7 @@ nResult LocalFilesystemSchema::enumPathImpl(std::experimental::filesystem::path 
 		auto isdir = is_directory(item);
 		if (includeFolder || !isdir)
 		{
-			if (!enumCallback(GetStreamInfoFromPath(item.c_str())))
+			if (!enumCallback(GetStreamInfoFromPath(nString{ WideString{ item.c_str() } })))
 			{
 				return NatErr_Interrupted;
 			}
@@ -204,12 +210,12 @@ nResult LocalFilesystemSchema::enumPathImpl(std::experimental::filesystem::path 
 	return NatErr_OK;
 }
 
-natRefPointer<ISchema> n2dSchemaFactoryImpl::CreateLocalFilesystemSchema(ncTStr schemaName) const
+natRefPointer<ISchema> n2dSchemaFactoryImpl::CreateLocalFilesystemSchema(nStrView schemaName) const
 {
 	return make_ref<LocalFilesystemSchema>(schemaName);
 }
 
-natRefPointer<ISchema> n2dSchemaFactoryImpl::CreateLocalFilesystemSchema(ncTStr schemaName, ncTStr rootPath) const
+natRefPointer<ISchema> n2dSchemaFactoryImpl::CreateLocalFilesystemSchema(nStrView schemaName, nStrView rootPath) const
 {
 	return make_ref<LocalFilesystemSchema>(schemaName, rootPath);
 }

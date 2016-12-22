@@ -14,11 +14,11 @@ n2dObjLoader::n2dObjLoader()
 {
 }
 
-n2dObjLoader::n2dObjLoader(ncTStr filename)
+n2dObjLoader::n2dObjLoader(nStrView filename)
 {
 	if (!CreateStaticModelFromFile(filename, nullptr))
 	{
-		nat_Throw(natException, _T("Load object model \"%s\" failed"), filename);
+		nat_Throw(natException, "Load object model \"%s\" failed"_nv, filename);
 	}
 }
 
@@ -27,7 +27,7 @@ n2dObjLoader::~n2dObjLoader()
 	init();
 }
 
-nResult n2dObjLoader::CreateStaticModelFromFile(ncTStr lpPath, n2dModelData** pOut)
+nResult n2dObjLoader::CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut)
 {
 	natStream* tpStream = new natFileStream(lpPath, true, false);
 	nResult tRet = CreateStaticModelFromStream(tpStream, pOut);
@@ -96,10 +96,10 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 			{
 				ss >> tstr[j];
 				std::vector<std::string> vi;
-				natUtil::split(tstr[j], std::string("/"), [&vi](ncStr str, size_t len)
+				/*natUtil::split(tstr[j], std::string("/"), [&vi](ncStr str, size_t len)
 				{
 					vi.emplace_back(str, len);
-				});
+				});*/
 				std::stringstream tss;
 
 				for (nuInt i = 0u; i < 3u; ++i)

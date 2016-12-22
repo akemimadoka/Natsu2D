@@ -7,11 +7,11 @@
 
 namespace
 {
-	ncTStr PMDBoneKneeName =
+	nString PMDBoneKneeName =
 #ifdef _UNICODE
-		_T("\x5082\x505e");
+		L"\x5082\x505e"_wv;
 #else
-		_T("\x82\xd0\x82\xb4");
+		"\x82\xd0\x82\xb4"_av;
 #endif
 }
 
@@ -92,7 +92,7 @@ n2dMotionManagerImpl::~n2dMotionManagerImpl()
 {
 }
 
-nResult n2dMotionManagerImpl::LoadMotionFromStream(ncTStr lpName, natStream * pStream)
+nResult n2dMotionManagerImpl::LoadMotionFromStream(nStrView lpName, natStream * pStream)
 {
 	// Parse file start
 	if (!pStream)
@@ -137,12 +137,7 @@ nResult n2dMotionManagerImpl::LoadMotionFromStream(ncTStr lpName, natStream * pS
 		return NatErr_InternalErr;
 	}
 
-	tMotion.OriginModelName =
-#ifdef _UNICODE
-		natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-		reinterpret_cast<ncStr>(tBuf);
-#endif
+	tMotion.OriginModelName = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
 
 	pStream->ReadBytes(tBuf, 4ull);
 	tMotion.BoneFrames.resize(*reinterpret_cast<nuInt*>(tBuf));
@@ -152,12 +147,7 @@ nResult n2dMotionManagerImpl::LoadMotionFromStream(ncTStr lpName, natStream * pS
 		tBuf[15] = 0u;
 		pStream->ReadBytes(tBuf, 15ull);
 
-		tBoneFrame.TargetBone =
-#ifdef _UNICODE
-			natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-			reinterpret_cast<ncStr>(tBuf);
-#endif
+		tBoneFrame.TargetBone = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
 
 		pStream->ReadBytes(reinterpret_cast<nData>(&tBoneFrame.FrameNumber), 4ull);
 
@@ -177,12 +167,7 @@ nResult n2dMotionManagerImpl::LoadMotionFromStream(ncTStr lpName, natStream * pS
 		memset(tBuf, 0, 16);
 		pStream->ReadBytes(tBuf, 15ull);
 
-		tMorphFrame.TargetMorph =
-#ifdef _UNICODE
-			natUtil::MultibyteToUnicode(reinterpret_cast<ncStr>(tBuf));
-#else
-			reinterpret_cast<ncStr>(tBuf);
-#endif
+		tMorphFrame.TargetMorph = AnsiStringView{ reinterpret_cast<ncStr>(tBuf) };
 
 		pStream->ReadBytes(reinterpret_cast<nData>(&tMorphFrame.nFrame), 4ull);
 		pStream->ReadBytes(reinterpret_cast<nData>(&tMorphFrame.Weight), 4ull);
@@ -272,9 +257,9 @@ nResult n2dMotionManagerImpl::LoadMotionFromStream(ncTStr lpName, natStream * pS
 	return NatErr_OK;
 }
 
-nResult n2dMotionManagerImpl::LoadMotionFromFile(ncTStr lpName, ncTStr lpPath)
+nResult n2dMotionManagerImpl::LoadMotionFromFile(nStrView lpName, nStrView lpPath)
 {
-	if (!lpName || !lpPath)
+	if (lpName.empty() || lpPath.empty())
 	{
 		return NatErr_InvalidArg;
 	}
@@ -283,9 +268,9 @@ nResult n2dMotionManagerImpl::LoadMotionFromFile(ncTStr lpName, ncTStr lpPath)
 	return LoadMotionFromStream(lpName, pStream);
 }
 
-nResult n2dMotionManagerImpl::ApplyToModel(ncTStr lpName, n2dModelData * pModel)
+nResult n2dMotionManagerImpl::ApplyToModel(nStrView lpName, n2dModelData * pModel)
 {
-	if (!lpName || !pModel || pModel->IsStatic())
+	if (lpName.empty() || !pModel || pModel->IsStatic())
 	{
 		return NatErr_InvalidArg;
 	}
@@ -432,7 +417,7 @@ void n2dSkeleton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
 		nuShort parentID = tBone.Parent;
 		m_Bones[i].m_InitialPosition = tBone.Pos;
 		m_Bones[i].m_pParent = (parentID == std::numeric_limits<nuShort>::max() ? nullptr : &m_Bones[parentID]);
-		m_Bones[i].m_isLimitAngleX = tBone.Name.find(PMDBoneKneeName) != nTString::npos;
+		m_Bones[i].m_isLimitAngleX = tBone.Name.GetView().Find(PMDBoneKneeName) != nString::npos;
 		tBoneSet.insert(&m_Bones[i]);
 	}
 
@@ -445,7 +430,7 @@ void n2dSkeleton::CreateFromDynamicModel(const n2dDynamicModelDataImpl * pModel)
 			pBone = pBone->m_pParent;
 			/*if (Count++ == nBone)
 			{
-				nat_Throw(natException, _T("Invalid bone data"));
+				nat_Throw(natException, "Invalid bone data"_nv);
 			}*/
 		}
 		m_UpdateList[i] = pBone;

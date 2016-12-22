@@ -3,7 +3,7 @@
 
 extern "C" nResult N2DFUNC CreateN2DEngine(
 	nInt Reserved,
-	ncTStr lpClassname,
+	nStrView lpClassname,
 	nuInt x,
 	nuInt y,
 	nuInt WindowWidth,

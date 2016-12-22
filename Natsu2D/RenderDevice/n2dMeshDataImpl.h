@@ -31,7 +31,7 @@ public:
 	nuInt GetIndexCount() const override;
 
 	nBool IsStatic() const override;
-	nResult ApplyExpression(nTString const& Name, nFloat Weight) override
+	nResult ApplyExpression(nStrView const& Name, nFloat Weight) override
 	{
 		return NatErr_NotImpl;
 	}
@@ -77,7 +77,7 @@ public:
 	nuInt GetIndexCount() const override;
 
 	nBool IsStatic() const override;
-	nResult ApplyExpression(nTString const& Name, nFloat Weight) override;
+	nResult ApplyExpression(nStrView const& Name, nFloat Weight) override;
 
 	void Update(nuInt nFrame);
 
@@ -96,7 +96,7 @@ private:
 
 	struct BoneData
 	{
-		nTString Name;
+		nString Name;
 		nuShort Parent;
 		nuShort Child;
 		nByte Type;
@@ -106,7 +106,7 @@ private:
 
 	struct MorphData
 	{
-		nTString Name;
+		nString Name;
 		nByte Type;
 		std::vector<nuInt> Vertexes;
 		std::vector<natVec3<>> Translation;
@@ -134,7 +134,7 @@ private:
 	std::vector<nuInt> m_BoneMap;
 	std::vector<nuInt> m_MorphMap;
 
-	std::unordered_map<nTString, nuInt> m_Expression;
+	std::unordered_map<nString, nuInt> m_Expression;
 
 	MotionData* m_pMotion;
 	n2dMotionManagerImpl* m_pMotionManager;

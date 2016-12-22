@@ -160,7 +160,7 @@ nBool n2dDynamicMeshDataImpl::IsStatic() const
 	return false;
 }
 
-nResult n2dDynamicMeshDataImpl::ApplyExpression(nTString const & Name, nFloat Weight)
+nResult n2dDynamicMeshDataImpl::ApplyExpression(nStrView const& Name, nFloat Weight)
 {
 	auto tItea = m_Expression.find(Name);
 	if (m_Expression.end() == tItea)

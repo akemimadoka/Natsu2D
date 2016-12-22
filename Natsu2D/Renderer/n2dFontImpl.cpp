@@ -21,7 +21,7 @@ n2dFontImpl::~n2dFontImpl()
 	FT_Done_FreeType(m_pFTLib);
 }
 
-nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, ncTStr lpFontFile, nuInt iWidth, nuInt iHeight)
+nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight)
 {
 	return InitFont(pRenderer, make_ref<natFileStream>(lpFontFile, true, false), iWidth, iHeight);
 }
@@ -57,7 +57,7 @@ nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nu
 	return NatErr_OK;
 }
 
-nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
+nResult n2dFontImpl::InitText(nStrView str, nLen lStrlen)
 {
 	if (!m_pFTLib)
 	{
@@ -109,7 +109,7 @@ nResult n2dFontImpl::InitText(ncTStr str, nLen lStrlen)
 	return NatErr_OK;
 }
 
-nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color)
+nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color)
 {
 	if (!m_pFTLib)
 	{
@@ -151,16 +151,16 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 	pFontProgram->Use();
 	GLint textureID = 0;
 	GLint useTexture = GL_FALSE;
-	//auto p = static_cast<n2dShaderProgramImpl::UniformReferenceImpl*>(pFontProgram->GetUniformReference(_T("textColor")));
-	//m_pRenderer->GetEngine()->GetLogger().LogMsg(_T("textColor: {0}, type: {1}"), p->GetLocation(), static_cast<nuInt>(p->GetType()));
-	pFontProgram->GetUniformReference(1)->SetValue(1, &textureID);
-	pFontProgram->GetUniformReference(3)->SetValue(1, &useTexture);
-	pFontProgram->GetUniformReference(4)->SetValue(1, &color);
+	//auto p = static_cast<n2dShaderProgramImpl::UniformReferenceImpl*>(pFontProgram->GetUniformReference("textColor"_nv));
+	//m_pRenderer->GetEngine()->GetLogger().LogMsg("textColor: {0}, type: {1}"_nv, p->GetLocation(), static_cast<nuInt>(p->GetType()));
+	pFontProgram->GetUniformReference("text"_nv)->SetValue(1, &textureID);
+	pFontProgram->GetUniformReference("useTexture"_nv)->SetValue(1, &useTexture);
+	pFontProgram->GetUniformReference("textColor"_nv)->SetValue(1, &color);
 
 	return PrintFontImpl(pGraphic, str, x, y, scale);
 }
 
-nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture)
+nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture)
 {
 	if (!m_pFTLib)
 	{
@@ -201,11 +201,11 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 
 	pFontProgram->Use();
 	GLint textureID = 0;
-	pFontProgram->GetUniformReference(1)->SetValue(1, &textureID);
+	pFontProgram->GetUniformReference("text"_nv)->SetValue(1, &textureID);
 	textureID = 1;
-	pFontProgram->GetUniformReference(2)->SetValue(1, &textureID);
+	pFontProgram->GetUniformReference("textTexture"_nv)->SetValue(1, &textureID);
 	GLint useTexture = GL_TRUE;
-	pFontProgram->GetUniformReference(3)->SetValue(1, &useTexture);
+	pFontProgram->GetUniformReference("useTexture"_nv)->SetValue(1, &useTexture);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, pTexture->GetTextureID());
@@ -213,9 +213,9 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nF
 	return PrintFontImpl(pGraphic, str, x, y, scale);
 }
 
-nResult n2dFontImpl::PrintFontImpl(n2dGraphics2D* pGraphic, ncTStr str, nFloat x, nFloat y, nFloat scale)
+nResult n2dFontImpl::PrintFontImpl(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale)
 {
-	nLen tLen = std::char_traits<nTChar>::length(str);
+	nLen tLen = str.size();
 	nFloat currentx = x, currenty = y;
 	for (nLen i = 0; i < tLen; ++i)
 	{

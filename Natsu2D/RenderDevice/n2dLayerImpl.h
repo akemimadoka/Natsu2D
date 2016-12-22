@@ -8,13 +8,13 @@ class n2dLayerImpl
 	: public natRefObjImpl<n2dLayer>
 {
 public:
-	explicit n2dLayerImpl(n2dLayerHandler* Handler, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr);
+	explicit n2dLayerImpl(n2dLayerHandler* Handler, nInt Order = 0, nStrView Name = nullptr, natNode* pParent = nullptr);
 	~n2dLayerImpl();
 
 	void AddChild(natNode* pChild) override;
 	nBool ChildExists(natNode* pChild) const noexcept override;
-	nBool ChildExists(ncTStr Name) const noexcept override;
-	natNode* GetChildByName(ncTStr Name) const noexcept override;
+	nBool ChildExists(nStrView Name) const noexcept override;
+	natNode* GetChildByName(nStrView Name) const noexcept override;
 
 	nBool EnumChildNode(nBool Recursive, std::function<nBool(natNode*)> EnumCallback) override;
 
@@ -22,11 +22,11 @@ public:
 	void SetParent(natNode* pParent) override;
 	natNode* GetParent() const noexcept override;
 	void RemoveChild(natNode* pnatNode) override;
-	void RemoveChildByName(ncTStr Name) override;
+	void RemoveChildByName(nStrView Name) override;
 	void RemoveAllChild() override;
 
-	void SetName(ncTStr Name) override;
-	ncTStr GetName() const noexcept override;
+	void SetName(nStrView Name) override;
+	nStrView GetName() const noexcept override;
 
 	nBool Render(nDouble ElapsedTime, n2dRenderDevice* pRenderer) override;
 	nBool Update(nDouble ElapsedTime) override;
@@ -43,7 +43,7 @@ private:
 
 	struct ChildRenderNodes
 	{
-		std::unordered_map<nTString, natRefPointer<n2dRenderNode>> m_NamedRenderNodes;
+		std::unordered_map<nString, natRefPointer<n2dRenderNode>> m_NamedRenderNodes;
 		std::unordered_set<natRefPointer<n2dRenderNode>> m_UnnamedRenderNodes;
 	};
 
@@ -53,7 +53,7 @@ private:
 	n2dLayerHandler* m_Handler;
 
 	natNode* m_pParent;
-	nTString m_Name;
+	nString m_Name;
 	natRect<> m_BoundingRect;
 	nInt m_Order;
 };
@@ -64,7 +64,7 @@ class n2dLayerMgrImpl
 public:
 	n2dLayerMgrImpl();
 
-	nResult CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order = 0, ncTStr Name = nullptr, natNode* pParent = nullptr) override;
+	nResult CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order = 0, nStrView Name = nullptr, natNode* pParent = nullptr) override;
 	n2dLayer* GetRootLayer() override;
 
 private:

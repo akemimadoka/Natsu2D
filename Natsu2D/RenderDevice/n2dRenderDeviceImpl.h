@@ -80,7 +80,7 @@ class n2dRenderDeviceImpl final
 		case Capability::ProgramPointSize:
 			return GL_PROGRAM_POINT_SIZE;
 		default:
-			nat_Throw(natException, _T("Not an available Capability enum"));
+			nat_Throw(natException, "Not an available Capability enum"_nv);
 		}
 	}
 
@@ -93,7 +93,7 @@ class n2dRenderDeviceImpl final
 		case CapabilityI::ScissorTest:
 			return GL_SCISSOR_TEST;
 		default:
-			nat_Throw(natException, _T("Not an available CapabilityI enum"));
+			nat_Throw(natException, "Not an available CapabilityI enum"_nv);
 		}
 	}
 
@@ -140,7 +140,7 @@ class n2dRenderDeviceImpl final
 		case BlendFactor::OneMinusSrc1Alpha:
 			return GL_ONE_MINUS_SRC1_ALPHA;
 		default:
-			nat_Throw(natException, _T("Not an available BlendFactor enum"));
+			nat_Throw(natException, "Not an available BlendFactor enum"_nv);
 		}
 	}
 public:

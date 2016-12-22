@@ -239,5 +239,5 @@ struct n2dEngine
 	///	@param[in]	title	窗口名
 	///	@param[in]	FPS		渲染和更新FPS
 	///	@note	将来可能分离渲染及更新FPS
-	virtual void MainLoop(ncTStr title, nuInt FPS) = 0;
+	virtual void MainLoop(nStrView title, nuInt FPS) = 0;
 };

@@ -5,23 +5,23 @@
 #include <map>
 
 class n2dLayerImpl
-	: public natRefObjImpl<n2dLayer>
+	: public natRefObjImpl<n2dLayerImpl, n2dLayer>
 {
 public:
 	explicit n2dLayerImpl(n2dLayerHandler* Handler, nInt Order = 0, nStrView Name = nullptr, natNode* pParent = nullptr);
 	~n2dLayerImpl();
 
-	void AddChild(natNode* pChild) override;
-	nBool ChildExists(natNode* pChild) const noexcept override;
+	void AddChild(natRefPointer<natNode> pChild) override;
+	nBool ChildExists(natRefPointer<natNode> pChild) const noexcept override;
 	nBool ChildExists(nStrView Name) const noexcept override;
-	natNode* GetChildByName(nStrView Name) const noexcept override;
+	natRefPointer<natNode> GetChildByName(nStrView Name) const noexcept override;
 
-	nBool EnumChildNode(nBool Recursive, std::function<nBool(natNode*)> EnumCallback) override;
+	nBool EnumChildNode(nBool Recursive, std::function<nBool(natRefPointer<natNode>)> EnumCallback) override;
 
 	size_t GetChildCount() const noexcept override;
 	void SetParent(natNode* pParent) override;
-	natNode* GetParent() const noexcept override;
-	void RemoveChild(natNode* pnatNode) override;
+	natRefPointer<natNode> GetParent() const noexcept override;
+	void RemoveChild(natRefPointer<natNode> pnatNode) override;
 	void RemoveChildByName(nStrView Name) override;
 	void RemoveAllChild() override;
 
@@ -59,12 +59,12 @@ private:
 };
 
 class n2dLayerMgrImpl
-	: public natRefObjImpl<n2dLayerMgr>
+	: public natRefObjImpl<n2dLayerMgrImpl, n2dLayerMgr>
 {
 public:
 	n2dLayerMgrImpl();
 
-	nResult CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order = 0, nStrView Name = nullptr, natNode* pParent = nullptr) override;
+	nResult CreateLayer(n2dLayerHandler* Handler, natRefPointer<n2dLayer>& pOut, nInt Order = 0, nStrView Name = nullptr, natNode* pParent = nullptr) override;
 	n2dLayer* GetRootLayer() override;
 
 private:

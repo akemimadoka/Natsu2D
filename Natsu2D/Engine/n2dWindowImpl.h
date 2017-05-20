@@ -19,7 +19,7 @@ class n2dEngineImpl;
 ///	@brief	Natsu2D窗口类
 ////////////////////////////////////////////////////////////////////////////////
 class n2dWindowImpl
-	: public natRefObjImpl<n2dWindow>
+	: public natRefObjImpl<n2dWindowImpl, n2dWindow>
 {
 public:
 	///	@brief	GL窗口构造函数

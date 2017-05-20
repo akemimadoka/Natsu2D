@@ -6,6 +6,7 @@
 #include <natType.h>
 #include <natVec.h>
 #include "../n2dModel.h"
+#include "../n2dRenderDevice.h"
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +14,7 @@
 ///	@deprecated	已经失效，请勿使用
 ////////////////////////////////////////////////////////////////////////////////
 class n2dObjLoader final
-	: public natRefObjImpl<n2dModelLoader>
+	: public natRefObjImpl<n2dObjLoader, n2dModelLoader>
 {
 public:
 	n2dObjLoader();
@@ -26,20 +27,20 @@ public:
 
 	///	@brief	加载Obj模型
 	///	@param[in]	filename	文件名
-	nResult CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut) override;
-	nResult CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut) override;
+	nResult CreateStaticModelFromFile(nStrView lpPath, natRefPointer<n2dModelData>& pOut) override;
+	nResult CreateStaticModelFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dModelData>& pOut) override;
 
-	nResult CreateDynamicModelFromStream(natStream* pStream, n2dModelData** pOut) override
+	nResult CreateDynamicModelFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dModelData>& pOut) override
 	{
 		return NatErr_NotImpl;
 	}
 
-	nResult CreateDynamicModelFromFile(nStrView lpPath, n2dModelData** pOut) override
+	nResult CreateDynamicModelFromFile(nStrView lpPath, natRefPointer<n2dModelData>& pOut) override
 	{
 		return NatErr_NotImpl;
 	}
 
-	void SetDefaultTexture(n2dTexture2D* Texture) override;
+	void SetDefaultTexture(natRefPointer<n2dTexture2D> Texture) override;
 
 	n2dModelData* GetModel();
 
@@ -66,7 +67,7 @@ private:
 	std::vector<natVec3<>> m_Normals;
 	std::vector<nuShort> m_ElementIndexes;
 
-	n2dTexture2D* m_Texture;
+	natRefPointer<n2dTexture2D> m_Texture;
 	nuInt m_VertexBuffer, m_UVBuffer, m_NormalBuffer, m_ElementBuffer;
 
 	void init();

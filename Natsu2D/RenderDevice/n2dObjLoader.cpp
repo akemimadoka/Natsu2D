@@ -16,7 +16,8 @@ n2dObjLoader::n2dObjLoader()
 
 n2dObjLoader::n2dObjLoader(nStrView filename)
 {
-	if (!CreateStaticModelFromFile(filename, nullptr))
+	natRefPointer<n2dModelData> dummyModel;
+	if (!CreateStaticModelFromFile(filename, dummyModel))
 	{
 		nat_Throw(natException, "Load object model \"%s\" failed"_nv, filename);
 	}
@@ -27,16 +28,15 @@ n2dObjLoader::~n2dObjLoader()
 	init();
 }
 
-nResult n2dObjLoader::CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut)
+nResult n2dObjLoader::CreateStaticModelFromFile(nStrView lpPath, natRefPointer<n2dModelData>& pOut)
 {
-	natStream* tpStream = new natFileStream(lpPath, true, false);
+	auto tpStream = make_ref<natFileStream>(lpPath, true, false);
 	nResult tRet = CreateStaticModelFromStream(tpStream, pOut);
-	SafeRelease(tpStream);
 
 	return tRet;
 }
 
-nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut)
+nResult n2dObjLoader::CreateStaticModelFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dModelData>& pOut)
 {
 	init();
 
@@ -145,7 +145,7 @@ nResult n2dObjLoader::CreateStaticModelFromStream(natStream* pStream, n2dModelDa
 	return NatErr_OK;
 }
 
-void n2dObjLoader::SetDefaultTexture(n2dTexture2D* Texture)
+void n2dObjLoader::SetDefaultTexture(natRefPointer<n2dTexture2D> Texture)
 {
 	m_Texture = Texture;
 }

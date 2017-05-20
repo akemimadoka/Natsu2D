@@ -69,7 +69,7 @@ struct n2dSoundSource
 	virtual nuInt GetHandle() const = 0;
 
 	///	@brief	绑定缓存
-	virtual void BindBuffer(const n2dSoundBuffer* pBuffer) = 0;
+	virtual void BindBuffer(natRefPointer<n2dSoundBuffer> pBuffer) = 0;
 
 	///	@brief	获得仰角
 	virtual nFloat GetPitch() const = 0;
@@ -179,11 +179,11 @@ struct n2dSoundSource
 	///	@brief	将缓存放入队列
 	///	@param[in]	Count			缓存数组大小
 	///	@param[in]	pBufferArray	缓存数组
-	virtual nResult QueueBuffers(nuInt Count, const n2dSoundBuffer* pBufferArray) = 0;
+	//virtual nResult QueueBuffers(nuInt Count, natRefPointer<n2dSoundBuffer> pBufferArray) = 0;
 	///	@brief	从队列中移除缓存
 	///	@param[in]	Count			缓存数组大小
 	///	@param[in]	pBufferArray	缓存数组
-	virtual nResult UnqueueBuffers(nuInt Count, const n2dSoundBuffer* pBufferArray) = 0;
+	//virtual nResult UnqueueBuffers(nuInt Count, natRefPointer<n2dSoundBuffer> pBufferArray) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,17 +238,17 @@ struct n2dSoundSys
 
 	///	@brief	获得收听者
 	///	@note	请勿释放
-	virtual n2dSoundListener* GetListener() = 0;
+	virtual natRefPointer<n2dSoundListener> GetListener() = 0;
 	///	@brief	创建声音缓存
 	///	@param[out]		pOut	创建的声音缓存
 	///	@return	处理结果
-	virtual nResult CreateSoundBuffer(n2dSoundBuffer** pOut) = 0;
+	virtual nResult CreateSoundBuffer(natRefPointer<n2dSoundBuffer>& pOut) = 0;
 	///	@brief	从流中创建波形声音缓存
 	///	@param[out]		pOut	创建的声音缓存
 	///	@return	处理结果
-	virtual nResult CreateWaveSoundBufferFromStream(natStream* pStream, n2dSoundBuffer** pOut) = 0;
+	virtual nResult CreateWaveSoundBufferFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dSoundBuffer>& pOut) = 0;
 	///	@brief	创建声源
 	///	@param[out]		pOut	创建的声源
 	///	@return	处理结果
-	virtual nResult CreateSoundSource(n2dSoundSource** pOut) = 0;
+	virtual nResult CreateSoundSource(natRefPointer<n2dSoundSource>& pOut) = 0;
 };

@@ -3,19 +3,19 @@
 #include "OpenAL.h"
 
 class n2dSoundBufferImpl
-	: public natRefObjImpl<n2dSoundBuffer>
+	: public natRefObjImpl<n2dSoundBufferImpl, n2dSoundBuffer>
 {
 	static nuInt GetBufferFormatEnum(BufferFormat format)
 	{
 		switch (format)
 		{
-		case n2dSoundBuffer::BufferFormat::Mono8:
+		case BufferFormat::Mono8:
 			return AL_FORMAT_MONO8;
-		case n2dSoundBuffer::BufferFormat::Mono16:
+		case BufferFormat::Mono16:
 			return AL_FORMAT_MONO16;
-		case n2dSoundBuffer::BufferFormat::Stereo8:
+		case BufferFormat::Stereo8:
 			return AL_FORMAT_STEREO8;
-		case n2dSoundBuffer::BufferFormat::Stereo16:
+		case BufferFormat::Stereo16:
 			return AL_FORMAT_STEREO16;
 		default:
 			nat_Throw(natException, "Invaild BufferFormat"_nv);

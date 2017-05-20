@@ -38,22 +38,22 @@ struct n2dCharTexture final
 ///	@brief		Natsu2D字体类实现
 ////////////////////////////////////////////////////////////////////////////////
 class n2dFontImpl final
-	: public natRefObjImpl<n2dFont>
+	: public natRefObjImpl<n2dFontImpl, n2dFont>
 {
 public:
 	explicit n2dFontImpl(n2dRenderDeviceImpl* pRenderer);
 	~n2dFontImpl();
 
-	nResult InitFont(n2dRenderDevice* pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight) override;
-	nResult InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nuInt iWidth, nuInt iHeight) override;
+	nResult InitFont(natRefPointer<n2dRenderDevice> pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight) override;
+	nResult InitFont(natRefPointer<n2dRenderDevice> pRenderer, natRefPointer<natStream> pStream, nuInt iWidth, nuInt iHeight) override;
 
 	nResult InitText(nStrView str, nLen lStrlen) override;
 
-	nResult PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color) override;
-	nResult PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture) override;
+	nResult PrintFont(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color) override;
+	nResult PrintFont(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natRefPointer<n2dTexture> pTexture) override;
 
 private:
-	nResult PrintFontImpl(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale);
+	nResult PrintFontImpl(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale);
 
 	FT_Library m_pFTLib;
 	FT_Face m_pFTFace;

@@ -13,7 +13,7 @@ class n2dModelLoaderImpl;
 struct MotionData;
 
 class n2dStaticMeshDataImpl
-	: public natRefObjImpl<n2dMeshData>
+	: public natRefObjImpl<n2dStaticMeshDataImpl, n2dMeshData>
 {
 	friend class n2dGraphics3DImpl;
 	friend class n2dModelLoaderImpl;
@@ -57,7 +57,7 @@ private:
 };
 
 class n2dDynamicMeshDataImpl
-	: public natRefObjImpl<n2dMeshData>
+	: public natRefObjImpl<n2dDynamicMeshDataImpl, n2dMeshData>
 {
 	friend class n2dMotionManagerImpl;
 	friend class n2dGraphics3DImpl;

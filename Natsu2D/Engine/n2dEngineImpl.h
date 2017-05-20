@@ -5,8 +5,6 @@
 #pragma once
 #include "../n2dEngine.h"
 #include "n2dWindowImpl.h"
-#include "n2dVirtualFileSystemImpl.h"
-#include "n2dSchemaImpl.h"
 #include <natEvent.h>
 #include <natMultiThread.h>
 #include <natType.h>
@@ -25,7 +23,7 @@ struct n2dEngine;
 ///	@brief	n2d引擎
 ////////////////////////////////////////////////////////////////////////////////
 class n2dEngineImpl
-	: public natRefObjImpl<n2dEngine>
+	: public natRefObjImpl<n2dEngineImpl, n2dEngine>
 {
 public:
 	///	@brief	自定义窗口消息
@@ -98,14 +96,16 @@ public:
 	void SwapBuffers() override
 	{ m_Window.SwapBuffers();	}
 	///	@brief	获得窗口
-	n2dWindow* GetWindow() override
-	{ return &m_Window; }
+	natRefPointer<n2dWindow> GetWindow() override
+	{ return m_Window.ForkRef(); }
 
-	n2dRenderDevice* GetRenderDevice() override;
-	n2dSoundSys* GetSoundSys() override;
+	natRefPointer<n2dRenderDevice> GetRenderDevice() override;
+	natRefPointer<n2dSoundSys> GetSoundSys() override;
 
 	n2dEngineEventListener* GetListener() override
-	{ return m_pListener; }
+	{
+		return m_pListener;
+	}
 
 	ThreadMode GetThreadMode() const override;
 	HINSTANCE GetHInstance() const override;
@@ -113,8 +113,6 @@ public:
 	natLog& GetLogger() override;
 	natEventBus& GetEventBus() override;
 	natThreadPool& GetThreadPool() override;
-	n2dSchemaFactory& GetSchemaFactory() override;
-	n2dVirtualFileSystem& GetVirtualFileSystem() override;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数
@@ -155,9 +153,6 @@ private:
 
 	natRefPointer<n2dRenderDevice>		m_pRenderer;
 	natRefPointer<n2dSoundSys>			m_pSoundSys;
-
-	n2dVirtualFileSystemImpl			m_VirtualFileSystem;
-	n2dSchemaFactoryImpl				m_SchemaFactory;
 
 	///	@brief	当前按键状况
 	///	@note	仅当当前窗口激活时有效

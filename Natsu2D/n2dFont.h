@@ -27,13 +27,13 @@ struct n2dFont
 	/// @param[in]	lpFontFile	字体文件名
 	/// @param[in]	iWidth		字体宽度（像素）
 	/// @param[in]	iHeight		字体高度（像素）
-	virtual nResult InitFont(n2dRenderDevice* pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight) = 0;
+	virtual nResult InitFont(natRefPointer<n2dRenderDevice> pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight) = 0;
 	/// @brief	使用字体文件进行初始化
 	/// @param[in]	pRenderer	渲染设备
 	/// @param[in]	pStream		字体流
 	/// @param[in]	iWidth		字体宽度（像素）
 	/// @param[in]	iHeight		字体高度（像素）
-	virtual nResult InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nuInt iWidth, nuInt iHeight) = 0;
+	virtual nResult InitFont(natRefPointer<n2dRenderDevice> pRenderer, natRefPointer<natStream> pStream, nuInt iWidth, nuInt iHeight) = 0;
 
 	///	@brief	初始化文本
 	///	@param[in]	str		文本
@@ -64,7 +64,7 @@ struct n2dFont
 	/// @param[in]	y			要绘制到的y坐标
 	/// @param[in]	scale		缩放系数
 	/// @param[in]	color		字体颜色
-	virtual nResult PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color) = 0;
+	virtual nResult PrintFont(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color) = 0;
 
 	/// @brief	使用纹理绘制字体
 	/// @param[in]	pGraphic	图元渲染器
@@ -73,5 +73,5 @@ struct n2dFont
 	/// @param[in]	y			要绘制到的y坐标
 	/// @param[in]	scale		缩放系数
 	/// @param[in]	pTexture	字体纹理
-	virtual nResult PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture) = 0;
+	virtual nResult PrintFont(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natRefPointer<n2dTexture> pTexture) = 0;
 };

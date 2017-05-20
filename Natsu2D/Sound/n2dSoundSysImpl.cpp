@@ -30,84 +30,35 @@ nBool n2dSoundSysImpl::IsCapabilityEnabled(Capability capa)
 	return false;
 }
 
-n2dSoundListener * n2dSoundSysImpl::GetListener()
+natRefPointer<n2dSoundListener> n2dSoundSysImpl::GetListener()
 {
-	return &m_Listener;
+	return m_Listener.ForkRef();
 }
 
-nResult n2dSoundSysImpl::CreateSoundBuffer(n2dSoundBuffer ** pOut)
+nResult n2dSoundSysImpl::CreateSoundBuffer(natRefPointer<n2dSoundBuffer>& pOut)
 {
-	if (pOut == nullptr)
-	{
-		return NatErr_InvalidArg;
-	}
-
-	try
-	{
-		*pOut = new n2dSoundBufferImpl;
-	}
-	catch (std::bad_alloc&)
-	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
-	}
+	pOut = make_ref<n2dSoundBufferImpl>();
 
 	return NatErr_OK;
 }
 
-nResult n2dSoundSysImpl::CreateWaveSoundBufferFromStream(natStream * pStream, n2dSoundBuffer ** pOut)
+nResult n2dSoundSysImpl::CreateWaveSoundBufferFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dSoundBuffer>& pOut)
 {
-	if (pOut == nullptr)
+	auto pBuffer = make_ref<n2dSoundBufferImpl>();
+	std::vector<nByte> tBuffer(static_cast<nuInt>(pStream->GetSize() - pStream->GetPosition()));
+	pStream->ReadBytes(tBuffer.data(), tBuffer.size());
+	if (!ALFWLoadWaveBufferToBuffer(tBuffer.data(), static_cast<DWORD>(tBuffer.size()), pBuffer->GetHandle()))
 	{
-		return NatErr_InvalidArg;
+		nat_Throw(natException, "Cannot load wave buffer"_nv);
 	}
-
-	try
-	{
-		auto pBuffer = make_ref<n2dSoundBufferImpl>();
-		std::vector<nByte> tBuffer(static_cast<nuInt>(pStream->GetSize() - pStream->GetPosition()));
-		pStream->ReadBytes(tBuffer.data(), tBuffer.size());
-		if (!ALFWLoadWaveBufferToBuffer(tBuffer.data(), static_cast<DWORD>(tBuffer.size()), pBuffer->GetHandle()))
-		{
-			nat_Throw(natException, "Cannot load wave buffer"_nv);
-		}
-		*pOut = pBuffer;
-		pBuffer->AddRef();
-	}
-	catch (std::bad_alloc&)
-	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
-	}
+	pOut = pBuffer;
 
 	return NatErr_OK;
 }
 
-nResult n2dSoundSysImpl::CreateSoundSource(n2dSoundSource ** pOut)
+nResult n2dSoundSysImpl::CreateSoundSource(natRefPointer<n2dSoundSource>& pOut)
 {
-	if (pOut == nullptr)
-	{
-		return NatErr_InvalidArg;
-	}
-
-	try
-	{
-		*pOut = new n2dSoundSourceImpl;
-	}
-	catch (std::bad_alloc&)
-	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
-	}
+	pOut = make_ref<n2dSoundSourceImpl>();
 
 	return NatErr_OK;
 }

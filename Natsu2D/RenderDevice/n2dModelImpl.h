@@ -2,7 +2,7 @@
 #include "n2dMeshDataImpl.h"
 
 class n2dStaticModelDataImpl
-	: public natRefObjImpl<n2dModelData>
+	: public natRefObjImpl<n2dStaticModelDataImpl, n2dModelData>
 {
 	friend class n2dGraphics3DImpl;
 	friend class n2dModelLoaderImpl;
@@ -17,7 +17,7 @@ public:
 	void Update(nuInt) override {}
 
 	nuInt GetMeshCount() const override;
-	n2dMeshData* GetMesh(nuInt Index) override
+	natRefPointer<n2dMeshData> GetMesh(nuInt Index) override
 	{
 		if (Index >= m_Meshes.size())
 		{
@@ -39,7 +39,7 @@ private:
 };
 
 class n2dDynamicModelDataImpl
-	: public natRefObjImpl<n2dModelData>
+	: public natRefObjImpl<n2dDynamicModelDataImpl, n2dModelData>
 {
 	friend class n2dMotionManagerImpl;
 	friend class n2dGraphics3DImpl;
@@ -62,11 +62,11 @@ public:
 		return 1u;
 	}
 
-	n2dMeshData* GetMesh(nuInt Index) override
+	natRefPointer<n2dMeshData> GetMesh(nuInt Index) override
 	{
 		if (0u == Index)
 		{
-			return &m_Mesh;
+			return m_Mesh.ForkRef();
 		}
 
 		return nullptr;

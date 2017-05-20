@@ -51,7 +51,7 @@ struct n2dTexture2D
 	///	@param[in]	pStream		流
 	///	@param[in]	dwFileType	文件类型ID，此处是由于图形库需要而要求提供，之后会移除
 	///	@return	是否加载成功
-	virtual nBool LoadTexture(natStream* pStream, DWORD dwFileType) = 0;
+	virtual nBool LoadTexture(natRefPointer<natStream> pStream, DWORD dwFileType) = 0;
 
 	///	@brief	从Image加载纹理
 	///	@param[in]	image		已加载的Image
@@ -220,9 +220,8 @@ struct n2dBuffer
 	///	@param[in]	Access	存取权限
 	///	@return	映射的流
 	///	@note	会使上次映射的流失效\n
-	///			请勿Release\n
 	///			隐含调用Bind
-	virtual natStream* MapBuffer(BufferAccess Access) = 0;
+	virtual natRefPointer<natStream> MapBuffer(BufferAccess Access) = 0;
 	///	@brief	解除缓存映射
 	///	@note	会使上次映射的流失效\n
 	///			隐含调用Bind
@@ -234,9 +233,8 @@ struct n2dBuffer
 	///	@param[in]	Access	存取权限
 	///	@return	映射的流
 	///	@note	会使上次映射的流失效\n
-	///			请勿Release\n
 	///			隐含调用Bind
-	virtual natStream* MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) = 0;
+	virtual natRefPointer<natStream> MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) = 0;
 	///	@brief	刷新映射的部分缓存
 	///	@param[in]	Offset	偏移
 	///	@param[in]	Length	长度
@@ -430,7 +428,7 @@ struct n2dShaderProgram
 	{
 		///	@brief	获得关联的程序
 		///	@note	程序销毁后返回nullptr
-		virtual n2dShaderProgram* GetProgram() const = 0;
+		virtual natRefPointer<n2dShaderProgram> GetProgram() const = 0;
 
 		///	@brief	获得大小
 		///	@note	GetSize获得的大小是元素个数，GetInternalSize获得的大小是实际占的字节数
@@ -470,7 +468,7 @@ struct n2dShaderProgram
 	{
 		///	@brief	获得关联的程序
 		///	@note	程序销毁后返回nullptr
-		virtual n2dShaderProgram* GetProgram() const = 0;
+		virtual natRefPointer<n2dShaderProgram> GetProgram() const = 0;
 
 		///	@brief	获得变量类型
 		virtual VarType GetType() const = 0;
@@ -495,7 +493,7 @@ struct n2dShaderProgram
 	{
 		///	@brief	获得关联的程序
 		///	@note	程序销毁后返回nullptr
-		virtual n2dShaderProgram* GetProgram() const = 0;
+		virtual natRefPointer<n2dShaderProgram> GetProgram() const = 0;
 
 		///	@brief	获得大小
 		virtual nuInt GetSize() const = 0;
@@ -503,7 +501,7 @@ struct n2dShaderProgram
 		virtual nuInt ActiveUniformCount() const = 0;
 
 		///	@brief	绑定到Buffer
-		virtual void Bind(n2dBuffer* pBuffer) = 0;
+		virtual void Bind(natRefPointer<n2dBuffer> pBuffer) = 0;
 		///	@brief	获得绑定点
 		virtual nuInt GetBindingPoint() const = 0;
 	};
@@ -513,9 +511,9 @@ struct n2dShaderProgram
 	virtual HandleType GetHandle() const = 0;
 
 	///	@brief	附加着色器
-	virtual void AttachShader(n2dShader* pShader) = 0;
+	virtual void AttachShader(natRefPointer<n2dShader> pShader) = 0;
 	///	@brief	分离着色器
-	virtual void DetachShader(n2dShader* pShader) = 0;
+	virtual void DetachShader(natRefPointer<n2dShader> pShader) = 0;
 
 	///	@brief	获得附加的着色器的个数
 	virtual nuInt AttachedShaderCount() const = 0;
@@ -544,7 +542,7 @@ struct n2dShaderProgram
 	///	@brief	输出二进制文件
 	///	@param[in]	pStream	输出到的流
 	///	@return	处理结果
-	virtual nResult OutputBinary(natStream* pStream) const = 0;
+	virtual nResult OutputBinary(natRefPointer<natStream> pStream) const = 0;
 
 	///	@brief	获得有效的Attribute个数
 	virtual nuInt ActiveAttributeCount() const = 0;
@@ -555,24 +553,24 @@ struct n2dShaderProgram
 
 	///	@brief	获得Attribute引用
 	///	@param[in]	Location	位置
-	virtual AttributeReference* GetAttributeReference(nuInt Location) = 0;
+	virtual natRefPointer<AttributeReference> GetAttributeReference(nuInt Location) = 0;
 	///	@brief	获得Attribute引用
 	///	@param[in]	Name	名称
-	virtual AttributeReference* GetAttributeReference(nStrView Name) = 0;
+	virtual natRefPointer<AttributeReference> GetAttributeReference(nStrView Name) = 0;
 
 	///	@brief	获得Uniform引用
 	///	@param[in]	Location	位置
-	virtual UniformReference* GetUniformReference(nuInt Location) = 0;
+	virtual natRefPointer<UniformReference> GetUniformReference(nuInt Location) = 0;
 	///	@brief	获得Uniform引用
 	///	@param[in]	Name	名称
-	virtual UniformReference* GetUniformReference(nStrView Name) = 0;
+	virtual natRefPointer<UniformReference> GetUniformReference(nStrView Name) = 0;
 
 	///	@brief	获得Uniform块引用
 	///	@param[in]	Location	位置
-	virtual UniformBlockReference* GetUniformBlockReference(nuInt Location) = 0;
+	virtual natRefPointer<UniformBlockReference> GetUniformBlockReference(nuInt Location) = 0;
 	///	@brief	获得Uniform块引用
 	///	@param[in]	Name	名称
-	virtual UniformBlockReference* GetUniformBlockReference(nStrView Name) = 0;
+	virtual natRefPointer<UniformBlockReference> GetUniformBlockReference(nStrView Name) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -603,7 +601,7 @@ struct n2dProgramPipeline
 	///	@brief	绑定程序到管线步骤
 	///	@param[in]	stages		步骤
 	///	@param[in]	pProgram	着色器程序
-	virtual void UseProgramStages(nuInt stages, n2dShaderProgram* pProgram) = 0;
+	virtual void UseProgramStages(nuInt stages, natRefPointer<n2dShaderProgram> pProgram) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -613,26 +611,26 @@ struct n2dShaderWrapper
 	: n2dInterface
 {
 	///	@brief	从流中创建着色器
-	virtual nResult CreateShaderFromStream(natStream* pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, n2dShader** pOut) = 0;
+	virtual nResult CreateShaderFromStream(natRefPointer<natStream> pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, natRefPointer<n2dShader>& pOut) = 0;
 	///	@brief	创建着色器程序
-	virtual nResult CreateProgram(n2dShaderProgram** pOut) = 0;
+	virtual nResult CreateProgram(natRefPointer<n2dShaderProgram>& pOut) = 0;
 	///	@brief	从流中创建着色器程序
 	///	@note	加载的必须是着色器程序的二进制编译
-	virtual nResult CreateProgramFromStream(natStream* pStream, n2dShaderProgram** pOut) = 0;
+	virtual nResult CreateProgramFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dShaderProgram>& pOut) = 0;
 	///	@brief	创建程序管线
-	virtual nResult CreateProgramPipeline(n2dProgramPipeline** pOut) = 0;
+	virtual nResult CreateProgramPipeline(natRefPointer<n2dProgramPipeline>& pOut) = 0;
 
 	///	@brief		获得当前使用的着色器程序
-	virtual n2dShaderProgram* GetCurrentProgram() = 0;
+	virtual natRefPointer<n2dShaderProgram> GetCurrentProgram() = 0;
 	///	@brief		获得当前使用的程序管线
-	virtual n2dProgramPipeline* GetCurrentProgramPipeline() = 0;
+	virtual natRefPointer<n2dProgramPipeline> GetCurrentProgramPipeline() = 0;
 
 	///	@brief		获得默认程序
 	///	@warning	请勿自行释放
-	virtual n2dShaderProgram* GetDefaultProgram() const = 0;
+	virtual natRefPointer<n2dShaderProgram> GetDefaultProgram() const = 0;
 
-	virtual n2dShaderProgram* SetFontProgram(n2dShaderProgram* pProgram) = 0;
-	virtual n2dShaderProgram* GetFontProgram() const = 0;
+	virtual natRefPointer<n2dShaderProgram> SetFontProgram(natRefPointer<n2dShaderProgram> pProgram) = 0;
+	virtual natRefPointer<n2dShaderProgram> GetFontProgram() const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -676,9 +674,9 @@ struct n2dCamera
 	: n2dInterface
 {
 	///	@brief	获得渲染设备
-	virtual n2dRenderDevice* GetRenderDevice() = 0;
+	virtual natRefPointer<n2dRenderDevice> GetRenderDevice() = 0;
 
-	virtual void Attach(n2dLayer* layer) = 0;
+	virtual void Attach(natRefPointer<n2dLayer> layer) = 0;
 
 	///	@brief	提交模型矩阵
 	///	@param[in]	Mat	提交的矩阵
@@ -853,7 +851,7 @@ struct n2dRenderDevice
 	///	@brief	为特定的DrawBuffer设置混合模式
 	///	@param[in]	Source		源混合因子
 	///	@param[in]	Destination	目标混合因子
-	virtual void SetBlendModeI(n2dBuffer* Buf, BlendFactor Source, BlendFactor Destination) = 0;
+	virtual void SetBlendModeI(natRefPointer<n2dBuffer> Buf, BlendFactor Source, BlendFactor Destination) = 0;
 	///	@brief	设置混合颜色
 	virtual void SetBlendColor(natVec4<> const& Color) = 0;
 	///	@brief	设置混合颜色
@@ -867,7 +865,7 @@ struct n2dRenderDevice
 	virtual void SwapBuffers() = 0;
 
 	///	@brief	获得着色器包装器
-	virtual n2dShaderWrapper* GetShaderWrapper() = 0;
+	virtual natRefPointer<n2dShaderWrapper> GetShaderWrapper() = 0;
 
 	///	@brief	提交模型矩阵
 	///	@param[in]	Mat	提交的矩阵
@@ -920,7 +918,7 @@ struct n2dRenderDevice
 	virtual natMat4<> const& GetMVPMat() = 0;
 
 	///	@brief	获得关联的引擎
-	virtual n2dEngine* GetEngine() = 0;
+	virtual natRefPointer<n2dEngine> GetEngine() = 0;
 
 	///	@brief	获得最大灯光数
 	virtual nuInt GetMaxLight() const = 0;
@@ -928,49 +926,49 @@ struct n2dRenderDevice
 	///	@note	仅能设置一次，后续调用将被忽略
 	virtual void SetMaxLights(nuInt value) = 0;
 	///	@brief	获得对应索引的灯光控制器
-	virtual n2dLightController* GetLightController(nuInt Index) = 0;
+	virtual natRefPointer<n2dLightController> GetLightController(nuInt Index) = 0;
 
 	///	@brief	创建缓存
 	///	@param[in]	DefaultTarget	初始目标
 	///	@param[out]	pOut			创建的缓存
 	///	@return	处理结果
-	virtual nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut) = 0;
+	virtual nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, natRefPointer<n2dBuffer>& pOut) = 0;
 
-	virtual nResult CreateLayerMgr(n2dLayerMgr** pOut) = 0;
+	virtual nResult CreateLayerMgr(natRefPointer<n2dLayerMgr>& pOut) = 0;
 
 	///	@brief	创建二维图元渲染器
 	///	@param[out]	pOut	创建的二维图元渲染器
 	///	@return	处理结果
-	virtual nResult CreateGraphics2D(n2dGraphics2D** pOut) = 0;
+	virtual nResult CreateGraphics2D(natRefPointer<n2dGraphics2D>& pOut) = 0;
 	///	@brief	创建三维图元渲染器
 	///	@param[out]	pOut	创建的三维图元渲染器
 	///	@return	处理结果
-	virtual nResult CreateGraphics3D(n2dGraphics3D** pOut) = 0;
+	virtual nResult CreateGraphics3D(natRefPointer<n2dGraphics3D>& pOut) = 0;
 
 	///	@brief	创建纹理
 	///	@param[out]	pOut	创建的纹理
 	///	@return	处理结果
-	virtual nResult CreateTexture(n2dTexture2D** pOut) = 0;
+	virtual nResult CreateTexture(natRefPointer<n2dTexture2D>& pOut) = 0;
 	///	@brief	从流中创建纹理
 	///	@param[out]	pOut	创建的纹理
 	///	@return	处理结果
-	virtual nResult CreateTextureFromStream(natStream* pStream, DWORD dwFileType, n2dTexture2D** pOut) = 0;
+	virtual nResult CreateTextureFromStream(natRefPointer<natStream> pStream, DWORD dwFileType, natRefPointer<n2dTexture2D>& pOut) = 0;
 
 	///	@brief	创建模型加载器
 	///	@param[out]	pOut	创建的模型加载器
 	///	@return	处理结果
-	virtual nResult CreateModelLoader(n2dModelLoader** pOut) = 0;
+	virtual nResult CreateModelLoader(natRefPointer<n2dModelLoader>& pOut) = 0;
 
 	///	@brief	创建Obj模型加载器
 	///	@param[out]	pOut	创建的Obj模型加载器
 	///	@return	处理结果
 	///	@deprecated	仅作者测试用
-	virtual nResult CreateObjLoader(n2dModelLoader** pOut) = 0;
+	virtual nResult CreateObjLoader(natRefPointer<n2dModelLoader>& pOut) = 0;
 
 	///	@brief	创建动作管理器
 	///	@param[out]	pOut	创建的动作管理器
 	///	@return	处理结果
-	virtual nResult CreateMotionManager(n2dMotionManager** pOut) = 0;
+	virtual nResult CreateMotionManager(natRefPointer<n2dMotionManager>& pOut) = 0;
 
-	virtual nResult CreateFontManager(n2dFont** pOut) = 0;
+	virtual nResult CreateFontManager(natRefPointer<n2dFont>& pOut) = 0;
 };

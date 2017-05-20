@@ -81,7 +81,7 @@ struct n2dModelData
 	virtual nuInt GetMeshCount() const = 0;
 	///	@brief	获得网格数据
 	///	@param[in]	Index	索引
-	virtual n2dMeshData* GetMesh(nuInt Index) = 0;
+	virtual natRefPointer<n2dMeshData> GetMesh(nuInt Index) = 0;
 
 	///	@brief	设置缩放
 	///	@param[in]	Factor	缩放因子
@@ -99,28 +99,28 @@ struct n2dModelLoader
 	///	@param[in]	pStream	流
 	///	@param[out]	pOut	创建的模型数据
 	///	@return	处理结果
-	virtual nResult CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut) = 0;
+	virtual nResult CreateStaticModelFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dModelData>& pOut) = 0;
 	///	@brief	从文件中创建静态模型
 	///	@param[in]	lpPath	文件路径
 	///	@param[out]	pOut	创建的模型数据
 	///	@return	处理结果
-	virtual nResult CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut) = 0;
+	virtual nResult CreateStaticModelFromFile(nStrView lpPath, natRefPointer<n2dModelData>& pOut) = 0;
 
 	///	@brief	从流中创建动态模型
 	///	@param[in]	pStream	流
 	///	@param[out]	pOut	创建的模型数据
 	///	@return	处理结果
-	virtual nResult CreateDynamicModelFromStream(natStream* pStream, n2dModelData** pOut) = 0;
+	virtual nResult CreateDynamicModelFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dModelData>& pOut) = 0;
 	///	@brief	从文件中创建动态模型
 	///	@param[in]	lpPath	文件路径
 	///	@param[out]	pOut	创建的模型数据
 	///	@return	处理结果
-	virtual nResult CreateDynamicModelFromFile(nStrView lpPath, n2dModelData** pOut) = 0;
+	virtual nResult CreateDynamicModelFromFile(nStrView lpPath, natRefPointer<n2dModelData>& pOut) = 0;
 
 	///	@brief	设置纹理缺失时使用的纹理
 	///	@param[in]	Texture	选定的默认纹理
 	///	@note	用空指针做参数表示在缺失时不绑定纹理
-	virtual void SetDefaultTexture(n2dTexture2D* Texture) = 0;
+	virtual void SetDefaultTexture(natRefPointer<n2dTexture2D> Texture) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ struct n2dMotionManager
 	///	@param[in]	pStream	流
 	///	@return	处理结果
 	///	@note	动作名称作为标识符
-	virtual nResult LoadMotionFromStream(nStrView lpName, natStream* pStream) = 0;
+	virtual nResult LoadMotionFromStream(nStrView lpName, natRefPointer<natStream> pStream) = 0;
 	///	@brief	从文件中加载动作
 	///	@param[in]	lpName	动作名称
 	///	@param[in]	lpPath	文件路径
@@ -147,9 +147,9 @@ struct n2dMotionManager
 	///	@param[in]	pModel	应用到的模型
 	///	@return	处理结果
 	///	@note	仅对动态模型有效
-	virtual nResult ApplyToModel(nStrView lpName, n2dModelData* pModel) = 0;
+	virtual nResult ApplyToModel(nStrView lpName, natRefPointer<n2dModelData> pModel) = 0;
 	///	@brief	回复对应模型的动作
-	virtual void RestoreMotion(n2dModelData* pModel) = 0;
+	virtual void RestoreMotion(natRefPointer<n2dModelData> pModel) = 0;
 	///	@brief	回复对应模型的变型
-	virtual void RestoreMorph(n2dModelData* pModel) = 0;
+	virtual void RestoreMorph(natRefPointer<n2dModelData> pModel) = 0;
 };

@@ -192,9 +192,9 @@ public:
 	explicit test(HINSTANCE hInstance)
 		: m_Speed(0.0f), m_bShouldControl(false), m_RotateL(0.0f), m_RotateH(0.0f)
 	{
-		nat_ThrowIfFailed(CreateN2DEngine(0, "GLAPP"_nv, 0u, 0u, 800u, 600u, 1280u, 720u, 32u, false, hInstance, n2dEngine::ThreadMode::MultiThread, this, &m_pEngine), "Failed to create Natsu2D engine"_nv);
+		nat_ThrowIfFailed(CreateN2DEngine(0, "GLAPP"_nv, 0u, 0u, 800u, 600u, 1280u, 720u, 32u, false, hInstance, n2dEngine::ThreadMode::MultiThread, this, m_pEngine), "Failed to create Natsu2D engine"_nv);
 
-		Global::g_pEngine = m_pEngine;
+		Global::g_pEngine = m_pEngine.Get();
 
 		m_pEngine->GetLogger().UseDefaultAction(Global::g_Console, Global::g_LogFile);
 
@@ -302,28 +302,28 @@ public:
 	nBool WindowInit() override
 	{
 		static auto inited = false;
-		n2dRenderDevice* renderdevice = m_pEngine->GetRenderDevice();
+		auto renderdevice = m_pEngine->GetRenderDevice();
 		
 		if (!inited)
 		{
 			// 创建二维图元渲染器
-			nat_ThrowIfFailed(renderdevice->CreateGraphics2D(&m_pGraphics), "CreateGraphics2D failed."_nv);
+			nat_ThrowIfFailed(renderdevice->CreateGraphics2D(m_pGraphics), "CreateGraphics2D failed."_nv);
 			// 创建三维图元渲染器
-			nat_ThrowIfFailed(renderdevice->CreateGraphics3D(&m_pGraphics3D), "CreateGraphics3D failed."_nv);
+			nat_ThrowIfFailed(renderdevice->CreateGraphics3D(m_pGraphics3D), "CreateGraphics3D failed."_nv);
 			// 纹理加载
 			// TODO: 完成纹理管理器
-			//renderdevice->CreateTexture(&m_texture);
-			renderdevice->CreateTexture(&m_texture2);
-			//renderdevice->CreateTexture(&m_texture3);
+			//renderdevice->CreateTexture(m_texture);
+			renderdevice->CreateTexture(m_texture2);
+			//renderdevice->CreateTexture(m_texture3);
 
 			// 创建模型加载器
-			nat_ThrowIfFailed(renderdevice->CreateModelLoader(&m_modelloader), "CreateModelLoader failed."_nv);
+			nat_ThrowIfFailed(renderdevice->CreateModelLoader(m_modelloader), "CreateModelLoader failed."_nv);
 			// 用于调试的缓存
-			nat_ThrowIfFailed(renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, &m_DebugBuffer), "CreateBuffer failed."_nv);
+			nat_ThrowIfFailed(renderdevice->CreateBuffer(n2dBuffer::BufferTarget::ShaderStorageBuffer, m_DebugBuffer), "CreateBuffer failed."_nv);
 			// 创建动作管理器
-			nat_ThrowIfFailed(renderdevice->CreateMotionManager(&m_MotionManager), "CreateMotionManager failed."_nv);
+			nat_ThrowIfFailed(renderdevice->CreateMotionManager(m_MotionManager), "CreateMotionManager failed."_nv);
 
-			nat_ThrowIfFailed(renderdevice->CreateFontManager(&f), "CreateFontManager failed."_nv);
+			nat_ThrowIfFailed(renderdevice->CreateFontManager(f), "CreateFontManager failed."_nv);
 		}
 
 		m_pEngine->GetLogger().LogMsg(natUtil::FormatString("GLAPP initialized as {0} thread mode"_nv, m_pEngine->GetThreadMode() == n2dEngine::ThreadMode::SingleThread ? "single"_nv : "multi"_nv));
@@ -338,7 +338,7 @@ public:
 			nat_Throw(natException, "Cannot create mutex"_nv);
 		}
 
-		n2dWindow* window = m_pEngine->GetWindow();
+		auto window = m_pEngine->GetWindow();
 
 		if (!window->GetFullScreen())
 		{
@@ -354,22 +354,6 @@ public:
 		{
 			inited = true;
 
-			// 测试虚拟文件系统
-			auto& schemaFactory = m_pEngine->GetSchemaFactory();
-			auto& vfs = m_pEngine->GetVirtualFileSystem();
-
-			auto schema = schemaFactory.CreateLocalFilesystemSchema("local"_nv);
-			vfs.RegisterSchema(schema);
-			auto streamInfo = vfs.GetStreamInfoFromUri("local://script/boot.nut"_nv);
-			nLen size = 0;
-			nat_ThrowIfFailed(streamInfo->GetSize(size), "Cannot get size."_nv);
-			std::chrono::system_clock::time_point time;
-			nat_ThrowIfFailed(streamInfo->GetEditTime(time), "Cannot get time."_nv);
-			m_pEngine->GetLogger().LogMsg("Path: {0}, Size: {1}"_nv, streamInfo->GetPath(), size);
-			std::vector<nByte> data(static_cast<size_t>(size) + 1);
-			streamInfo->OpenStream(true, false)->ReadBytes(data.data(), size);
-			m_pEngine->GetLogger().LogMsg("{0}"_nv, AnsiStringView(reinterpret_cast<ncStr>(data.data())));
-
 			// 关闭垂直同步
 			renderdevice->SetSwapInterval(1u);
 
@@ -378,10 +362,10 @@ public:
 			renderdevice->SetBlendMode(n2dRenderDevice::BlendFactor::SrcAlpha, n2dRenderDevice::BlendFactor::OneMinusSrcAlpha);
 
 			sw = renderdevice->GetShaderWrapper();
-			sw->CreateProgram(&sp);
+			sw->CreateProgram(sp);
 			natRefPointer<n2dShader> pShader[2];
-			auto pStream = vfs.GetStreamInfoFromUri("local://VertexShader.glsl"_nv)->OpenStream(true, false);
-			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
+			auto pStream = make_ref<natFileStream>("VertexShader.glsl", true, false);
+			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, pShader[0]);
 			if (!pShader[0]->Compiled())
 			{
 				nat_Throw(natException, "Compile Shader0 Failed, Log: %s"_nv, pShader[0]->GetInfoLog());
@@ -393,8 +377,8 @@ public:
 				m_pEngine->GetLogger().LogWarn("Compile0Log: %s"_nv, pLog);
 			}
 
-			pStream = vfs.GetStreamInfoFromUri("local://FragmentShader.glsl"_nv)->OpenStream(true, false);
-			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
+			pStream = make_ref<natFileStream>("FragmentShader.glsl", true, false);
+			sw->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, pShader[1]);
 			if (!pShader[1]->Compiled())
 			{
 				nat_Throw(natException, "Compile Shader1 Failed, Log: %s"_nv, pShader[1]->GetInfoLog());
@@ -458,7 +442,7 @@ public:
 			renderdevice->SubmitModelMat(natMat4<>(1.0f));
 
 			renderdevice->SetMaxLights(10u);
-			n2dLightController* pLight = renderdevice->GetLightController(0u);
+			auto pLight = renderdevice->GetLightController(0u);
 			auto prop = pLight->GetProperties();
 			prop.isEnabled = true;
 			prop.ambient = natVec3<>(0.0f, 0.0f, 0.0f);
@@ -469,7 +453,7 @@ public:
 			m_DebugBuffer->AllocData(sizeof(DebugBuffer), nullptr, n2dBuffer::BufferUsage::DynamicRead);
 			m_DebugBuffer->BindBase(3u);
 
-			f->InitFont(renderdevice, vfs.GetStreamInfoFromUri("local://fz.ttf"_nv)->OpenStream(true, false), 32, 32);
+			f->InitFont(renderdevice, make_ref<natFileStream>("fz.ttf", true, false), 32, 32);
 			f->InitText("23"_nv, 2);
 			/*if (!m_texture->LoadTexture("texture.dds"_nv))
 			{
@@ -485,10 +469,10 @@ public:
 			nat_Throw(natException, "Unable to load texture"_nv);
 			}*/
 
-			n2dSoundSys* pSound = m_pEngine->GetSoundSys();
-			pStream = vfs.GetStreamInfoFromUri("local://Lamb.wav"_nv)->OpenStream(true, false);
-			pSound->CreateWaveSoundBufferFromStream(pStream, &m_soundbuf);
-			pSound->CreateSoundSource(&m_soundsrc);
+			auto pSound = m_pEngine->GetSoundSys();
+			pStream = make_ref<natFileStream>("Lamb.wav", true, false);
+			pSound->CreateWaveSoundBufferFromStream(pStream, m_soundbuf);
+			pSound->CreateSoundSource(m_soundsrc);
 			m_soundsrc->BindBuffer(m_soundbuf);
 			m_soundsrc->SetLooping(false);
 
@@ -496,7 +480,7 @@ public:
 			m_pEngine->GetLogger().LogMsg("Loading model"_nv);
 			//m_modelloader->SetDefaultTexture(m_texture);
 			//m_modelloader->CreateStaticModelFromFile("comb.obj"_nv, &m_model2))
-			nat_ThrowIfFailed(m_modelloader->CreateDynamicModelFromFile("cirno.pmd"_nv, &m_model2), "Unable to load model"_nv);
+			nat_ThrowIfFailed(m_modelloader->CreateDynamicModelFromFile("cirno.pmd"_nv, m_model2), "Unable to load model"_nv);
 
 			/*m_modelloader->SetDefaultTexture(m_texture2);
 			if (NATFAIL(m_modelloader->CreateStaticModelFromFile("table.obj"_nv, &m_model)))
@@ -609,12 +593,12 @@ private:
 	nFloat							m_RotateH;
 
 	natRefPointer<n2dFont>			f;
-	nUnsafePtr<n2dShaderWrapper>	sw;
+	natRefPointer<n2dShaderWrapper>	sw;
 	natRefPointer<n2dShaderProgram>	sp;
 
-	nUnsafePtr<n2dShaderProgram::UniformReference> ViewMatrix;
-	nUnsafePtr<n2dShaderProgram::UniformReference> ModelMatrix;
-	nUnsafePtr<n2dShaderProgram::UniformReference> Light;
+	natRefPointer<n2dShaderProgram::UniformReference> ViewMatrix;
+	natRefPointer<n2dShaderProgram::UniformReference> ModelMatrix;
+	natRefPointer<n2dShaderProgram::UniformReference> Light;
 
 	HANDLE							m_Mutex;
 	//natRefPointer<n2dTexture2D>		m_texture;

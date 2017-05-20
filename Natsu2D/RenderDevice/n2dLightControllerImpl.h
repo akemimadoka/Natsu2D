@@ -3,7 +3,7 @@
 #include "n2dBufferImpl.h"
 
 class n2dLightControllerImpl
-	: public natRefObjImpl<n2dLightController>
+	: public natRefObjImpl<n2dLightControllerImpl, n2dLightController>
 {
 public:
 	n2dLightControllerImpl(nuInt index, n2dBufferImpl* pBuffer);

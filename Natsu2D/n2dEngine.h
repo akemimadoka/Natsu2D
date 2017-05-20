@@ -200,11 +200,11 @@ struct n2dEngine
 	///	@brief	交换缓冲区
 	virtual void SwapBuffers() = 0;
 	///	@brief	获得窗口
-	virtual n2dWindow* GetWindow() = 0;
+	virtual natRefPointer<n2dWindow> GetWindow() = 0;
 	///	@brief	获得渲染设备
-	virtual n2dRenderDevice* GetRenderDevice() = 0;
+	virtual natRefPointer<n2dRenderDevice> GetRenderDevice() = 0;
 	///	@brief	获得声音系统
-	virtual n2dSoundSys* GetSoundSys() = 0;
+	virtual natRefPointer<n2dSoundSys> GetSoundSys() = 0;
 	///	@brief	获得关联的引擎监听器
 	virtual n2dEngineEventListener* GetListener() = 0;
 
@@ -218,9 +218,6 @@ struct n2dEngine
 	virtual natEventBus& GetEventBus() = 0;
 	///	@brief	获得线程池
 	virtual natThreadPool& GetThreadPool() = 0;
-
-	virtual n2dSchemaFactory& GetSchemaFactory() = 0;
-	virtual n2dVirtualFileSystem& GetVirtualFileSystem() = 0;
 
 	///	@brief	注册窗口消息处理函数
 	///	@param[in]	func		窗口消息处理函数

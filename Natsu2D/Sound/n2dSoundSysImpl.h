@@ -5,7 +5,7 @@
 struct n2dEngine;
 
 class n2dSoundListenerImpl
-	: public natRefObjImpl<n2dSoundListener>
+	: public natRefObjImpl<n2dSoundListenerImpl, n2dSoundListener>
 {
 public:
 	nFloat GetGain() const override;
@@ -22,7 +22,7 @@ public:
 };
 
 class n2dSoundSysImpl
-	: public natRefObjImpl<n2dSoundSys>
+	: public natRefObjImpl<n2dSoundSysImpl, n2dSoundSys>
 {
 public:
 	explicit n2dSoundSysImpl(n2dEngine* pEngine);
@@ -31,10 +31,10 @@ public:
 	void EnableCapability(Capability capa, nBool value = true) override;
 	nBool IsCapabilityEnabled(Capability capa) override;
 
-	n2dSoundListener* GetListener() override;
-	nResult CreateSoundBuffer(n2dSoundBuffer** pOut) override;
-	nResult CreateWaveSoundBufferFromStream(natStream* pStream, n2dSoundBuffer** pOut) override;
-	nResult CreateSoundSource(n2dSoundSource** pOut) override;
+	natRefPointer<n2dSoundListener> GetListener() override;
+	nResult CreateSoundBuffer(natRefPointer<n2dSoundBuffer>& pOut) override;
+	nResult CreateWaveSoundBufferFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dSoundBuffer>& pOut) override;
+	nResult CreateSoundSource(natRefPointer<n2dSoundSource>& pOut) override;
 private:
 	n2dEngine* m_pEngine;
 	n2dSoundListenerImpl m_Listener;

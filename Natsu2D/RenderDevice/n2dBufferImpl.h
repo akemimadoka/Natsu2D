@@ -5,7 +5,7 @@
 class n2dShaderWrapperImpl;
 
 class n2dBufferImpl
-	: public natRefObjImpl<n2dBuffer>
+	: public natRefObjImpl<n2dBufferImpl, n2dBuffer>
 {
 	static GLenum GetBufferTargetEnum(BufferTarget bufferTarget)
 	{
@@ -192,7 +192,7 @@ class n2dBufferImpl
 		}
 	}
 public:
-	explicit n2dBufferImpl(BufferTarget DefaultTarget, n2dShaderWrapperImpl* pShaderWrapper);
+	explicit n2dBufferImpl(BufferTarget DefaultTarget, natRefPointer<n2dShaderWrapperImpl> pShaderWrapper);
 	~n2dBufferImpl();
 
 	GLhandle GetBuffer() const override;
@@ -231,12 +231,12 @@ public:
 	void GetSubData(nuInt Offset, nuInt Size, nData pData) override;
 
 	///	@note	隐含调用Bind
-	natStream* MapBuffer(BufferAccess Access) override;
+	natRefPointer<natStream> MapBuffer(BufferAccess Access) override;
 	///	@note	隐含调用Bind
 	void UnmapBuffer() override;
 
 	///	@note	隐含调用Bind
-	natStream* MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) override;
+	natRefPointer<natStream> MapBufferRange(nuInt Offset, nuInt Length, nuInt Access) override;
 	///	@note	隐含调用Bind
 	void FlushMappedBufferRange(nuInt Offset, nuInt Length) override;
 
@@ -253,5 +253,5 @@ private:
 
 	natStream* m_pMappedBuffer;
 
-	n2dShaderWrapperImpl* m_pShaderWrapper;
+	natRefPointer<n2dShaderWrapperImpl> m_pShaderWrapper;
 };

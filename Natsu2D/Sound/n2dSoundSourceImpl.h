@@ -3,17 +3,17 @@
 #include "OpenAL.h"
 
 class n2dSoundSourceImpl
-	: public natRefObjImpl<n2dSoundSource>
+	: public natRefObjImpl<n2dSoundSourceImpl, n2dSoundSource>
 {
 	static ALenum GetSourceTypeEnum(SourceType type)
 	{
 		switch (type)
 		{
-		case n2dSoundSource::SourceType::Undetermined:
+		case SourceType::Undetermined:
 			return AL_UNDETERMINED;
-		case n2dSoundSource::SourceType::Static:
+		case SourceType::Static:
 			return AL_STATIC;
-		case n2dSoundSource::SourceType::Streaming:
+		case SourceType::Streaming:
 			return AL_STREAMING;
 		default:
 			nat_Throw(natException, "Invaild SourceType"_nv);
@@ -25,11 +25,11 @@ class n2dSoundSourceImpl
 		switch (type)
 		{
 		case AL_UNDETERMINED:
-			return n2dSoundSource::SourceType::Undetermined;
+			return SourceType::Undetermined;
 		case AL_STATIC :
-			return n2dSoundSource::SourceType::Static;
+			return SourceType::Static;
 		case AL_STREAMING:
-			return n2dSoundSource::SourceType::Streaming;
+			return SourceType::Streaming;
 		default:
 			nat_Throw(natException, "Invaild SourceType"_nv);
 		}
@@ -39,13 +39,13 @@ class n2dSoundSourceImpl
 	{
 		switch (state)
 		{
-		case n2dSoundSource::SourceState::Initial:
+		case SourceState::Initial:
 			return AL_INITIAL;
-		case n2dSoundSource::SourceState::Playing:
+		case SourceState::Playing:
 			return AL_PLAYING;
-		case n2dSoundSource::SourceState::Paused:
+		case SourceState::Paused:
 			return AL_PAUSED;
-		case n2dSoundSource::SourceState::Stopped:
+		case SourceState::Stopped:
 			return AL_STOPPED;
 		default:
 			nat_Throw(natException, "Invaild SourceState"_nv);
@@ -57,13 +57,13 @@ class n2dSoundSourceImpl
 		switch (state)
 		{
 		case AL_INITIAL:
-			return n2dSoundSource::SourceState::Initial;
+			return SourceState::Initial;
 		case AL_PLAYING:
-			return n2dSoundSource::SourceState::Playing;
+			return SourceState::Playing;
 		case AL_PAUSED:
-			return n2dSoundSource::SourceState::Paused;
+			return SourceState::Paused;
 		case AL_STOPPED:
-			return n2dSoundSource::SourceState::Stopped;
+			return SourceState::Stopped;
 		default:
 			nat_Throw(natException, "Invaild SourceState"_nv);
 		}
@@ -72,9 +72,9 @@ public:
 	n2dSoundSourceImpl();
 	~n2dSoundSourceImpl();
 
-	nuInt GetHandle() const;
+	nuInt GetHandle() const override;
 
-	void BindBuffer(const n2dSoundBuffer* pBuffer);
+	void BindBuffer(natRefPointer<n2dSoundBuffer> pBuffer) override;
 
 	nFloat GetPitch() const override;
 	void SetPitch(nFloat value) override;
@@ -136,8 +136,8 @@ public:
 	void Stop() override;
 	void Rewind() override;
 
-	virtual nResult QueueBuffers(nuInt Count, const n2dSoundBuffer* pBufferArray) override;
-	virtual nResult UnqueueBuffers(nuInt Count, const n2dSoundBuffer* pBufferArray) override;
+	/*nResult QueueBuffers(nuInt Count, natRefPointer<n2dSoundBuffer> pBufferArray) override;
+	nResult UnqueueBuffers(nuInt Count, natRefPointer<n2dSoundBuffer> pBufferArray) override;*/
 private:
 	ALuint m_Handle;
 };

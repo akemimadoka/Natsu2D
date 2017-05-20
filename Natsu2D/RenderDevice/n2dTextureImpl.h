@@ -40,7 +40,7 @@ struct n2dImage final
 ///	@brief	2D纹理
 ////////////////////////////////////////////////////////////////////////////////
 class n2dTexture2DImpl final
-	: public natRefObjImpl<n2dTexture2D>
+	: public natRefObjImpl<n2dTexture2DImpl, n2dTexture2D>
 {
 public:
 	n2dTexture2DImpl();
@@ -51,7 +51,7 @@ public:
 	///	@return	是否加载成功
 	nBool LoadTexture(nString const& filename) override;
 
-	nBool LoadTexture(natStream* pStream, DWORD dwFileType) override;
+	nBool LoadTexture(natRefPointer<natStream> pStream, DWORD dwFileType) override;
 
 	///	@brief	从Image加载纹理
 	///	@param[in]	image	已加载的Image

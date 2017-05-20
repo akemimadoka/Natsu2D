@@ -7,12 +7,13 @@
 
 #include <natStopWatch.h>
 #include <natType.h>
+#include <natProperty.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 ///	@brief	FPS控制器实现
 ////////////////////////////////////////////////////////////////////////////////
 class n2dFPSControllerImpl final
-	: public natRefObjImpl<n2dFPSController>
+	: public natRefObjImpl<n2dFPSControllerImpl, n2dFPSController>
 {
 public:
 	///	@brief	FPS控制器构造函数
@@ -42,12 +43,10 @@ public:
 	nDouble GetMaxFPS() const override;
 
 	///	@brief	当前FPS（属性）
-	__declspec(property(get=GetFPS))
-	double FPS;
+	Property<nDouble> FPS{ [this] { return this->GetFPS(); } };
 
 	///	@brief	FPS限制（属性）
-	__declspec(property(get=GetFPSLimit, put=SetFPSLimit))
-	nuInt FPSLimit;
+	Property<nuInt> FPSLimit{ [this] { return this->GetFPSLimit(); }, [this](nuInt const& value) { this->SetFPSLimit(value); } };
 private:
 	nuInt m_TotalFrame;
 	double m_TotalTime;

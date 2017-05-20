@@ -11,8 +11,8 @@ n2dGraphics2DImpl::n2dGraphics2DImpl(n2dRenderDeviceImpl* pRenderDevice)
 	m_IB(nullptr),
 	m_bIsRendering(false)
 {
-	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, &m_VB), "Create vertex buffer failed."_nv);
-	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, &m_IB), "Create index buffer failed."_nv);
+	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ArrayBuffer, m_VB), "Create vertex buffer failed."_nv);
+	nat_ThrowIfFailed(m_pRenderDevice->CreateBuffer(n2dBuffer::BufferTarget::ElementArrayBuffer, m_IB), "Create index buffer failed."_nv);
 }
 
 n2dGraphics2DImpl::~n2dGraphics2DImpl()
@@ -58,7 +58,7 @@ namespace
 	const nuShort tQuadIndex[] = { 0u, 1u, 2u, 0u, 2u, 3u };
 }
 
-nResult n2dGraphics2DImpl::DrawQuad(n2dTexture2D* pTex, n2dGraphics2DVertex const& v1, n2dGraphics2DVertex const& v2, n2dGraphics2DVertex const& v3, n2dGraphics2DVertex const& v4)
+nResult n2dGraphics2DImpl::DrawQuad(natRefPointer<n2dTexture2D> pTex, n2dGraphics2DVertex const& v1, n2dGraphics2DVertex const& v2, n2dGraphics2DVertex const& v3, n2dGraphics2DVertex const& v4)
 {
 	if (!m_bIsRendering)
 		return NatErr_IllegalState;
@@ -70,7 +70,7 @@ nResult n2dGraphics2DImpl::DrawQuad(n2dTexture2D* pTex, n2dGraphics2DVertex cons
 	return NatErr_OK;
 }
 
-nResult n2dGraphics2DImpl::DrawQuad(n2dTexture2D* pTex, const n2dGraphics2DVertex* varr)
+nResult n2dGraphics2DImpl::DrawQuad(natRefPointer<n2dTexture2D> pTex, const n2dGraphics2DVertex* varr)
 {
 	if (!m_bIsRendering)
 		return NatErr_IllegalState;
@@ -80,7 +80,7 @@ nResult n2dGraphics2DImpl::DrawQuad(n2dTexture2D* pTex, const n2dGraphics2DVerte
 	return NatErr_OK;
 }
 
-nResult n2dGraphics2DImpl::DrawRaw(n2dTexture2D* pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr)
+nResult n2dGraphics2DImpl::DrawRaw(natRefPointer<n2dTexture2D> pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr)
 {
 	if (!m_bIsRendering)
 		return NatErr_IllegalState;
@@ -90,7 +90,7 @@ nResult n2dGraphics2DImpl::DrawRaw(n2dTexture2D* pTex, nuInt cVertex, nuInt cInd
 	return NatErr_OK;
 }
 
-void n2dGraphics2DImpl::pushCommand(n2dTexture2D* pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr)
+void n2dGraphics2DImpl::pushCommand(natRefPointer<n2dTexture2D> pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr)
 {
 	std::vector<natVec3<>> tVert(cVertex);
 	std::vector<natVec2<>> tUV(cVertex);
@@ -169,7 +169,7 @@ n2dGraphics3DImpl::n2dGraphics3DImpl(n2dRenderDeviceImpl* pRenderDevice)
 	m_pRenderDevice(pRenderDevice),
 	m_MaterialBuffer(nullptr), m_bIsRendering(false)
 {
-	m_MaterialBuffer = new n2dBufferImpl(n2dBuffer::BufferTarget::UniformBuffer, static_cast<n2dShaderWrapperImpl*>(m_pRenderDevice->GetShaderWrapper()));
+	m_MaterialBuffer = make_ref<n2dBufferImpl>(n2dBuffer::BufferTarget::UniformBuffer, static_cast<natRefPointer<n2dShaderWrapperImpl>>(m_pRenderDevice->GetShaderWrapper()));
 	m_MaterialBuffer->BindBase(2u);
 }
 
@@ -214,7 +214,7 @@ nResult n2dGraphics3DImpl::End()
 	return NatErr_OK;
 }
 
-nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
+nResult n2dGraphics3DImpl::RenderModel(natRefPointer<n2dModelData> pModelData)
 {
 	if (!pModelData)
 	{
@@ -223,7 +223,7 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 
 	if (pModelData->IsStatic())
 	{
-		auto pModel = dynamic_cast<n2dStaticModelDataImpl*>(pModelData);
+		natRefPointer<n2dStaticModelDataImpl> pModel = pModelData;
 
 		if (!pModel)
 		{
@@ -233,17 +233,14 @@ nResult n2dGraphics3DImpl::RenderModel(n2dModelData* pModelData)
 		m_StaticMaterials.reserve(m_StaticMaterials.size() + pModel->m_Meshes.size());
 		for (auto&& i : pModel->m_Meshes)
 		{
-			auto ptMesh = dynamic_cast<n2dStaticMeshDataImpl*>(static_cast<n2dMeshData*>(i));
-			assert(ptMesh && "Not a static mesh.");
-
-			m_StaticMaterials.emplace_back(&ptMesh->m_Material);
+			m_StaticMaterials.emplace_back(&i->m_Material);
 			std::vector<nuInt> tMatID = { static_cast<nuInt>(m_StaticMaterials.size() - 1) };
-			m_Commands.emplace_back(RenderCommand{ true, tMatID, ptMesh->GetVertexBuffer(), ptMesh->GetIndexBuffer(), i->GetVertexCount(), i->GetIndexCount() });
+			m_Commands.emplace_back(RenderCommand{ true, tMatID, i->GetVertexBuffer(), i->GetIndexBuffer(), i->GetVertexCount(), i->GetIndexCount() });
 		}
 	}
 	else
 	{
-		auto pModel = dynamic_cast<n2dDynamicModelDataImpl*>(pModelData);
+		natRefPointer<n2dDynamicModelDataImpl> pModel = pModelData;
 
 		if (!pModel)
 		{
@@ -277,7 +274,6 @@ void n2dGraphics3DImpl::flush()
 	glActiveTexture(GL_TEXTURE0);
 
 	n2dMeshData::Material* material;
-	n2dMeshData::DynamicMaterial* pdynamicmaterial;
 
 	for (auto& c : m_Commands)
 	{
@@ -300,7 +296,7 @@ void n2dGraphics3DImpl::flush()
 			}
 			else
 			{
-				pdynamicmaterial = m_DynamicMaterials[iMater];
+				n2dMeshData::DynamicMaterial* pdynamicmaterial = m_DynamicMaterials[iMater];
 				material = &pdynamicmaterial->BaseMaterial;
 				Count = pdynamicmaterial->Length;
 				tOffset = reinterpret_cast<ncData>(pdynamicmaterial->Start * sizeof(nuShort));

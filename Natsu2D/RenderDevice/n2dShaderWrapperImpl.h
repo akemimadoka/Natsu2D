@@ -15,7 +15,7 @@ namespace NatsuLib
 }
 
 class n2dShaderImpl
-	: public natRefObjImpl<n2dShader>
+	: public natRefObjImpl<n2dShaderImpl, n2dShader>
 {
 	static GLenum GetShaderType(ShaderType shaderType)
 	{
@@ -43,7 +43,7 @@ public:
 	nBool Compiled() const override;
 	nStrView GetInfoLog() const override;
 
-	void CompileFromStream(natStream* pStream, nBool bIsBinary = false);
+	void CompileFromStream(natRefPointer<natStream> pStream, nBool bIsBinary = false);
 private:
 	ShaderType m_ShaderType;
 	GLhandle m_Shader;
@@ -52,7 +52,7 @@ private:
 };
 
 class n2dShaderProgramImpl
-	: public natRefObjImpl<n2dShaderProgram>
+	: public natRefObjImpl<n2dShaderProgramImpl, n2dShaderProgram>
 {
 	GLint GetParameter(GLenum pname) const
 	{
@@ -532,13 +532,13 @@ class n2dShaderProgramImpl
 	}
 public:
 	class AttributeReferenceImpl
-		: public natRefObjImpl<AttributeReference>
+		: public natRefObjImpl<AttributeReferenceImpl, AttributeReference>
 	{
 		friend class n2dShaderProgramImpl;
 	public:
 		AttributeReferenceImpl(n2dShaderProgramImpl* pProgram, GLhandle Location);
 
-		n2dShaderProgram* GetProgram() const override;
+		natRefPointer<n2dShaderProgram> GetProgram() const override;
 
 		nuInt GetSize() const override;
 		nuInt GetInternalSize() const override;
@@ -562,12 +562,12 @@ public:
 	};
 
 	class UniformReferenceImpl
-		: public natRefObjImpl<UniformReference>
+		: public natRefObjImpl<UniformReferenceImpl, UniformReference>
 	{
 		friend class n2dShaderProgramImpl;
 	public:
 		UniformReferenceImpl(n2dShaderProgramImpl* pProgram, GLhandle Location);
-		n2dShaderProgram* GetProgram() const override;
+		natRefPointer<n2dShaderProgram> GetProgram() const override;
 
 		VarType GetType() const override;
 		nuInt GetSize() const override;
@@ -589,18 +589,18 @@ public:
 	};
 
 	class UniformBlockReferenceImpl
-		: public natRefObjImpl<UniformBlockReference>
+		: public natRefObjImpl<UniformBlockReferenceImpl, UniformBlockReference>
 	{
 		friend class n2dShaderProgramImpl;
 	public:
 		UniformBlockReferenceImpl(n2dShaderProgramImpl* pProgram, GLhandle Location);
 
-		n2dShaderProgram* GetProgram() const override;
+		natRefPointer<n2dShaderProgram> GetProgram() const override;
 
 		nuInt GetSize() const override;
 		nuInt ActiveUniformCount() const override;
 
-		void Bind(n2dBuffer* pBuffer) override;
+		void Bind(natRefPointer<n2dBuffer> pBuffer) override;
 		nuInt GetBindingPoint() const override;
 
 	private:
@@ -612,13 +612,13 @@ public:
 	};
 
 	explicit n2dShaderProgramImpl(GLhandle ProgramID = 0u);
-	n2dShaderProgramImpl(n2dShaderImpl* pVertexShader, n2dShaderImpl* pFragmentShader, n2dShaderImpl* pGeometryShader);
+	n2dShaderProgramImpl(natRefPointer<n2dShaderImpl> pVertexShader, natRefPointer<n2dShaderImpl> pFragmentShader, natRefPointer<n2dShaderImpl> pGeometryShader);
 	~n2dShaderProgramImpl();
 
 	HandleType GetHandle() const override;
 
-	void AttachShader(n2dShader* pShader) override;
-	void DetachShader(n2dShader* pShader) override;
+	void AttachShader(natRefPointer<n2dShader> pShader) override;
+	void DetachShader(natRefPointer<n2dShader> pShader) override;
 
 	nuInt AttachedShaderCount() const override;
 
@@ -632,22 +632,22 @@ public:
 	void Use() const override;
 	nBool IsUsing() const override;
 
-	nResult OutputBinary(natStream* pStream) const override;
+	nResult OutputBinary(natRefPointer<natStream> pStream) const override;
 
 	nuInt ActiveAttributeCount() const override;
 	nuInt ActiveUniformCount() const override;
 	nuInt ActiveUniformBlockCount() const override;
 
-	AttributeReference* GetAttributeReference(nuInt Location) override;
-	AttributeReference* GetAttributeReference(nStrView Name) override;
+	natRefPointer<AttributeReference> GetAttributeReference(nuInt Location) override;
+	natRefPointer<AttributeReference> GetAttributeReference(nStrView Name) override;
 
-	UniformReference* GetUniformReference(nuInt Location) override;
-	UniformReference* GetUniformReference(nStrView Name) override;
+	natRefPointer<UniformReference> GetUniformReference(nuInt Location) override;
+	natRefPointer<UniformReference> GetUniformReference(nStrView Name) override;
 
-	UniformBlockReference* GetUniformBlockReference(nuInt Location) override;
-	UniformBlockReference* GetUniformBlockReference(nStrView Name) override;
+	natRefPointer<UniformBlockReference> GetUniformBlockReference(nuInt Location) override;
+	natRefPointer<UniformBlockReference> GetUniformBlockReference(nStrView Name) override;
 
-	static n2dShaderProgramImpl* CreateFromStream(natStream* pStream);
+	static natRefPointer<n2dShaderProgramImpl> CreateFromStream(natRefPointer<natStream> pStream);
 private:
 	GLhandle m_Program;
 
@@ -659,7 +659,7 @@ private:
 };
 
 class n2dProgramPipelineImpl
-	: public natRefObjImpl<n2dProgramPipeline>
+	: public natRefObjImpl<n2dProgramPipelineImpl, n2dProgramPipeline>
 {
 public:
 	explicit n2dProgramPipelineImpl(GLhandle PipelineID = 0u);
@@ -669,7 +669,7 @@ public:
 	void Bind() const override;
 	nBool IsBinding() const override;
 
-	void UseProgramStages(nuInt stages, n2dShaderProgram* pProgram) override;
+	void UseProgramStages(nuInt stages, natRefPointer<n2dShaderProgram> pProgram) override;
 private:
 	GLhandle m_Pipeline;
 };
@@ -678,26 +678,26 @@ private:
 ///	@brief	Shader°ü×°Àà
 ////////////////////////////////////////////////////////////////////////////////
 class n2dShaderWrapperImpl final
-	: public natRefObjImpl<n2dShaderWrapper>
+	: public natRefObjImpl<n2dShaderWrapperImpl, n2dShaderWrapper>
 {
 	friend class n2dEngineImpl;
 public:
 	explicit n2dShaderWrapperImpl(n2dRenderDevice* pRenderDevice);
 	~n2dShaderWrapperImpl();
 
-	nResult CreateShaderFromStream(natStream* pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, n2dShader** pOut) override;
-	nResult CreateProgram(n2dShaderProgram** pOut) override;
-	nResult CreateProgramFromStream(natStream* pStream, n2dShaderProgram** pOut) override;
-	nResult CreateProgramPipeline(n2dProgramPipeline** pOut) override;
+	nResult CreateShaderFromStream(natRefPointer<natStream> pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, natRefPointer<n2dShader>& pOut) override;
+	nResult CreateProgram(natRefPointer<n2dShaderProgram>& pOut) override;
+	nResult CreateProgramFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dShaderProgram>& pOut) override;
+	nResult CreateProgramPipeline(natRefPointer<n2dProgramPipeline>& pOut) override;
 
-	n2dShaderProgram* GetCurrentProgram() override;
-	n2dProgramPipeline* GetCurrentProgramPipeline() override;
+	natRefPointer<n2dShaderProgram> GetCurrentProgram() override;
+	natRefPointer<n2dProgramPipeline> GetCurrentProgramPipeline() override;
 
-	n2dShaderProgramImpl* SetDefaultProgram(n2dShaderProgramImpl* pProgram);
-	n2dShaderProgram* GetDefaultProgram() const override;
+	natRefPointer<n2dShaderProgramImpl> SetDefaultProgram(natRefPointer<n2dShaderProgramImpl> pProgram);
+	natRefPointer<n2dShaderProgram> GetDefaultProgram() const override;
 
-	n2dShaderProgram* SetFontProgram(n2dShaderProgram* pProgram) override;
-	n2dShaderProgram* GetFontProgram() const override;
+	natRefPointer<n2dShaderProgram> SetFontProgram(natRefPointer<n2dShaderProgram> pProgram) override;
+	natRefPointer<n2dShaderProgram> GetFontProgram() const override;
 
 	GLuint GetAvailableBindPoint();
 	void UseBindingPoint(GLuint BindingPoint);

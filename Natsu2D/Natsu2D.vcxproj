@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -171,8 +171,6 @@
   <ItemGroup>
     <ClCompile Include="Engine\n2dEngineImpl.cpp" />
     <ClCompile Include="Engine\n2dFPSControllerImpl.cpp" />
-    <ClCompile Include="Engine\n2dSchemaImpl.cpp" />
-    <ClCompile Include="Engine\n2dVirtualFileSystemImpl.cpp" />
     <ClCompile Include="Engine\n2dWindowImpl.cpp" />
     <ClCompile Include="extern\nv_dds\nv_dds.cpp" />
     <ClCompile Include="RenderDevice\n2dBufferImpl.cpp" />
@@ -196,8 +194,6 @@
   <ItemGroup>
     <ClInclude Include="Engine\n2dEngineImpl.h" />
     <ClInclude Include="Engine\n2dFPSControllerImpl.h" />
-    <ClInclude Include="Engine\n2dSchemaImpl.h" />
-    <ClInclude Include="Engine\n2dVirtualFileSystemImpl.h" />
     <ClInclude Include="Engine\n2dWindowImpl.h" />
     <ClInclude Include="n2dCommon.h" />
     <ClInclude Include="extern\nv_dds\nv_dds.h" />

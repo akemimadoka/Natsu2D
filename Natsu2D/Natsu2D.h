@@ -15,4 +15,4 @@ extern "C" nResult N2DFUNC CreateN2DEngine(
 	HINSTANCE hInstance,
 	n2dEngine::ThreadMode threadMode,
 	n2dEngineEventListener* pListener,
-	n2dEngine** pOut);
+	natRefPointer<n2dEngine>& pOut);

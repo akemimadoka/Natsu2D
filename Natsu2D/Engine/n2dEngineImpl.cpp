@@ -28,20 +28,14 @@ extern "C" nResult N2DFUNC CreateN2DEngine(
 	HINSTANCE hInstance,
 	n2dEngineImpl::ThreadMode threadMode,
 	n2dEngineEventListener* pListener,
-	n2dEngine** pOut)
+	natRefPointer<n2dEngine>& pOut)
 {
-	if (pOut == nullptr)
-	{
-		return -1;
-	}
-	*pOut = nullptr;
-
 	if (Reserved != Reserved)
 	{
 		// ignored
 	}
 
-	*pOut = new n2dEngineImpl(classname, x, y, WindowWidth, WindowHeight, ScreenWidth, ScreenHeight, BitsPerPixel, fullscreen, hInstance, threadMode, pListener);
+	pOut = make_ref<n2dEngineImpl>(classname, x, y, WindowWidth, WindowHeight, ScreenWidth, ScreenHeight, BitsPerPixel, fullscreen, hInstance, threadMode, pListener);
 
 	return 0;
 }
@@ -96,7 +90,7 @@ void n2dEngineImpl::Show(nBool show)
 	m_Window.Show(show);
 }
 
-n2dRenderDevice* n2dEngineImpl::GetRenderDevice()
+natRefPointer<n2dRenderDevice> n2dEngineImpl::GetRenderDevice()
 {
 	if (!m_pRenderer)
 	{
@@ -106,7 +100,7 @@ n2dRenderDevice* n2dEngineImpl::GetRenderDevice()
 	return m_pRenderer;
 }
 
-n2dSoundSys * n2dEngineImpl::GetSoundSys()
+natRefPointer<n2dSoundSys> n2dEngineImpl::GetSoundSys()
 {
 	if (!m_pSoundSys)
 	{
@@ -139,16 +133,6 @@ natEventBus& n2dEngineImpl::GetEventBus()
 natThreadPool& n2dEngineImpl::GetThreadPool()
 {
 	return m_ThreadPool;
-}
-
-n2dSchemaFactory& n2dEngineImpl::GetSchemaFactory()
-{
-	return m_SchemaFactory;
-}
-
-n2dVirtualFileSystem& n2dEngineImpl::GetVirtualFileSystem()
-{
-	return m_VirtualFileSystem;
 }
 
 void n2dEngineImpl::AddMessageHandler(natEventBus::EventListenerDelegate func, Priority::Priority priority)
@@ -390,19 +374,19 @@ void n2dEngineImpl::CommonInit()
 
 	if (!tVert.empty() && !tFrag.empty())
 	{
-		n2dShaderWrapperImpl* pShaderWrapper = dynamic_cast<n2dShaderWrapperImpl*>(m_pRenderer->GetShaderWrapper());
+		natRefPointer<n2dShaderWrapperImpl> pShaderWrapper = m_pRenderer->GetShaderWrapper();
 		natRefPointer<n2dShaderProgramImpl> pProgram = make_ref<n2dShaderProgramImpl>();
 		
 		natRefPointer<n2dShader> pShader[2];
-		auto pStream = natMemoryStream::CreateFromExternMemory(tVert.data(), tVert.size(), true, false);
-		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
+		auto pStream = make_ref<natExternMemoryStream>(tVert.data(), tVert.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, pShader[0]);
 		if (!pShader[0]->Compiled())
 		{
 			nat_Throw(natException, "Compile DefaultVertexShader Failed, Log: %s"_nv, pShader[0]->GetInfoLog());
 		}
 
-		pStream = natMemoryStream::CreateFromExternMemory(tFrag.data(), tFrag.size(), true, false);
-		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
+		pStream = make_ref<natExternMemoryStream>(tFrag.data(), tFrag.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, pShader[1]);
 		if (!pShader[1]->Compiled())
 		{
 			nat_Throw(natException, "Compile DefaultFragmentShader Failed, Log: %s"_nv, pShader[1]->GetInfoLog());
@@ -427,15 +411,15 @@ void n2dEngineImpl::CommonInit()
 		pShader[0] = nullptr;
 		pShader[1] = nullptr;
 
-		pStream = natMemoryStream::CreateFromExternMemory(tFontVert.data(), tFontVert.size(), true, false);
-		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, &pShader[0]);
+		pStream = make_ref<natExternMemoryStream>(tFontVert.data(), tFontVert.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Vertex, false, pShader[0]);
 		if (!pShader[0]->Compiled())
 		{
 			nat_Throw(natException, "Compile DefaultFontVertexShader Failed, Log: %s"_nv, pShader[0]->GetInfoLog());
 		}
 
-		pStream = natMemoryStream::CreateFromExternMemory(tFontFrag.data(), tFontFrag.size(), true, false);
-		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, &pShader[1]);
+		pStream = make_ref<natExternMemoryStream>(tFontFrag.data(), tFontFrag.size(), true, false);
+		pShaderWrapper->CreateShaderFromStream(pStream, n2dShader::ShaderType::Fragment, false, pShader[1]);
 		if (!pShader[1]->Compiled())
 		{
 			nat_Throw(natException, "Compile DefaultFontFragmentShader Failed, Log: %s"_nv, pShader[1]->GetInfoLog());
@@ -514,7 +498,7 @@ void n2dEngineImpl::SingleThreadMainLoop(nStrView title, nuInt FPS)
 					else
 					{
 						m_pListener->Update(tTime, &tfpsc);
-						m_pListener->Render(tTime, &tfpsc, m_pRenderer);
+						m_pListener->Render(tTime, &tfpsc, m_pRenderer.Get());
 						//m_Window.SwapBuffers();
 					}
 				}
@@ -732,7 +716,7 @@ natThread::ResultType n2dEngineImpl::RenderThread::ThreadJob()
 				m_bAlreadyMadeCurrent = true;
 			}
 
-			m_pEngine->m_pListener->Render(tFPSC.Update(tTimer), &tFPSC, m_pEngine->m_pRenderer);
+			m_pEngine->m_pListener->Render(tFPSC.Update(tTimer), &tFPSC, m_pEngine->m_pRenderer.Get());
 			//m_pEngine->m_Window.SwapBuffers();
 		}
 

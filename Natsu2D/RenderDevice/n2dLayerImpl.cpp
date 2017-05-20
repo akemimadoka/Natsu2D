@@ -9,8 +9,8 @@ n2dLayerImpl::n2dLayerImpl(n2dLayerHandler* Handler, nInt Order, nStrView Name, 
 
 n2dLayerImpl::~n2dLayerImpl()
 {
-	natRefObjImpl<n2dLayer>::AddRef();
-	natRefObjImpl<n2dLayer>::AddRef();
+	RefCountBase<n2dLayer>::AddRef();
+	RefCountBase<n2dLayer>::AddRef();
 	if (m_pParent)
 	{
 		n2dLayerImpl::SetParent(nullptr);
@@ -18,11 +18,11 @@ n2dLayerImpl::~n2dLayerImpl()
 	n2dLayerImpl::RemoveAllChild();
 }
 
-void n2dLayerImpl::AddChild(natNode* pChild)
+void n2dLayerImpl::AddChild(natRefPointer<natNode> pChild)
 {
 	assert(pChild && "pChild should be a valid pointer.");
 
-	n2dRenderNode* pChildn2dRenderNode = dynamic_cast<n2dRenderNode*>(pChild);
+	natRefPointer<n2dRenderNode> pChildn2dRenderNode = pChild;
 	if (!pChildn2dRenderNode)
 	{
 		nat_Throw(natException, "pChild is not a Layer."_nv);
@@ -56,11 +56,11 @@ void n2dLayerImpl::AddChild(natNode* pChild)
 	nat_Throw(natException, "Node %p already existed."_nv, pChildn2dRenderNode);
 }
 
-nBool n2dLayerImpl::ChildExists(natNode* pChild) const noexcept
+nBool n2dLayerImpl::ChildExists(natRefPointer<natNode> pChild) const noexcept
 {
 	assert(pChild && "pChild should be a valid pointer.");
 
-	n2dRenderNode* pRenderNode = dynamic_cast<n2dRenderNode*>(pChild);
+	natRefPointer<n2dRenderNode> pRenderNode = pChild;
 
 	assert(pRenderNode && "pChild should be a RenderNode.");
 
@@ -95,7 +95,7 @@ nBool n2dLayerImpl::ChildExists(nStrView Name) const noexcept
 	return false;
 }
 
-natNode* n2dLayerImpl::GetChildByName(nStrView Name) const noexcept
+natRefPointer<natNode> n2dLayerImpl::GetChildByName(nStrView Name) const noexcept
 {
 	assert(!Name.empty() && "Name should be a valid pointer.");
 
@@ -112,21 +112,12 @@ natNode* n2dLayerImpl::GetChildByName(nStrView Name) const noexcept
 	return nullptr;
 }
 
-nBool n2dLayerImpl::EnumChildNode(nBool Recursive, std::function<nBool(natNode*)> EnumCallback)
+nBool n2dLayerImpl::EnumChildNode(nBool Recursive, std::function<nBool(natRefPointer<natNode>)> EnumCallback)
 {
 	assert(EnumCallback && "EnumCallback should be a valid callable object.");
 
-	bool Enumerated = false;
 	for (auto& iter : m_ChildRenderNodes)
 	{
-		if (!Enumerated && iter.first > 0)
-		{
-			if (EnumCallback(this))
-			{
-				return true;
-			}
-		}
-
 		for (auto& iter2 : iter.second.m_NamedRenderNodes)
 		{
 			if (EnumCallback(iter2.second))
@@ -160,11 +151,6 @@ nBool n2dLayerImpl::EnumChildNode(nBool Recursive, std::function<nBool(natNode*)
 		}
 	}
 
-	if (!Enumerated)
-	{
-		return EnumCallback(this);
-	}
-
 	return false;
 }
 
@@ -190,20 +176,20 @@ void n2dLayerImpl::SetParent(natNode* pParent)
 	m_pParent = pParent;
 	if (pOldParent)
 	{
-		pOldParent->RemoveChild(this);
+		pOldParent->RemoveChild(ForkRef());
 	}
 }
 
-natNode* n2dLayerImpl::GetParent() const noexcept
+natRefPointer<natNode> n2dLayerImpl::GetParent() const noexcept
 {
-	return m_pParent;
+	return natRefPointer<natNode>{ m_pParent };
 }
 
-void n2dLayerImpl::RemoveChild(natNode* pNode)
+void n2dLayerImpl::RemoveChild(natRefPointer<natNode> pNode)
 {
 	assert(pNode && "pNode should be a valid pointer.");
 
-	n2dRenderNode* pRenderNode = dynamic_cast<n2dRenderNode*>(pNode);
+	natRefPointer<n2dRenderNode> pRenderNode = pNode;
 
 	assert(pRenderNode && "pChild should be a RenderNode.");
 
@@ -255,7 +241,7 @@ void n2dLayerImpl::SetName(nStrView Name)
 		{
 			AddRef();
 			m_pParent->RemoveChildByName(OldName);
-			m_pParent->AddChild(this);
+			m_pParent->AddChild(ForkRef());
 			Release();
 		}
 	}
@@ -348,8 +334,9 @@ void n2dLayerImpl::SetOrder(nInt Order)
 		if (m_pParent && dynamic_cast<n2dRenderNode*>(m_pParent))
 		{
 			AddRef();
-			m_pParent->RemoveChild(this);
-			m_pParent->AddChild(this);
+			const auto pThis = ForkRef();
+			m_pParent->RemoveChild(pThis);
+			m_pParent->AddChild(pThis);
 			Release();
 		}
 	}
@@ -373,7 +360,7 @@ nBool n2dLayerImpl::OnUpdate(nDouble ElapsedTime)
 namespace
 {
 	struct DummyLayerHandler
-		: natRefObjImpl<n2dLayerHandler>
+		: natRefObjImpl<DummyLayerHandler, n2dLayerHandler>
 	{
 		nBool OnRender(nDouble ElapsedTime, n2dRenderDevice* pRenderer) override
 		{
@@ -392,26 +379,9 @@ n2dLayerMgrImpl::n2dLayerMgrImpl()
 {
 }
 
-nResult n2dLayerMgrImpl::CreateLayer(n2dLayerHandler* Handler, n2dLayer** pOut, nInt Order, nStrView Name, natNode* pParent)
+nResult n2dLayerMgrImpl::CreateLayer(n2dLayerHandler* Handler, natRefPointer<n2dLayer>& pOut, nInt Order, nStrView Name, natNode* pParent)
 {
-	if (pOut == nullptr)
-	{
-		return NatErr_InvalidArg;
-	}
-
-	try
-	{
-		*pOut = new n2dLayerImpl(Handler, Order, Name, pParent ? pParent : &m_RootLayer);
-	}
-	catch (std::bad_alloc&)
-	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
-	}
-
+	pOut = make_ref<n2dLayerImpl>(Handler, Order, Name, pParent ? pParent : &m_RootLayer);
 	return NatErr_OK;
 }
 

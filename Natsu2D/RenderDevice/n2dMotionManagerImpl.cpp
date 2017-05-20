@@ -92,7 +92,7 @@ n2dMotionManagerImpl::~n2dMotionManagerImpl()
 {
 }
 
-nResult n2dMotionManagerImpl::LoadMotionFromStream(nStrView lpName, natStream * pStream)
+nResult n2dMotionManagerImpl::LoadMotionFromStream(nStrView lpName, natRefPointer<natStream> pStream)
 {
 	// Parse file start
 	if (!pStream)
@@ -268,14 +268,14 @@ nResult n2dMotionManagerImpl::LoadMotionFromFile(nStrView lpName, nStrView lpPat
 	return LoadMotionFromStream(lpName, pStream);
 }
 
-nResult n2dMotionManagerImpl::ApplyToModel(nStrView lpName, n2dModelData * pModel)
+nResult n2dMotionManagerImpl::ApplyToModel(nStrView lpName, natRefPointer<n2dModelData> pModel)
 {
 	if (lpName.empty() || !pModel || pModel->IsStatic())
 	{
 		return NatErr_InvalidArg;
 	}
 
-	n2dDynamicModelDataImpl* pDynamicModel = dynamic_cast<n2dDynamicModelDataImpl*>(pModel);
+	natRefPointer<n2dDynamicModelDataImpl> pDynamicModel = pModel;
 	if (!pDynamicModel)
 	{
 		return NatErr_InvalidArg;
@@ -309,14 +309,14 @@ nResult n2dMotionManagerImpl::ApplyToModel(nStrView lpName, n2dModelData * pMode
 	return NatErr_OK;
 }
 
-void n2dMotionManagerImpl::RestoreMotion(n2dModelData * pModel)
+void n2dMotionManagerImpl::RestoreMotion(natRefPointer<n2dModelData> pModel)
 {
 	if (!pModel || pModel->IsStatic())
 	{
 		return;
 	}
 
-	n2dDynamicModelDataImpl* pDynamicModel = dynamic_cast<n2dDynamicModelDataImpl*>(pModel);
+	natRefPointer<n2dDynamicModelDataImpl> pDynamicModel = pModel;
 	if (!pDynamicModel)
 	{
 		return;
@@ -325,14 +325,14 @@ void n2dMotionManagerImpl::RestoreMotion(n2dModelData * pModel)
 	doRestoreMotion(&pDynamicModel->m_Mesh);
 }
 
-void n2dMotionManagerImpl::RestoreMorph(n2dModelData * pModel)
+void n2dMotionManagerImpl::RestoreMorph(natRefPointer<n2dModelData> pModel)
 {
 	if (!pModel || pModel->IsStatic())
 	{
 		return;
 	}
 
-	n2dDynamicModelDataImpl* pDynamicModel = dynamic_cast<n2dDynamicModelDataImpl*>(pModel);
+	natRefPointer<n2dDynamicModelDataImpl> pDynamicModel = pModel;
 	if (!pDynamicModel)
 	{
 		return;

@@ -17,7 +17,7 @@ class n2dLightControllerImpl;
 ///	@brief	渲染设备实现
 ////////////////////////////////////////////////////////////////////////////////
 class n2dRenderDeviceImpl final
-	: public natRefObjImpl<n2dRenderDevice>
+	: public natRefObjImpl<n2dRenderDeviceImpl, n2dRenderDevice>
 {
 	static GLenum GetCapabilityEnum(Capability cp)
 	{
@@ -171,7 +171,7 @@ public:
 	nBool IsCapabilityIEnabled(CapabilityI capability, nuInt Index) const override;
 
 	void SetBlendMode(BlendFactor Source, BlendFactor Destination) override;
-	void SetBlendModeI(n2dBuffer* Buf, BlendFactor Source, BlendFactor Destination) override;
+	void SetBlendModeI(natRefPointer<n2dBuffer> Buf, BlendFactor Source, BlendFactor Destination) override;
 
 	void SetBlendColor(natVec4<> const& Color) override;
 	void SetBlendColor(nFloat r, nFloat g, nFloat b, nFloat a) override;
@@ -182,7 +182,7 @@ public:
 	void SwapBuffers() override;
 
 	///	@brief	获得着色器包装器
-	n2dShaderWrapper* GetShaderWrapper() override;
+	natRefPointer<n2dShaderWrapper> GetShaderWrapper() override;
 
 	///	@brief	提交模型矩阵
 	///	@param[in]	Mat	提交的矩阵
@@ -235,23 +235,23 @@ public:
 	natMat4<> const& GetMVPMat() override;
 
 	///	@brief	获得关联的引擎
-	n2dEngine* GetEngine() override;
+	natRefPointer<n2dEngine> GetEngine() override;
 
 	nuInt GetMaxLight() const override;
 	void SetMaxLights(nuInt value) override;
-	n2dLightController* GetLightController(nuInt Index) override;
+	natRefPointer<n2dLightController> GetLightController(nuInt Index) override;
 
-	nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, n2dBuffer** pOut) override;
-	nResult CreateLayerMgr(n2dLayerMgr** pOut) override;
-	nResult CreateGraphics2D(n2dGraphics2D** pOut) override;
-	nResult CreateGraphics3D(n2dGraphics3D** pOut) override;
-	nResult CreateTexture(n2dTexture2D** pOut) override;
-	nResult CreateTextureFromStream(natStream* pStream, DWORD dwFileType, n2dTexture2D** pOut) override;
-	nResult CreateModelLoader(n2dModelLoader** pOut) override;
+	nResult CreateBuffer(n2dBuffer::BufferTarget DefaultTarget, natRefPointer<n2dBuffer>& pOut) override;
+	nResult CreateLayerMgr(natRefPointer<n2dLayerMgr>& pOut) override;
+	nResult CreateGraphics2D(natRefPointer<n2dGraphics2D>& pOut) override;
+	nResult CreateGraphics3D(natRefPointer<n2dGraphics3D>& pOut) override;
+	nResult CreateTexture(natRefPointer<n2dTexture2D>& pOut) override;
+	nResult CreateTextureFromStream(natRefPointer<natStream> pStream, DWORD dwFileType, natRefPointer<n2dTexture2D>& pOut) override;
+	nResult CreateModelLoader(natRefPointer<n2dModelLoader>& pOut) override;
 	///	@deprecated		仅实验用
-	nResult CreateObjLoader(n2dModelLoader** pOut) override;
-	nResult CreateMotionManager(n2dMotionManager** pOut) override;
-	nResult CreateFontManager(n2dFont** pOut) override;
+	nResult CreateObjLoader(natRefPointer<n2dModelLoader>& pOut) override;
+	nResult CreateMotionManager(natRefPointer<n2dMotionManager>& pOut) override;
+	nResult CreateFontManager(natRefPointer<n2dFont>& pOut) override;
 
 	void updateMVP();
 private:

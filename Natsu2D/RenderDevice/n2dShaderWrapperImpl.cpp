@@ -26,127 +26,61 @@ n2dShaderWrapperImpl::~n2dShaderWrapperImpl()
 {
 }
 
-nResult n2dShaderWrapperImpl::CreateShaderFromStream(natStream* pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, n2dShader** pOut)
+nResult n2dShaderWrapperImpl::CreateShaderFromStream(natRefPointer<natStream> pStream, n2dShader::ShaderType shaderType, nBool bIsBinary, natRefPointer<n2dShader>& pOut)
 {
-	if (pOut == nullptr)
-	{
-		return NatErr_InvalidArg;
-	}
+	auto pTmp = make_ref<n2dShaderImpl>(shaderType);
+	pTmp->CompileFromStream(pStream, bIsBinary);
+	pOut = std::move(pTmp);
 
-	try
+	return NatErr_OK;
+}
+
+nResult n2dShaderWrapperImpl::CreateProgram(natRefPointer<n2dShaderProgram>& pOut)
+{
+	auto pProgram = make_ref<n2dShaderProgramImpl>();
+	auto itea = m_Programs.find(pProgram->GetHandle());
+	if (itea != m_Programs.end())
 	{
-		auto pTmp = make_ref<n2dShaderImpl>(shaderType);
-		pTmp->CompileFromStream(pStream, bIsBinary);
-		*pOut = pTmp;
-		pTmp->AddRef();
+		pOut = itea->second;
 	}
-	catch (std::bad_alloc&)
+	else
 	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
+		m_Programs.insert(std::make_pair(pProgram->GetHandle(), pProgram));
+		pOut = pProgram;
 	}
 
 	return NatErr_OK;
 }
 
-nResult n2dShaderWrapperImpl::CreateProgram(n2dShaderProgram** pOut)
+nResult n2dShaderWrapperImpl::CreateProgramFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dShaderProgram>& pOut)
 {
-	if (pOut == nullptr)
+	natRefPointer<n2dShaderProgramImpl> pProgram{ n2dShaderProgramImpl::CreateFromStream(pStream) };
+	auto itea = m_Programs.find(pProgram->GetHandle());
+	if (itea != m_Programs.end())
 	{
-		return NatErr_InvalidArg;
+		pOut = itea->second;
 	}
-
-	try
+	else
 	{
-		auto pProgram = make_ref<n2dShaderProgramImpl>();
-		auto itea = m_Programs.find(pProgram->GetHandle());
-		if (itea != m_Programs.end())
-		{
-			*pOut = itea->second;
-		}
-		else
-		{
-			m_Programs.insert(std::make_pair(pProgram->GetHandle(), pProgram));
-			*pOut = pProgram;
-			pProgram->AddRef();
-		}
-	}
-	catch (std::bad_alloc&)
-	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
+		m_Programs.insert(std::make_pair(pProgram->GetHandle(), pProgram));
+		pOut = pProgram;
 	}
 
 	return NatErr_OK;
 }
 
-nResult n2dShaderWrapperImpl::CreateProgramFromStream(natStream* pStream, n2dShaderProgram** pOut)
+nResult n2dShaderWrapperImpl::CreateProgramPipeline(natRefPointer<n2dProgramPipeline>& pOut)
 {
-	if (pOut == nullptr)
+	auto pProgramPipeline = make_ref<n2dProgramPipelineImpl>();
+	auto itea = m_ProgramPipelines.find(pProgramPipeline->GetHandle());
+	if (itea != m_ProgramPipelines.end())
 	{
-		return NatErr_InvalidArg;
+		pOut = itea->second;
 	}
-
-	try
+	else
 	{
-		natRefPointer<n2dShaderProgramImpl> pProgram{ n2dShaderProgramImpl::CreateFromStream(pStream) };
-		auto itea = m_Programs.find(pProgram->GetHandle());
-		if (itea != m_Programs.end())
-		{
-			*pOut = itea->second;
-		}
-		else
-		{
-			m_Programs.insert(std::make_pair(pProgram->GetHandle(), pProgram));
-			*pOut = pProgram;
-		}
-	}
-	catch (std::bad_alloc&)
-	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
-	}
-
-	return NatErr_OK;
-}
-
-nResult n2dShaderWrapperImpl::CreateProgramPipeline(n2dProgramPipeline** pOut)
-{
-	if (pOut == nullptr)
-	{
-		return NatErr_InvalidArg;
-	}
-
-	try
-	{
-		auto pProgramPipeline = make_ref<n2dProgramPipelineImpl>();
-		auto itea = m_ProgramPipelines.find(pProgramPipeline->GetHandle());
-		if (itea != m_ProgramPipelines.end())
-		{
-			*pOut = itea->second;
-		}
-		else
-		{
-			m_ProgramPipelines[pProgramPipeline->GetHandle()] = pProgramPipeline;
-			*pOut = pProgramPipeline;
-		}
-	}
-	catch (std::bad_alloc&)
-	{
-		nat_Throw(natException, "Failed to allocate memory"_nv);
-	}
-	catch (...)
-	{
-		return NatErr_Unknown;
+		m_ProgramPipelines[pProgramPipeline->GetHandle()] = pProgramPipeline;
+		pOut = pProgramPipeline;
 	}
 
 	return NatErr_OK;
@@ -203,7 +137,7 @@ void n2dShaderWrapperImpl::ReleaseBindingPoint(GLuint BindingPoint)
 	m_AvailableBindingPoint.insert(BindingPoint);
 }
 
-n2dShaderProgram* n2dShaderWrapperImpl::GetCurrentProgram()
+natRefPointer<n2dShaderProgram> n2dShaderWrapperImpl::GetCurrentProgram()
 {
 	GLint tUsingProgram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &tUsingProgram);
@@ -223,7 +157,7 @@ n2dShaderProgram* n2dShaderWrapperImpl::GetCurrentProgram()
 	return pProgram;
 }
 
-n2dProgramPipeline* n2dShaderWrapperImpl::GetCurrentProgramPipeline()
+natRefPointer<n2dProgramPipeline> n2dShaderWrapperImpl::GetCurrentProgramPipeline()
 {
 	GLint tBindingPipeline = 0;
 	glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING, &tBindingPipeline);
@@ -243,26 +177,26 @@ n2dProgramPipeline* n2dShaderWrapperImpl::GetCurrentProgramPipeline()
 	return pProgramPipeline;
 }
 
-n2dShaderProgramImpl* n2dShaderWrapperImpl::SetDefaultProgram(n2dShaderProgramImpl* pProgram)
+natRefPointer<n2dShaderProgramImpl> n2dShaderWrapperImpl::SetDefaultProgram(natRefPointer<n2dShaderProgramImpl> pProgram)
 {
 	auto pOld = m_DefaultProgram;
 	m_DefaultProgram = natRefPointer<n2dShaderProgramImpl>(pProgram);
 	return pOld;
 }
 
-n2dShaderProgram* n2dShaderWrapperImpl::GetDefaultProgram() const
+natRefPointer<n2dShaderProgram> n2dShaderWrapperImpl::GetDefaultProgram() const
 {
 	return m_DefaultProgram;
 }
 
-n2dShaderProgram* n2dShaderWrapperImpl::SetFontProgram(n2dShaderProgram* pProgram)
+natRefPointer<n2dShaderProgram> n2dShaderWrapperImpl::SetFontProgram(natRefPointer<n2dShaderProgram> pProgram)
 {
 	auto pOld = m_FontProgram;
 	m_FontProgram = natRefPointer<n2dShaderProgram>(pProgram);
 	return pOld;
 }
 
-n2dShaderProgram* n2dShaderWrapperImpl::GetFontProgram() const
+natRefPointer<n2dShaderProgram> n2dShaderWrapperImpl::GetFontProgram() const
 {
 	return m_FontProgram;
 }
@@ -325,7 +259,7 @@ nStrView n2dShaderImpl::GetInfoLog() const
 	return m_Log;
 }
 
-void n2dShaderImpl::CompileFromStream(natStream* pStream, nBool bIsBinary)
+void n2dShaderImpl::CompileFromStream(natRefPointer<natStream> pStream, nBool bIsBinary)
 {
 	if (!pStream)
 	{
@@ -362,9 +296,9 @@ n2dShaderProgramImpl::AttributeReferenceImpl::AttributeReferenceImpl(n2dShaderPr
 	glGetActiveAttrib(m_pProgram->GetHandle(), m_Location, 0, nullptr, &m_RealSize, &m_ExType, nullptr);
 }
 
-n2dShaderProgram* n2dShaderProgramImpl::AttributeReferenceImpl::GetProgram() const
+natRefPointer<n2dShaderProgram> n2dShaderProgramImpl::AttributeReferenceImpl::GetProgram() const
 {
-	return m_pProgram;
+	return m_pProgram->ForkRef();
 }
 
 nuInt n2dShaderProgramImpl::AttributeReferenceImpl::GetSize() const
@@ -619,9 +553,9 @@ n2dShaderProgramImpl::UniformReferenceImpl::UniformReferenceImpl(n2dShaderProgra
 	glGetActiveUniform(m_pProgram->GetHandle(), m_Location, 0, nullptr, &m_Size, &m_Type, nullptr);
 }
 
-n2dShaderProgram* n2dShaderProgramImpl::UniformReferenceImpl::GetProgram() const
+natRefPointer<n2dShaderProgram> n2dShaderProgramImpl::UniformReferenceImpl::GetProgram() const
 {
-	return m_pProgram;
+	return m_pProgram->ForkRef();
 }
 
 n2dShaderProgram::VarType n2dShaderProgramImpl::UniformReferenceImpl::GetType() const
@@ -885,9 +819,9 @@ n2dShaderProgramImpl::UniformBlockReferenceImpl::UniformBlockReferenceImpl(n2dSh
 	glGetActiveUniformBlockiv(m_pProgram->GetHandle(), m_Location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &m_ActiveUniformCount);
 }
 
-n2dShaderProgram* n2dShaderProgramImpl::UniformBlockReferenceImpl::GetProgram() const
+natRefPointer<n2dShaderProgram> n2dShaderProgramImpl::UniformBlockReferenceImpl::GetProgram() const
 {
-	return m_pProgram;
+	return m_pProgram->ForkRef();
 }
 
 nuInt n2dShaderProgramImpl::UniformBlockReferenceImpl::GetSize() const
@@ -900,7 +834,7 @@ nuInt n2dShaderProgramImpl::UniformBlockReferenceImpl::ActiveUniformCount() cons
 	return m_ActiveUniformCount;
 }
 
-void n2dShaderProgramImpl::UniformBlockReferenceImpl::Bind(n2dBuffer* pBuffer)
+void n2dShaderProgramImpl::UniformBlockReferenceImpl::Bind(natRefPointer<n2dBuffer> pBuffer)
 {
 	glUniformBlockBinding(m_pProgram->GetHandle(), m_Location, pBuffer->GetBindingPoint());
 	pBuffer->BindBase();
@@ -927,7 +861,7 @@ n2dShaderProgramImpl::n2dShaderProgramImpl(GLhandle ProgramID)
 	}
 }
 
-n2dShaderProgramImpl::n2dShaderProgramImpl(n2dShaderImpl* pVertexShader, n2dShaderImpl* pFragmentShader, n2dShaderImpl* pGeometryShader)
+n2dShaderProgramImpl::n2dShaderProgramImpl(natRefPointer<n2dShaderImpl> pVertexShader, natRefPointer<n2dShaderImpl> pFragmentShader, natRefPointer<n2dShaderImpl> pGeometryShader)
 	: n2dShaderProgramImpl(0u)
 {
 	n2dShaderProgramImpl::AttachShader(pVertexShader);
@@ -960,7 +894,7 @@ HandleType n2dShaderProgramImpl::GetHandle() const
 	return m_Program;
 }
 
-void n2dShaderProgramImpl::AttachShader(n2dShader* pShader)
+void n2dShaderProgramImpl::AttachShader(natRefPointer<n2dShader> pShader)
 {
 	if (pShader)
 	{
@@ -968,7 +902,7 @@ void n2dShaderProgramImpl::AttachShader(n2dShader* pShader)
 	}
 }
 
-void n2dShaderProgramImpl::DetachShader(n2dShader* pShader)
+void n2dShaderProgramImpl::DetachShader(natRefPointer<n2dShader> pShader)
 {
 	glDetachShader(m_Program, pShader->GetHandle());
 }
@@ -1029,7 +963,7 @@ nBool n2dShaderProgramImpl::IsUsing() const
 	return GetParameter(GL_CURRENT_PROGRAM) == m_Program;
 }
 
-nResult n2dShaderProgramImpl::OutputBinary(natStream* pStream) const
+nResult n2dShaderProgramImpl::OutputBinary(natRefPointer<natStream> pStream) const
 {
 	if (!pStream || !pStream->CanWrite())
 	{
@@ -1071,7 +1005,7 @@ nuInt n2dShaderProgramImpl::ActiveUniformBlockCount() const
 	return GetParameter(GL_ACTIVE_UNIFORM_BLOCKS);
 }
 
-n2dShaderProgram::AttributeReference* n2dShaderProgramImpl::GetAttributeReference(nuInt location)
+natRefPointer<n2dShaderProgram::AttributeReference> n2dShaderProgramImpl::GetAttributeReference(nuInt location)
 {
 	if (location >= ActiveAttributeCount())
 	{
@@ -1090,14 +1024,14 @@ n2dShaderProgram::AttributeReference* n2dShaderProgramImpl::GetAttributeReferenc
 	return pRet;
 }
 
-n2dShaderProgram::AttributeReference* n2dShaderProgramImpl::GetAttributeReference(nStrView Name)
+natRefPointer<n2dShaderProgram::AttributeReference> n2dShaderProgramImpl::GetAttributeReference(nStrView Name)
 {
 	GLhandle tLocation = glGetAttribLocation(m_Program, AnsiString{ Name }.data());
 
 	return tLocation == GLhandle(-1) ? nullptr : GetAttributeReference(tLocation);
 }
 
-n2dShaderProgram::UniformReference* n2dShaderProgramImpl::GetUniformReference(nuInt location)
+natRefPointer<n2dShaderProgram::UniformReference> n2dShaderProgramImpl::GetUniformReference(nuInt location)
 {
 	if (location >= ActiveUniformCount())
 	{
@@ -1116,14 +1050,14 @@ n2dShaderProgram::UniformReference* n2dShaderProgramImpl::GetUniformReference(nu
 	return pRet;
 }
 
-n2dShaderProgram::UniformReference* n2dShaderProgramImpl::GetUniformReference(nStrView Name)
+natRefPointer<n2dShaderProgram::UniformReference> n2dShaderProgramImpl::GetUniformReference(nStrView Name)
 {
 	GLhandle tLocation = glGetUniformLocation(m_Program, AnsiString{ Name }.data());
 
 	return tLocation == GLhandle(-1) ? nullptr : GetUniformReference(tLocation);
 }
 
-n2dShaderProgram::UniformBlockReference* n2dShaderProgramImpl::GetUniformBlockReference(nuInt Location)
+natRefPointer<n2dShaderProgram::UniformBlockReference> n2dShaderProgramImpl::GetUniformBlockReference(nuInt Location)
 {
 	if (Location >= ActiveUniformBlockCount())
 	{
@@ -1142,21 +1076,21 @@ n2dShaderProgram::UniformBlockReference* n2dShaderProgramImpl::GetUniformBlockRe
 	return pRet;
 }
 
-n2dShaderProgram::UniformBlockReference* n2dShaderProgramImpl::GetUniformBlockReference(nStrView Name)
+natRefPointer<n2dShaderProgram::UniformBlockReference> n2dShaderProgramImpl::GetUniformBlockReference(nStrView Name)
 {
 	GLhandle tLocation = glGetUniformBlockIndex(m_Program, AnsiString{ Name }.data());
 
 	return tLocation == GLhandle(-1) ? nullptr : GetUniformBlockReference(tLocation);
 }
 
-n2dShaderProgramImpl* n2dShaderProgramImpl::CreateFromStream(natStream* pStream)
+natRefPointer<n2dShaderProgramImpl> n2dShaderProgramImpl::CreateFromStream(natRefPointer<natStream> pStream)
 {
 	if (!pStream || !pStream->CanRead())
 	{
 		return nullptr;
 	}
 
-	n2dShaderProgramImpl* pRet = new n2dShaderProgramImpl;
+	auto pRet = make_ref<n2dShaderProgramImpl>();
 	
 	GLenum tBinaryFormat = 0u;
 	pStream->ReadBytes(reinterpret_cast<nData>(&tBinaryFormat), sizeof(tBinaryFormat));
@@ -1201,7 +1135,7 @@ nBool n2dProgramPipelineImpl::IsBinding() const
 	return tResult == m_Pipeline;
 }
 
-void n2dProgramPipelineImpl::UseProgramStages(nuInt stages, n2dShaderProgram* pProgram)
+void n2dProgramPipelineImpl::UseProgramStages(nuInt stages, natRefPointer<n2dShaderProgram> pProgram)
 {
 	glUseProgramStages(m_Pipeline, stages, pProgram->GetHandle());
 }

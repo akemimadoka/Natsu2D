@@ -18,23 +18,14 @@ n2dModelLoaderImpl::n2dModelLoaderImpl(n2dRenderDeviceImpl* pRenderDevice)
 	m_DefaultTexture = make_ref<n2dTexture2DImpl>();
 }
 
-nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dModelData** pOut)
+nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dModelData>& pOut)
 {
 	if (!pStream || !pOut)
 	{
 		return NatErr_InvalidArg;
 	}
 
-	n2dStaticModelDataImpl* pModel = nullptr;
-
-	try
-	{
-		pModel = new n2dStaticModelDataImpl;
-	}
-	catch (...)
-	{
-		return NatErr_InternalErr;
-	}
+	auto pModel = make_ref<n2dStaticModelDataImpl>();
 
 	Assimp::Importer tImporter;
 	nLen tLen = pStream->GetSize() - pStream->GetPosition();
@@ -55,43 +46,32 @@ nResult n2dModelLoaderImpl::CreateStaticModelFromStream(natStream* pStream, n2dM
 		return NatErr_InternalErr;
 	}
 
-	loadMeshData(pModel, tpScene, tpScene->mRootNode, 1.0f);
+	loadMeshData(pModel.Get(), tpScene, tpScene->mRootNode, 1.0f);
 
 	for (auto& mesh : pModel->m_Meshes)
 	{
 		mesh->m_pRenderDevice = m_pRenderDevice;
 	}
 
-	*pOut = pModel;
+	pOut = pModel;
 	return NatErr_OK;
 }
 
-nResult n2dModelLoaderImpl::CreateStaticModelFromFile(nStrView lpPath, n2dModelData** pOut)
+nResult n2dModelLoaderImpl::CreateStaticModelFromFile(nStrView lpPath, natRefPointer<n2dModelData>& pOut)
 {
-	natStream* tpStream = new natFileStream(lpPath, true, false);
+	auto tpStream = make_ref<natFileStream>(lpPath, true, false);
 	nResult tRet = CreateStaticModelFromStream(tpStream, pOut);
-	SafeRelease(tpStream);
 	return tRet;
 }
 
-nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2dModelData ** pOut)
+nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natRefPointer<natStream> pStream, natRefPointer<n2dModelData>& pOut)
 {
-	if (!pStream || !pOut)
+	if (!pStream)
 	{
 		return NatErr_InvalidArg;
 	}
 
-	n2dDynamicModelDataImpl* pModel;
-
-	try
-	{
-		pModel = new n2dDynamicModelDataImpl;
-	}
-	catch (...)
-	{
-		return NatErr_InternalErr;
-	}
-
+	auto pModel = make_ref<n2dDynamicModelDataImpl>();
 	pModel->m_Mesh.m_pRenderDevice = m_pRenderDevice;
 
 	nByte tBuf[257] = { 0 };
@@ -268,10 +248,10 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 		// Morphes end
 
 		pModel->m_Mesh.m_Selekton = std::make_shared<n2dSkeleton>();
-		pModel->m_Mesh.m_Selekton->CreateFromDynamicModel(pModel);
+		pModel->m_Mesh.m_Selekton->CreateFromDynamicModel(pModel.Get());
 		for (nuInt i = 0u; i < pModel->m_Mesh.m_IK.size(); ++i)
 		{
-			pModel->m_Mesh.m_IK[i].CreateFromDynamicModel(pModel, i);
+			pModel->m_Mesh.m_IK[i].CreateFromDynamicModel(pModel.Get(), i);
 		}
 		for (nuInt i = 1u; i < pModel->m_Mesh.m_Morphes.size(); ++i)
 		{
@@ -292,22 +272,22 @@ nResult n2dModelLoaderImpl::CreateDynamicModelFromStream(natStream * pStream, n2
 		return NatErr_InternalErr;
 	}
 
-	*pOut = pModel;
+	pOut = pModel;
 	return NatErr_OK;
 }
 
-nResult n2dModelLoaderImpl::CreateDynamicModelFromFile(nStrView lpPath, n2dModelData ** pOut)
+nResult n2dModelLoaderImpl::CreateDynamicModelFromFile(nStrView lpPath, natRefPointer<n2dModelData>& pOut)
 {
 	natRefPointer<natStream> pStream = make_ref<natFileStream>(lpPath, true, false);
 	nResult tRet = CreateDynamicModelFromStream(pStream, pOut);
 	return tRet;
 }
 
-void n2dModelLoaderImpl::SetDefaultTexture(n2dTexture2D* Texture)
+void n2dModelLoaderImpl::SetDefaultTexture(natRefPointer<n2dTexture2D> Texture)
 {
 	if (Texture)
 	{
-		m_DefaultTexture = natRefPointer<n2dTexture2D>(Texture);
+		m_DefaultTexture = Texture;
 	}
 }
 

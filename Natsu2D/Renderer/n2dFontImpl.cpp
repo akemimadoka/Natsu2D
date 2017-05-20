@@ -21,16 +21,16 @@ n2dFontImpl::~n2dFontImpl()
 	FT_Done_FreeType(m_pFTLib);
 }
 
-nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight)
+nResult n2dFontImpl::InitFont(natRefPointer<n2dRenderDevice> pRenderer, nStrView lpFontFile, nuInt iWidth, nuInt iHeight)
 {
 	return InitFont(pRenderer, make_ref<natFileStream>(lpFontFile, true, false), iWidth, iHeight);
 }
 
-nResult n2dFontImpl::InitFont(n2dRenderDevice* pRenderer, natStream* pStream, nuInt iWidth, nuInt iHeight)
+nResult n2dFontImpl::InitFont(natRefPointer<n2dRenderDevice> pRenderer, natRefPointer<natStream> pStream, nuInt iWidth, nuInt iHeight)
 {
-	if (pRenderer != nullptr)
+	if (pRenderer)
 	{
-		m_pRenderer = pRenderer;
+		m_pRenderer = pRenderer.Get();
 	}
 
 	m_FontCache.clear();
@@ -109,7 +109,7 @@ nResult n2dFontImpl::InitText(nStrView str, nLen lStrlen)
 	return NatErr_OK;
 }
 
-nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color)
+nResult n2dFontImpl::PrintFont(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natVec3<> const& color)
 {
 	if (!m_pFTLib)
 	{
@@ -160,7 +160,7 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, 
 	return PrintFontImpl(pGraphic, str, x, y, scale);
 }
 
-nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, n2dTexture* pTexture)
+nResult n2dFontImpl::PrintFont(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale, natRefPointer<n2dTexture> pTexture)
 {
 	if (!m_pFTLib)
 	{
@@ -213,7 +213,7 @@ nResult n2dFontImpl::PrintFont(n2dGraphics2D* pGraphic, nStrView str, nFloat x, 
 	return PrintFontImpl(pGraphic, str, x, y, scale);
 }
 
-nResult n2dFontImpl::PrintFontImpl(n2dGraphics2D* pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale)
+nResult n2dFontImpl::PrintFontImpl(natRefPointer<n2dGraphics2D> pGraphic, nStrView str, nFloat x, nFloat y, nFloat scale)
 {
 	nLen tLen = str.size();
 	nFloat currentx = x, currenty = y;

@@ -6,7 +6,7 @@
 
 namespace
 {
-	std::unique_ptr<n2dImage> LoadPicture(natStream* pStream, DWORD dTypeId)
+	std::unique_ptr<n2dImage> LoadPicture(natRefPointer<natStream> pStream, DWORD dTypeId)
 	{
 		static natCriticalSection s_Section;
 		natRefScopeGuard<natCriticalSection> guard{ s_Section };
@@ -86,10 +86,10 @@ nBool n2dTexture2DImpl::LoadTexture(nString const& filename)
 		return LoadDDS(&Stream);
 	}
 
-	return LoadTexture(&Stream, CxImage::GetTypeIdFromName(WideString(tName).data()));
+	return LoadTexture(Stream.ForkRef(), CxImage::GetTypeIdFromName(WideString(tName).data()));
 }
 
-nBool n2dTexture2DImpl::LoadTexture(natStream* pStream, DWORD dwFileType)
+nBool n2dTexture2DImpl::LoadTexture(natRefPointer<natStream> pStream, DWORD dwFileType)
 {
 	return LoadTexture(*LoadPicture(pStream, dwFileType));
 }

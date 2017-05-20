@@ -16,7 +16,7 @@ nuInt n2dSoundSourceImpl::GetHandle() const
 	return m_Handle;
 }
 
-void n2dSoundSourceImpl::BindBuffer(const n2dSoundBuffer * pBuffer)
+void n2dSoundSourceImpl::BindBuffer(natRefPointer<n2dSoundBuffer> pBuffer)
 {
 	alSourcei(m_Handle, AL_BUFFER, pBuffer->GetHandle());
 }
@@ -311,7 +311,7 @@ void n2dSoundSourceImpl::Rewind()
 {
 	alSourceRewind(m_Handle);
 }
-
+/*
 nResult n2dSoundSourceImpl::QueueBuffers(nuInt Count, const n2dSoundBuffer * pBufferArray)
 {
 	std::vector<ALuint> tBuffers(Count);
@@ -335,3 +335,4 @@ nResult n2dSoundSourceImpl::UnqueueBuffers(nuInt Count, const n2dSoundBuffer * p
 
 	return alGetError() == AL_NO_ERROR ? NatErr_OK : NatErr_InternalErr;
 }
+*/

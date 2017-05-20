@@ -50,7 +50,7 @@ struct n2dGraphics2D
 {
 	///	@brief	绘制矩形
 	virtual nResult DrawQuad(
-		n2dTexture2D* pTex,
+		natRefPointer<n2dTexture2D> pTex,
 		n2dGraphics2DVertex const& v1,
 		n2dGraphics2DVertex const& v2,
 		n2dGraphics2DVertex const& v3,
@@ -58,10 +58,10 @@ struct n2dGraphics2D
 		) = 0;
 
 	///	@brief	绘制矩形
-	virtual nResult DrawQuad(n2dTexture2D* pTex, const n2dGraphics2DVertex* varr) = 0;
+	virtual nResult DrawQuad(natRefPointer<n2dTexture2D> pTex, const n2dGraphics2DVertex* varr) = 0;
 
 	///	@brief	自由绘制
-	virtual nResult DrawRaw(n2dTexture2D* pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr) = 0;
+	virtual nResult DrawRaw(natRefPointer<n2dTexture2D> pTex, nuInt cVertex, nuInt cIndex, const n2dGraphics2DVertex* varr, const nuShort* iarr) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,5 +71,5 @@ struct n2dGraphics3D
 	: n2dGraphics
 {
 	///	@brief	绘制模型
-	virtual nResult RenderModel(n2dModelData* pModelData) = 0;
+	virtual nResult RenderModel(natRefPointer<n2dModelData> pModelData) = 0;
 };

@@ -249,18 +249,18 @@ inline MorphKeyFrame mix(MorphKeyFrame const& a, MorphKeyFrame const& b, nFloat 
 }
 
 class n2dMotionManagerImpl
-	: public natRefObjImpl<n2dMotionManager>
+	: public natRefObjImpl<n2dMotionManagerImpl, n2dMotionManager>
 {
 public:
 	n2dMotionManagerImpl();
 	~n2dMotionManagerImpl();
 
-	nResult LoadMotionFromStream(nStrView lpName, natStream* pStream) override;
+	nResult LoadMotionFromStream(nStrView lpName, natRefPointer<natStream> pStream) override;
 	nResult LoadMotionFromFile(nStrView lpName, nStrView lpPath) override;
 
-	nResult ApplyToModel(nStrView lpName, n2dModelData* pModel) override;
-	void RestoreMotion(n2dModelData* pModel) override;
-	void RestoreMorph(n2dModelData* pModel) override;
+	nResult ApplyToModel(nStrView lpName, natRefPointer<n2dModelData> pModel) override;
+	void RestoreMotion(natRefPointer<n2dModelData> pModel) override;
+	void RestoreMorph(natRefPointer<n2dModelData> pModel) override;
 
 	void applyMotion(n2dDynamicMeshDataImpl* pMesh, MotionData* Motion, nuInt nFrame);
 	void applyMorph(n2dDynamicMeshDataImpl* pMesh, MotionData* Motion, nuInt nFrame);
